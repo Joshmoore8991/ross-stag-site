@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun!">
+<title>BARCELONA STAG - May 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇪🇸</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #D4A843;
+    --black: #0A0A0A;
+    --cream: #F5F0E8;
+    --dark: #1A1A1A;
+    --accent: #C9382A;
+    --sun: #F4A423;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Outfit', sans-serif; background: var(--black); color: var(--cream); overflow-x: hidden; }
+
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; position: relative;
+    background: radial-gradient(ellipse at 30% 20%, rgba(164,23,49,.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(244,164,35,.08) 0%, transparent 50%), var(--black);
+  }
+  .hero::before { content:''; position:absolute; inset:0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L60 30 L30 60 L0 30Z' fill='none' stroke='%23D4A84310' stroke-width='.5'/%3E%3C/svg%3E"); opacity:.4; }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-emoji { font-size: 56px; margin-bottom: -6px; animation: fadeDown .8s ease-out; filter: drop-shadow(0 0 30px rgba(212,168,67,.3)); }
+  .hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(64px,16vw,180px); letter-spacing:10px; color:var(--gold); line-height:.85; animation:fadeUp .8s ease-out; text-shadow:0 0 60px rgba(212,168,67,.2); }
+  .hero h2 { font-family:'Bebas Neue',sans-serif; font-size:clamp(16px,3.5vw,28px); letter-spacing:12px; color:var(--cream); opacity:.6; margin-top:8px; animation:fadeUp .8s .2s ease-out both; }
+  .divider-line { width:120px; height:1px; background:var(--gold); margin:28px auto; animation:scaleIn .8s .4s ease-out both; }
+  .hero-date { font-size:clamp(18px,3.5vw,32px); font-weight:600; letter-spacing:4px; animation:fadeUp .8s .5s ease-out both; }
+  .hero-location { font-size:13px; letter-spacing:6px; text-transform:uppercase; opacity:.5; margin-top:8px; animation:fadeUp .8s .6s ease-out both; }
+  .scroll-hint { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:4px; text-transform:uppercase; opacity:.3; animation:bounce 2s infinite; }
+
+  .countdown { background:var(--dark); border:1px solid rgba(212,168,67,.15); border-radius:2px; padding:44px 24px; text-align:center; margin:0 auto; max-width:900px; }
+  .countdown-label { font-size:11px; letter-spacing:6px; text-transform:uppercase; opacity:.5; margin-bottom:20px; }
+  .countdown-grid { display:flex; justify-content:center; gap:28px; flex-wrap:wrap; }
+  .countdown-num { font-family:'Bebas Neue',sans-serif; font-size:clamp(44px,10vw,72px); color:var(--gold); line-height:1; }
+  .countdown-unit { font-size:10px; letter-spacing:4px; text-transform:uppercase; opacity:.5; }
+
+  section { max-width:900px; margin:0 auto; padding:90px 24px; }
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(32px,7vw,56px); color:var(--gold); letter-spacing:5px; margin-bottom:36px; position:relative; }
+  .section-title::after { content:''; display:block; width:45px; height:2px; background:var(--accent); margin-top:10px; }
+
+  .lads-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; }
+  .lad-card { background:var(--dark); border:1px solid rgba(212,168,67,.1); padding:24px 16px; border-radius:2px; text-align:center; transition:border-color .3s, transform .3s; }
+  .lad-card:hover { border-color:var(--gold); transform:translateY(-3px); }
+  .lad-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--sun)); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--black); }
+  .lad-name { font-weight:600; font-size:14px; }
+  .lad-role { font-size:11px; opacity:.4; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+
+  .flight-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:2px; padding:28px; margin-bottom:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .flight-direction { font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:4px; color:var(--accent); text-transform:uppercase; min-width:80px; }
+  .flight-route { flex:1; min-width:200px; }
+  .flight-route .airports { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--cream); letter-spacing:3px; display:flex; align-items:center; gap:12px; }
+  .flight-route .airports .arrow { color:var(--gold); font-size:18px; }
+  .flight-meta { font-size:13px; opacity:.5; margin-top:4px; line-height:1.6; }
+  .flight-ref { font-size:12px; opacity:.35; letter-spacing:2px; font-family:monospace; }
+
+  .hotel-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:2px; padding:32px; }
+  .hotel-name { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--gold); letter-spacing:3px; }
+  .hotel-address { font-size:13px; opacity:.5; margin-top:4px; margin-bottom:20px; }
+  .hotel-details { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:16px; }
+  .hotel-detail-item { padding:16px; background:rgba(255,255,255,.03); border-radius:2px; }
+  .hotel-detail-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; opacity:.4; margin-bottom:4px; }
+  .hotel-detail-value { font-weight:600; font-size:15px; }
+
+  .cost-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:2px; padding:32px; text-align:center; }
+  .cost-total-label { font-size:11px; letter-spacing:5px; text-transform:uppercase; opacity:.4; margin-bottom:8px; }
+  .cost-total { font-family:'Bebas Neue',sans-serif; font-size:56px; color:var(--gold); }
+  .cost-per-person { font-size:14px; opacity:.5; margin-top:4px; margin-bottom:28px; }
+  .cost-breakdown { display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:400px; margin:0 auto; text-align:left; }
+  .cost-row-label { font-size:13px; opacity:.5; }
+  .cost-row-value { font-size:13px; font-weight:600; text-align:right; }
+
+  .schedule-item { display:flex; gap:20px; padding:24px 0; border-bottom:1px solid rgba(255,255,255,.06); align-items:flex-start; }
+  .schedule-time { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--gold); min-width:110px; flex-shrink:0; }
+  .schedule-info h3 { font-size:16px; font-weight:600; margin-bottom:3px; }
+  .schedule-info p { font-size:13px; opacity:.5; line-height:1.5; }
+
+  .rules-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .rule-card { background:var(--dark); border:1px solid rgba(212,168,67,.1); padding:24px; border-radius:2px; transition:border-color .3s; }
+  .rule-card:hover { border-color:var(--gold); }
+  .rule-num { font-family:'Bebas Neue',sans-serif; font-size:32px; color:var(--accent); margin-bottom:6px; }
+  .rule-card h3 { font-size:15px; font-weight:600; margin-bottom:4px; }
+  .rule-card p { font-size:12px; opacity:.5; line-height:1.5; }
+
+  .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .info-card { background:var(--dark); border:1px solid rgba(212,168,67,.08); padding:24px; border-radius:2px; }
+  .info-card h3 { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--gold); letter-spacing:2px; margin-bottom:10px; }
+  .info-card p, .info-card a { font-size:13px; opacity:.6; line-height:1.6; }
+  .info-card a { color:var(--gold); text-decoration:none; }
+
+  .rsvp-section { text-align:center; padding:100px 24px; }
+  .rsvp-btn { display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--black); background:var(--gold); padding:16px 52px; border:none; cursor:pointer; text-decoration:none; transition:all .3s; margin-top:20px; }
+  .rsvp-btn:hover { background:var(--cream); transform:translateY(-2px); box-shadow:0 12px 40px rgba(212,168,67,.3); }
+  footer { text-align:center; padding:50px 24px; font-size:11px; opacity:.25; letter-spacing:4px; text-transform:uppercase; border-top:1px solid rgba(255,255,255,.05); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes scaleIn { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+  @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+  .fade-in { opacity:0; transform:translateY(20px); transition:opacity .6s ease, transform .6s ease; }
+  .fade-in.visible { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-emoji">&#127466;&#127480;</div>
+    <h1>BARCELONA</h1>
+    <h2>Ross's Stag Do</h2>
+    <div class="divider-line"></div>
+    <div class="hero-date">3 - 5 MAY 2026</div>
+    <div class="hero-location">3 nights &#183; 6 lads &#183; 1 mission</div>
+  </div>
+  <div class="scroll-hint">Scroll Down</div>
+</div>
+
+<div class="countdown fade-in">
+  <div class="countdown-label">Countdown to Takeoff</div>
+  <div class="countdown-grid">
+    <div class="countdown-item"><div class="countdown-num" id="days">--</div><div class="countdown-unit">Days</div></div>
+    <div class="countdown-item"><div class="countdown-num" id="hours">--</div><div class="countdown-unit">Hours</div></div>
+    <div class="countdown-item"><div class="countdown-num" id="mins">--</div><div class="countdown-unit">Minutes</div></div>
+    <div class="countdown-item"><div class="countdown-num" id="secs">--</div><div class="countdown-unit">Seconds</div></div>
+  </div>
+  <div style="margin-top:20px;">
+    <div style="font-size:11px; letter-spacing:4px; text-transform:uppercase; opacity:.5; margin-bottom:8px;">Trip Progress</div>
+    <div style="width:100%; height:6px; background:rgba(255,255,255,.1); border-radius:3px;">
+      <div id="progress-fill" style="height:100%; background:var(--gold); border-radius:3px; width:0%; transition:width 1s;"></div>
+    </div>
+    <div id="progress-text" style="font-size:12px; opacity:.5; margin-top:4px;"></div>
+  </div>
+</div>
+
+<div style="margin-top:20px;">
+  <div style="font-size:11px; letter-spacing:4px; text-transform:uppercase; opacity:.5; margin-bottom:8px;">Trip Progress</div>
+  <div style="width:100%; height:6px; background:rgba(255,255,255,.1); border-radius:3px;">
+    <div id="progress-fill" style="height:100%; background:var(--gold); border-radius:3px; width:0%; transition:width 1s;"></div>
+  </div>
+  <div id="progress-text" style="font-size:12px; opacity:.5; margin-top:4px;"></div>
+</div>
+
+<section>
+  <h2 class="section-title fade-in">The Lads</h2>
+  <div class="lads-grid">
+    <div class="lad-card fade-in"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Lad</div></div>
+    <div class="lad-card fade-in"><div class="lad-avatar">EP</div><div class="lad-name">Emmanuel Pascual</div><div class="lad-role">Lad</div></div>
+    <div class="lad-card fade-in"><div class="lad-avatar">RW</div><div class="lad-name">Ross Wightman</div><div class="lad-role">The Groom</div></div>
+    <div class="lad-card fade-in"><div class="lad-avatar">KB</div><div class="lad-name">Kelan Boylan</div><div class="lad-role">Lad</div></div>
+    <div class="lad-card fade-in"><div class="lad-avatar">JD</div><div class="lad-name">Jack Doherty</div><div class="lad-role">Lad</div></div>
+    <div class="lad-card fade-in"><div class="lad-avatar">CS</div><div class="lad-name">Ciaran Stone</div><div class="lad-role">Lad</div></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Flights</h2>
+  <div class="flight-card fade-in">
+    <div class="flight-direction">Outbound</div>
+    <div class="flight-route">
+      <div class="airports">BFS <span class="arrow">&#10230;</span> BCN</div>
+      <div class="flight-meta">Sun 3 May &#183; Departs 06:10 &#183; Arrives 09:50 local &#183; 2h 40m</div>
+      <div class="flight-meta">EasyJet EZY3001</div>
+    </div>
+    <div class="flight-ref">KBMV8M2</div>
+  </div>
+  <div class="flight-card fade-in">
+    <div class="flight-direction">Return</div>
+    <div class="flight-route">
+      <div class="airports">BCN <span class="arrow">&#10230;</span> BFS</div>
+      <div class="flight-meta">Wed 6 May &#183; Departs 14:00 &#183; Arrives 15:55 local &#183; 2h 55m</div>
+      <div class="flight-meta">EasyJet EZY3002</div>
+    </div>
+    <div class="flight-ref">KBMV8M2</div>
+  </div>
+  <p class="fade-in" style="font-size:12px; opacity:.4; margin-top:16px; line-height:1.6;">Hand luggage only (45x36x20cm). No hold bags. Check-in opens 30 days before at easyjet.com.</p>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">The Base</h2>
+  <div class="hotel-card fade-in">
+    <div class="hotel-name">Htop BCN City</div>
+    <div class="hotel-address">Calle Travessera De Gracia, Barcelona 08025</div>
+    <div class="hotel-details">
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Check-in</div><div class="hotel-detail-value">3 May</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Check-out</div><div class="hotel-detail-value">6 May</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Nights</div><div class="hotel-detail-value">3</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Rooms</div><div class="hotel-detail-value">3 Triple</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Board</div><div class="hotel-detail-value">Room Only</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Ref</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">OTBH2189476</div></div>
+    </div>
+    <p style="font-size:12px; opacity:.4; margin-top:20px; line-height:1.6;">Tourism tax ~&#8364;1.10/person/night. Hotel may request a security deposit at check-in.</p>
+    <p><a href="https://maps.google.com/?q=Htop+BCN+City,+Calle+Travessera+De+Gracia,+Barcelona+08025" target="_blank" style="color:var(--gold); text-decoration:none;">View Hotel on Google Maps</a></p>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Airport Transfer</h2>
+  <div class="hotel-card fade-in">
+    <div class="hotel-name" style="font-size:28px;">Private Minibus</div>
+    <div class="hotel-address">Return transfer via Suntransfers &#183; ~30 min each way</div>
+    <div class="hotel-details">
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Arrival Pickup</div><div class="hotel-detail-value">3 May, 09:50</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Return Pickup</div><div class="hotel-detail-value">6 May (TBC)</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Ref</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">RT-4125725</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Emergency</div><div class="hotel-detail-value" style="font-size:11px;">+34 871 556 827</div></div>
+    </div>
+    <p style="font-size:12px; opacity:.4; margin-top:20px; line-height:1.6;">Driver meets you at arrivals with a name sign. Return pickup time available 24hrs before at customer.suntransfers.com/on-the-beach.</p>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">The Damage</h2>
+  <div class="cost-card fade-in">
+    <div class="cost-total-label">Total Trip Cost</div>
+    <div class="cost-total">&#163;1,979.97</div>
+    <div class="cost-per-person">&#163;330 per head (6 lads)</div>
+    <div class="cost-breakdown">
+      <span class="cost-row-label">Flights</span><span class="cost-row-value">&#163;697.86</span>
+      <span class="cost-row-label">Hotel (3 nights)</span><span class="cost-row-value">&#163;1,213.68</span>
+      <span class="cost-row-label">Transfers</span><span class="cost-row-value">&#163;174.00</span>
+      <span class="cost-row-label">Fees &amp; Discounts</span><span class="cost-row-value">-&#163;105.57</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Key Dates</h2>
+  <div class="schedule-item fade-in">
+    <div class="schedule-time">3 Apr</div>
+    <div class="schedule-info"><h3>Final Payment Taken</h3><p>&#163;450.00 &#8212; fully paid up!</p></div>
+  </div>
+  <div class="schedule-item fade-in">
+    <div class="schedule-time">3 Apr</div>
+    <div class="schedule-info"><h3>Check-in Opens</h3><p>EasyJet online check-in. Get your seats sorted.</p></div>
+  </div>
+  <div class="schedule-item fade-in">
+    <div class="schedule-time">1 May</div>
+    <div class="schedule-info"><h3>Reconfirm Flights</h3><p>Verify flight times 48hrs before departure.</p></div>
+  </div>
+  <div class="schedule-item fade-in">
+    <div class="schedule-time">3 May</div>
+    <div class="schedule-info"><h3>Wheels Up</h3><p>Belfast 06:10. Be at the airport by 04:00. No excuses.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">The Rules</h2>
+  <div class="rules-grid">
+    <div class="rule-card fade-in"><div class="rule-num">01</div><h3>No Phones After Dark</h3><p>What happens in Barca stays in Barca.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">02</div><h3>The Groom Drinks Free</h3><p>Ross's wallet stays at the hotel. Sort it between you.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">03</div><h3>No Early Exits</h3><p>You signed up for the full 3 nights. See it through.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">04</div><h3>Best Man's Word is Law</h3><p>Challenges will be issued. They will be accepted.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">05</div><h3>Hand Luggage Only</h3><p>No hold bags booked. Pack light, lads.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">06</div><h3>Passports Checked</h3><p>If yours is expired, that's on you. Check it now.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Need to Know</h2>
+  <div class="info-grid">
+    <div class="info-card fade-in"><h3>Booking Ref</h3><p style="font-family:monospace;font-size:16px;opacity:1;color:var(--gold);">MYB14642185B</p><p>On the Beach reference. Keep it safe.</p></div>
+    <div class="info-card fade-in"><h3>In-Resort Support</h3><p><a href="tel:+443330031934">+44 (0) 333 003 1934</a></p><p>On the Beach support if anything goes wrong.</p></div>
+    <div class="info-card fade-in"><h3>Transfer Emergency</h3><p><a href="tel:+34871556827">+34 871 556 827</a></p><p>Suntransfers 24/7. Also: <a href="tel:+442045879973">+44 20 4587 9973</a></p></div>
+    <div class="info-card fade-in"><h3>Travel Advice</h3><p><a href="https://www.gov.uk/foreign-travel-advice/spain" target="_blank">gov.uk/foreign-travel-advice/spain</a></p><p>Passport &amp; visa info for Spain.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Barcelona Tips</h2>
+  <div class="info-grid">
+    <div class="info-card fade-in"><h3>Currency</h3><p>Euro (&#8364;). Cards accepted everywhere. ATMs plentiful.</p></div>
+    <div class="info-card fade-in"><h3>Language</h3><p>Catalan & Spanish. English widely spoken in tourist areas.</p></div>
+    <div class="info-card fade-in"><h3>Transport</h3><p>Metro, buses, taxis. TMB app for public transport.</p></div>
+    <div class="info-card fade-in"><h3>Weather</h3><p>May is mild, 15-25&#176;C. Pack layers.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Barcelona Highlights</h2>
+  <div class="info-grid">
+    <div class="info-card fade-in"><h3>Sagrada Familia</h3><p>The iconic unfinished basilica by Gaudí. A must-see architectural marvel.</p></div>
+    <div class="info-card fade-in"><h3>Park Güell</h3><p>Colorful mosaic park with stunning views of the city.</p></div>
+    <div class="info-card fade-in"><h3>La Rambla</h3><p>Bustling street with street performers, markets, and nightlife.</p></div>
+    <div class="info-card fade-in"><h3>Camp Nou</h3><p>Home of FC Barcelona. Tour the stadium if you're a football fan.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Packing List</h2>
+  <div class="rules-grid">
+    <div class="rule-card fade-in"><div class="rule-num">01</div><h3>Passport</h3><p>Valid for at least 3 months. Keep it safe.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">02</div><h3>Clothes</h3><p>Light layers for May weather. Smart casual for nights out.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">03</div><h3>Toiletries</h3><p>Travel size only. Toothbrush, etc.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">04</div><h3>Phone Charger</h3><p>European adapter if needed.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">05</div><h3>Cash & Cards</h3><p>Euros for small purchases. Contactless cards work.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">06</div><h3>Good Vibes</h3><p>Positive attitude and lots of energy!</p></div>
+  </div>
+</section>
+
+<div class="rsvp-section fade-in">
+  <h2 class="section-title" style="text-align:center;">Vamos Barcelona</h2>
+  <p style="opacity:.5; max-width:420px; margin:0 auto; line-height:1.7; font-size:14px;">
+    3 nights. 6 lads. Zero hold bags. Maximum carnage. See you at Belfast International, 4am sharp.
+  </p>
+  <a href="#" class="rsvp-btn" onclick="alert('VAMOS! See you at BFS.'); return false;">I'M IN</a>
+</div>
+
+<footer>Barcelona Stag 2026 &#183; Ross Wightman</footer>
+
+<script>
+  const target = new Date('2026-05-03T06:10:00').getTime();
+  function tick() {
+    const diff = target - Date.now();
+    if (diff < 0) { ['days','hours','mins','secs'].forEach(id => document.getElementById(id).textContent = '00'); return; }
+    document.getElementById('days').textContent = String(Math.floor(diff/864e5)).padStart(2,'0');
+    document.getElementById('hours').textContent = String(Math.floor((diff%864e5)/36e5)).padStart(2,'0');
+    document.getElementById('mins').textContent = String(Math.floor((diff%36e5)/6e4)).padStart(2,'0');
+    document.getElementById('secs').textContent = String(Math.floor((diff%6e4)/1e3)).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+  const obs = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold:.12 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+  function updateProgress() {
+    const start = new Date('2026-04-03T00:00:00').getTime();
+    const end = new Date('2026-05-03T06:10:00').getTime();
+    const now = Date.now();
+    const progress = Math.min(100, Math.max(0, (now - start) / (end - start) * 100));
+    document.getElementById('progress-fill').style.width = progress + '%';
+    const daysPassed = Math.floor((now - start) / 864e5);
+    const daysLeft = Math.floor((end - now) / 864e5);
+    document.getElementById('progress-text').textContent = daysPassed + ' days down, ' + daysLeft + ' to go';
+  }
+  updateProgress();
+  setInterval(updateProgress, 60000);
+</script>
+</body>
+</html>
