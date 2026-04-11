@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; font-src 'self' https: data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self';">
 <meta name="description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun!">
 <title>BARCELONA STAG - May 2026</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇪🇸</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
   :root {
     --gold: #D4A843;
@@ -37,7 +37,7 @@
   .hero-location { font-size:13px; letter-spacing:6px; text-transform:uppercase; opacity:.5; margin-top:8px; animation:fadeUp .8s .6s ease-out both; }
   .scroll-hint { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:4px; text-transform:uppercase; opacity:.3; animation:bounce 2s infinite; }
 
-  .countdown { background:var(--dark); border:1px solid rgba(212,168,67,.15); border-radius:2px; padding:44px 24px; text-align:center; margin:0 auto; max-width:900px; }
+  .countdown { background:var(--dark); border:1px solid rgba(212,168,67,.15); border-radius:12px; padding:44px 24px; text-align:center; margin:0 auto; max-width:900px; box-shadow:0 8px 32px rgba(0,0,0,.4); transition:all .3s ease; }
   .countdown-label { font-size:11px; letter-spacing:6px; text-transform:uppercase; opacity:.5; margin-bottom:20px; }
   .countdown-grid { display:flex; justify-content:center; gap:28px; flex-wrap:wrap; }
   .countdown-num { font-family:'Bebas Neue',sans-serif; font-size:clamp(44px,10vw,72px); color:var(--gold); line-height:1; }
@@ -48,13 +48,13 @@
   .section-title::after { content:''; display:block; width:45px; height:2px; background:var(--accent); margin-top:10px; }
 
   .lads-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; }
-  .lad-card { background:var(--dark); border:1px solid rgba(212,168,67,.1); padding:24px 16px; border-radius:2px; text-align:center; transition:border-color .3s, transform .3s; }
-  .lad-card:hover { border-color:var(--gold); transform:translateY(-3px); }
+  .lad-card { background:var(--dark); border:1px solid rgba(212,168,67,.1); padding:24px 16px; border-radius:10px; text-align:center; transition:all .3s ease; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+  .lad-card:hover { border-color:var(--gold); transform:translateY(-6px); box-shadow:0 12px 28px rgba(212,168,67,.2); }
   .lad-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--sun)); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--black); }
   .lad-name { font-weight:600; font-size:14px; }
   .lad-role { font-size:11px; opacity:.4; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
 
-  .flight-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:2px; padding:28px; margin-bottom:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .flight-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:10px; padding:28px; margin-bottom:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; box-shadow:0 4px 16px rgba(0,0,0,.3); transition:all .3s ease; }
   .flight-direction { font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:4px; color:var(--accent); text-transform:uppercase; min-width:80px; }
   .flight-route { flex:1; min-width:200px; }
   .flight-route .airports { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--cream); letter-spacing:3px; display:flex; align-items:center; gap:12px; }
@@ -62,15 +62,16 @@
   .flight-meta { font-size:13px; opacity:.5; margin-top:4px; line-height:1.6; }
   .flight-ref { font-size:12px; opacity:.35; letter-spacing:2px; font-family:monospace; }
 
-  .hotel-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:2px; padding:32px; }
+  .hotel-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:10px; padding:32px; box-shadow:0 4px 16px rgba(0,0,0,.3); transition:all .3s ease; }
   .hotel-name { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--gold); letter-spacing:3px; }
   .hotel-address { font-size:13px; opacity:.5; margin-top:4px; margin-bottom:20px; }
   .hotel-details { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:16px; }
-  .hotel-detail-item { padding:16px; background:rgba(255,255,255,.03); border-radius:2px; }
+  .hotel-detail-item { padding:16px; background:rgba(255,255,255,.05); border-radius:8px; border:1px solid rgba(212,168,67,.08); transition:all .2s ease; }
+  .hotel-detail-item:hover { background:rgba(255,255,255,.08); border-color:rgba(212,168,67,.15); }
   .hotel-detail-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; opacity:.4; margin-bottom:4px; }
   .hotel-detail-value { font-weight:600; font-size:15px; }
 
-  .cost-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:2px; padding:32px; text-align:center; }
+  .cost-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:10px; padding:32px; text-align:center; box-shadow:0 4px 16px rgba(0,0,0,.3); transition:all .3s ease; }
   .cost-total-label { font-size:11px; letter-spacing:5px; text-transform:uppercase; opacity:.4; margin-bottom:8px; }
   .cost-total { font-family:'Bebas Neue',sans-serif; font-size:56px; color:var(--gold); }
   .cost-per-person { font-size:14px; opacity:.5; margin-top:4px; margin-bottom:28px; }
@@ -84,22 +85,99 @@
   .schedule-info p { font-size:13px; opacity:.5; line-height:1.5; }
 
   .rules-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
-  .rule-card { background:var(--dark); border:1px solid rgba(212,168,67,.1); padding:24px; border-radius:2px; transition:border-color .3s; }
-  .rule-card:hover { border-color:var(--gold); }
+  .rule-card { background:var(--dark); border:1px solid rgba(212,168,67,.1); padding:24px; border-radius:10px; transition:all .3s ease; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+  .rule-card:hover { border-color:var(--gold); transform:translateY(-4px); box-shadow:0 8px 24px rgba(212,168,67,.2); }
   .rule-num { font-family:'Bebas Neue',sans-serif; font-size:32px; color:var(--accent); margin-bottom:6px; }
   .rule-card h3 { font-size:15px; font-weight:600; margin-bottom:4px; }
   .rule-card p { font-size:12px; opacity:.5; line-height:1.5; }
 
   .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
-  .info-card { background:var(--dark); border:1px solid rgba(212,168,67,.08); padding:24px; border-radius:2px; }
+  .info-card { background:var(--dark); border:1px solid rgba(212,168,67,.08); padding:24px; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,.3); transition:all .3s ease; }
+  .info-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.4); }
   .info-card h3 { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--gold); letter-spacing:2px; margin-bottom:10px; }
   .info-card p, .info-card a { font-size:13px; opacity:.6; line-height:1.6; }
   .info-card a { color:var(--gold); text-decoration:none; }
 
+  .restaurant-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
+  .restaurant-card {
+    background: var(--dark);
+    border: 1px solid rgba(212,168,67,.12);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all .3s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  }
+  .restaurant-card:hover { transform: translateY(-8px); border-color: var(--gold); box-shadow: 0 12px 32px rgba(212,168,67,.25); }
+  .restaurant-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
+  .restaurant-body { padding: 16px; }
+  .restaurant-body h3 { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:var(--gold); margin-bottom:8px; }
+  .restaurant-meta { font-size:11px; letter-spacing:2px; text-transform:uppercase; opacity:.45; margin-bottom:8px; }
+  .restaurant-body p { font-size:13px; opacity:.65; line-height:1.5; }
+  .restaurant-link { display:inline-block; margin-top:10px; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--gold); text-decoration:none; }
+
   .rsvp-section { text-align:center; padding:100px 24px; }
-  .rsvp-btn { display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--black); background:var(--gold); padding:16px 52px; border:none; cursor:pointer; text-decoration:none; transition:all .3s; margin-top:20px; }
-  .rsvp-btn:hover { background:var(--cream); transform:translateY(-2px); box-shadow:0 12px 40px rgba(212,168,67,.3); }
-  footer { text-align:center; padding:50px 24px; font-size:11px; opacity:.25; letter-spacing:4px; text-transform:uppercase; border-top:1px solid rgba(255,255,255,.05); }
+  .rsvp-btn { display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--black); background:var(--gold); padding:16px 52px; border:none; cursor:pointer; text-decoration:none; transition:all .3s ease; margin-top:20px; border-radius:8px; box-shadow:0 6px 20px rgba(212,168,67,.3); font-weight:700; }
+  .rsvp-btn:hover { background:var(--cream); transform:translateY(-4px); box-shadow:0 12px 40px rgba(212,168,67,.5); }
+  footer { text-align:center; padding:50px 24px; font-size:11px; opacity:.35; letter-spacing:4px; text-transform:uppercase; border-top:2px solid rgba(212,168,67,.1); margin-top:80px; background:linear-gradient(to bottom, rgba(0,0,0,0), rgba(212,168,67,.03)); }
+
+  /* Form Elements */
+  input[type="text"],
+  input[type="password"],
+  select,
+  textarea {
+    border-radius: 8px;
+    border: 2px solid rgba(212,168,67,.15);
+    background: rgba(255,255,255,.05);
+    color: var(--cream);
+    padding: 10px 14px;
+    margin: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    transition: all .3s ease;
+  }
+  input[type="text"]:focus,
+  input[type="password"]:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: rgba(255,255,255,.08);
+    box-shadow: 0 0 16px rgba(212,168,67,.2);
+  }
+  
+  /* Light Theme Form Adjustments */
+  .light-theme input[type="text"],
+  .light-theme input[type="password"],
+  .light-theme select,
+  .light-theme textarea {
+    background: rgba(0,0,0,.04);
+    border-color: rgba(0,0,0,.15);
+    color: var(--cream);
+  }
+
+  /* Modern Button Styles */
+  button {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all .3s ease;
+    cursor: pointer;
+    border: none;
+    letter-spacing: 0.5px;
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  
+  /* Primary buttons (gold background) */
+  button[style*="background:var(--gold)"],
+  button[style*="background: var(--gold)"] {
+    box-shadow: 0 4px 16px rgba(212,168,67,.25);
+  }
+  button[style*="background:var(--gold)"]:hover,
+  button[style*="background: var(--gold)"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,168,67,.4) !important;
+  }
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
@@ -118,6 +196,63 @@
   }
   .light-theme body { background: var(--black); color: var(--cream); }
   .light-theme .info-card { background: var(--dark); border-color: rgba(212,168,67,.2); }
+
+  body.overlay-active { overflow: hidden; }
+
+  #login-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: var(--cream);
+    padding: 24px;
+  }
+  #login-overlay .login-box {
+    max-width: 360px;
+    width: 100%;
+    background: rgba(26,26,26,.98);
+    border: 1px solid rgba(212,168,67,.16);
+    padding: 28px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  #login-overlay input {
+    width: 100%;
+    padding: 14px 16px;
+    margin: 12px 0;
+    border: 2px solid rgba(212,168,67,.2);
+    border-radius: 8px;
+    background: rgba(255,255,255,.05);
+    color: var(--cream);
+    font-size: 14px;
+    transition: all .3s ease;
+  }
+  #login-overlay input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: rgba(255,255,255,.08);
+    box-shadow: 0 0 16px rgba(212,168,67,.2);
+  }
+  #login-overlay button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--gold), var(--sun));
+    color: var(--black);
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all .3s ease;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+  }
+  #login-overlay button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,168,67,.4);
+  }
 </style>
 </head>
 <body>
@@ -152,18 +287,10 @@
   </div>
 </div>
 
-<div style="margin-top:20px;">
-  <div style="font-size:11px; letter-spacing:4px; text-transform:uppercase; opacity:.5; margin-bottom:8px;">Trip Progress</div>
-  <div style="width:100%; height:6px; background:rgba(255,255,255,.1); border-radius:3px;">
-    <div id="progress-fill" style="height:100%; background:var(--gold); border-radius:3px; width:0%; transition:width 1s;"></div>
-  </div>
-  <div id="progress-text" style="font-size:12px; opacity:.5; margin-top:4px;"></div>
-</div>
-
 <section>
   <h2 class="section-title fade-in">The Lads</h2>
   <div class="lads-grid">
-    <div class="lad-card fade-in"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Lad</div></div>
+    <div class="lad-card fade-in"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Best Man</div></div>
     <div class="lad-card fade-in"><div class="lad-avatar">EP</div><div class="lad-name">Emmanuel Pascual</div><div class="lad-role">Lad</div></div>
     <div class="lad-card fade-in"><div class="lad-avatar">RW</div><div class="lad-name">Ross Wightman</div><div class="lad-role">The Groom</div></div>
     <div class="lad-card fade-in"><div class="lad-avatar">KB</div><div class="lad-name">Kelan Boylan</div><div class="lad-role">Lad</div></div>
@@ -209,7 +336,7 @@
       <div class="hotel-detail-item"><div class="hotel-detail-label">Ref</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">OTBH2189476</div></div>
     </div>
     <p style="font-size:12px; opacity:.4; margin-top:20px; line-height:1.6;">Tourism tax ~&#8364;1.10/person/night. Hotel may request a security deposit at check-in.</p>
-    <p><a href="https://maps.google.com/?q=Htop+BCN+City,+Calle+Travessera+De+Gracia,+Barcelona+08025" target="_blank" style="color:var(--gold); text-decoration:none;">View Hotel on Google Maps</a></p>
+    <p><a href="https://maps.google.com/?q=Htop+BCN+City,+Calle+Travessera+De+Gracia,+Barcelona+08025" target="_blank" rel="noopener noreferrer" style="color:var(--gold); text-decoration:none;">View Hotel on Google Maps</a></p>
   </div>
 </section>
 
@@ -244,35 +371,34 @@
 </section>
 
 <section>
-  <h2 class="section-title fade-in">Key Dates</h2>
+  <h2 class="section-title fade-in">Trip Schedule</h2>
   <div class="schedule-item fade-in">
-    <div class="schedule-time">3 Apr</div>
-    <div class="schedule-info"><h3>Final Payment Taken</h3><p>&#163;450.00 &#8212; fully paid up!</p></div>
+    <div class="schedule-time">Before Go</div>
+    <div class="schedule-info"><h3>Final Checks</h3><p>Final payment complete. EasyJet check-in is open. Keep passports, boarding passes and hotel ref ready.</p></div>
   </div>
   <div class="schedule-item fade-in">
-    <div class="schedule-time">3 Apr</div>
-    <div class="schedule-info"><h3>Check-in Opens</h3><p>EasyJet online check-in. Get your seats sorted.</p></div>
+    <div class="schedule-time">3 May<br>04:00</div>
+    <div class="schedule-info"><h3>Airport Meet-Up (BFS)</h3><p>Meet at Belfast International by 04:00. Coffee first, then security and gate.</p></div>
   </div>
   <div class="schedule-item fade-in">
-    <div class="schedule-time">1 May</div>
-    <div class="schedule-info"><h3>Reconfirm Flights</h3><p>Verify flight times 48hrs before departure.</p></div>
+    <div class="schedule-time">3 May<br>06:10</div>
+    <div class="schedule-info"><h3>Flight to Barcelona</h3><p>EasyJet EZY3001 departs 06:10 and lands 09:50 local time.</p></div>
   </div>
   <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May</div>
-    <div class="schedule-info"><h3>Wheels Up</h3><p>Belfast 06:10. Be at the airport by 04:00. No excuses.</p></div>
+    <div class="schedule-time">3 May<br>10:30+</div>
+    <div class="schedule-info"><h3>Transfer + Check-In + First Night</h3><p>Private transfer to Htop BCN City, bags dropped, quick city warm-up, then first night out.</p></div>
   </div>
   <div class="schedule-item fade-in">
-    <div class="schedule-time">Crew</div>
-    <div class="schedule-info"><h3>Birthday Login</h3><p>Enter your birthday to unlock lads-only schedule items. Ross cannot access this section.</p>
-      <input type="password" id="crew-login-bday" placeholder="DDMMYY" style="padding:8px; margin:5px 0; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:140px;">
-      <button onclick="crewLogin()" style="padding:8px 16px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px; margin-right:8px;">Unlock</button>
-      <button onclick="crewLogout()" style="padding:8px 16px; background:#C9382A; color:white; border:none; cursor:pointer; border-radius:2px;">Lock</button>
-      <div id="crew-login-msg" style="margin-top:10px; opacity:.8;"></div>
-    </div>
+    <div class="schedule-time">4 May<br>Day 2</div>
+    <div class="schedule-info"><h3>Big Activity Day</h3><p>Late breakfast, daytime activity window, then dinner and main night session.</p></div>
   </div>
-  <div class="schedule-item fade-in" id="crew-only-booking" style="display:none;">
-    <div class="schedule-time">4 May</div>
-    <div class="schedule-info"><h3>Secret Lads Booking</h3><p>For the lads only — keep this one off Ross's feed.</p><p><a href="https://www.getyourguide.com/booking/UPFUFOMJZWDYEUIP6HRGJMZPKXJ8H65U" target="_blank" style="color:var(--gold); text-decoration:none;">Pool club / day party</a><br><a href="https://www.getyourguide.com/booking/3BTINUZM22Q07IOGCCCS8BJXG8S796RD" target="_blank" style="color:var(--gold); text-decoration:none;">Evening crew booking</a></p></div>
+  <div class="schedule-item fade-in">
+    <div class="schedule-time">5 May<br>Day 3</div>
+    <div class="schedule-info"><h3>Recovery + Flex Plans</h3><p>Brunch, optional football/sightseeing block, final group meal and easy last night.</p></div>
+  </div>
+  <div class="schedule-item fade-in">
+    <div class="schedule-time">6 May<br>14:00</div>
+    <div class="schedule-info"><h3>Return Flight</h3><p>Transfer to BCN airport, EasyJet EZY3002 departs 14:00 and lands Belfast 15:55 local.</p></div>
   </div>
 </section>
 
@@ -294,7 +420,7 @@
     <div class="info-card fade-in"><h3>Booking Ref</h3><p style="font-family:monospace;font-size:16px;opacity:1;color:var(--gold);">MYB14642185B</p><p>On the Beach reference. Keep it safe.</p></div>
     <div class="info-card fade-in"><h3>In-Resort Support</h3><p><a href="tel:+443330031934">+44 (0) 333 003 1934</a></p><p>On the Beach support if anything goes wrong.</p></div>
     <div class="info-card fade-in"><h3>Transfer Emergency</h3><p><a href="tel:+34871556827">+34 871 556 827</a></p><p>Suntransfers 24/7. Also: <a href="tel:+442045879973">+44 20 4587 9973</a></p></div>
-    <div class="info-card fade-in"><h3>Travel Advice</h3><p><a href="https://www.gov.uk/foreign-travel-advice/spain" target="_blank">gov.uk/foreign-travel-advice/spain</a></p><p>Passport &amp; visa info for Spain.</p></div>
+    <div class="info-card fade-in"><h3>Travel Advice</h3><p><a href="https://www.gov.uk/foreign-travel-advice/spain" target="_blank" rel="noopener noreferrer">gov.uk/foreign-travel-advice/spain</a></p><p>Passport &amp; visa info for Spain.</p></div>
   </div>
 </section>
 
@@ -350,11 +476,98 @@
 </section>
 
 <section>
-  <h2 class="section-title fade-in">For the Lads</h2>
+  <h2 class="section-title fade-in">Local Football Matches (3-6 May)</h2>
   <div class="info-grid">
-    <div class="info-card fade-in"><h3>Drinking & Food</h3><p>Tapas crawl, craft cocktails and bar hops made for a stag night warm-up.</p></div>
-    <div class="info-card fade-in"><h3>Pulse Adventures</h3><p>High-energy activities, city challenges and boat parties to keep the group moving.</p></div>
-    <div class="info-card fade-in"><h3>Nightlife & Vibes</h3><p>Best late-night bars, rooftop pools and stag-friendly venues for the whole crew.</p></div>
+    <div class="info-card fade-in">
+      <h3>FC Barcelona (LaLiga)</h3>
+      <p>Likely match window: 2-3 May or 5-6 May (final kickoff confirmed closer to the date).</p>
+      <p>Ticket guide: usually starts around EUR 45 to EUR 140 depending on opponent and stand.</p>
+      <p><a href="https://www.fcbarcelona.com/en/tickets/football" target="_blank" rel="noopener noreferrer">Official FC Barcelona Tickets</a></p>
+      <p style="opacity:.45;">Venue may be Spotify Camp Nou or Estadi Olimpic depending on the 2026 schedule release.</p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>RCD Espanyol (LaLiga / League Fixture)</h3>
+      <p>Likely weekend fixture in the same window if at home at RCDE Stadium.</p>
+      <p>Ticket guide: commonly around EUR 20 to EUR 70 for league matches.</p>
+      <p><a href="https://www.rcdespanyol.com/en/tickets" target="_blank" rel="noopener noreferrer">Official Espanyol Tickets</a></p>
+      <p style="opacity:.45;">Good lower-cost option with easier availability for groups.</p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Lower League Picks (Barcelona)</h3>
+      <p><strong>CE Europa (Nou Sardenya):</strong> Often one of the best-value local matchday options in the city.</p>
+      <p><strong>UE Sant Andreu (Narcis Sala):</strong> Proper old-school atmosphere and usually good for groups.</p>
+      <p>Ticket guide: typically around EUR 10 to EUR 25, with easier late booking than top-flight games.</p>
+      <p><a href="https://www.ceeuropa.cat/" target="_blank" rel="noopener noreferrer">CE Europa Club Site</a> | <a href="https://www.uesantandreu.cat/" target="_blank" rel="noopener noreferrer">UE Sant Andreu Club Site</a></p>
+      <p style="opacity:.45;">Check each club's fixtures page once May 2026 dates are finalized.</p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Backup Plan: Matchday Screening</h3>
+      <p>If no home fixture lands on your exact dates, book a football-focused sports bar night.</p>
+      <p>Budget: around EUR 15 to EUR 35 per person with food and drinks.</p>
+      <p><a href="https://www.google.com/maps/search/sports+bar+barcelona" target="_blank" rel="noopener noreferrer">Find Sports Bars in Barcelona</a></p>
+      <p style="opacity:.45;">Best for keeping the lads together when kickoff times shift.</p>
+    </div>
+  </div>
+  <p class="fade-in" style="font-size:12px; opacity:.55; margin-top:16px; line-height:1.6;">Tip: TV times are often finalized 2-4 weeks before kickoff. Buy from official club ticket pages first, then trusted resale only if needed.</p>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Restaurant Picks</h2>
+  <div class="restaurant-grid">
+    <div class="restaurant-card fade-in">
+      <img src="https://images.unsplash.com/photo-1515443961218-a51367888e4b?auto=format&fit=crop&w=900&q=80" alt="Tapas dishes at a Barcelona restaurant">
+      <div class="restaurant-body">
+        <h3>El Nacional</h3>
+        <div class="restaurant-meta">Eixample • Tapas • Group Friendly</div>
+        <p>Big venue with multiple kitchens and bars, ideal for a stag group that wants variety in one stop.</p>
+        <a class="restaurant-link" href="https://maps.google.com/?q=El+Nacional+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      </div>
+    </div>
+    <div class="restaurant-card fade-in">
+      <img src="https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=900&q=80" alt="Seafood paella on a table">
+      <div class="restaurant-body">
+        <h3>Can Sole</h3>
+        <div class="restaurant-meta">Barceloneta • Seafood • Classic</div>
+        <p>Traditional seafood and rice dishes near the water, great for a proper sit-down crew dinner.</p>
+        <a class="restaurant-link" href="https://maps.google.com/?q=Can+Sole+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      </div>
+    </div>
+    <div class="restaurant-card fade-in">
+      <img src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=900&q=80" alt="Grilled steak and sides served on a table">
+      <div class="restaurant-body">
+        <h3>Besta</h3>
+        <div class="restaurant-meta">Eixample • Grill • Date Night Vibe</div>
+        <p>Modern Spanish-Galician menu with serious grill options and a stylish room for a big night out.</p>
+        <a class="restaurant-link" href="https://maps.google.com/?q=Besta+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      </div>
+    </div>
+    <div class="restaurant-card fade-in">
+      <img src="https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=900&q=80" alt="Pasta dish and wine on a rustic table">
+      <div class="restaurant-body">
+        <h3>Parking Pizza</h3>
+        <div class="restaurant-meta">Multiple Spots • Pizza • Casual</div>
+        <p>Fast, crowd-pleasing wood-fired pizza for easy nights when the plan is eat quickly then hit the bars.</p>
+        <a class="restaurant-link" href="https://maps.google.com/?q=Parking+Pizza+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      </div>
+    </div>
+    <div class="restaurant-card fade-in">
+      <img src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=900&q=80" alt="Brunch plates and coffee arranged on a table">
+      <div class="restaurant-body">
+        <h3>Brunch & Cake</h3>
+        <div class="restaurant-meta">Eixample • Brunch • Recovery Stop</div>
+        <p>Top-tier brunch and coffee for the morning after, with big portions and easy group seating.</p>
+        <a class="restaurant-link" href="https://maps.google.com/?q=Brunch+and+Cake+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      </div>
+    </div>
+    <div class="restaurant-card fade-in">
+      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80" alt="Assorted tapas on a bar counter">
+      <div class="restaurant-body">
+        <h3>Cerveceria Catalana</h3>
+        <div class="restaurant-meta">Eixample • Tapas • Lively</div>
+        <p>One of the safest crowd favorites in the city, with a huge menu and fast service for groups.</p>
+        <a class="restaurant-link" href="https://maps.google.com/?q=Cerveceria+Catalana+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -370,45 +583,69 @@
 <section>
   <h2 class="section-title fade-in">Book Barcelona Experiences</h2>
   <div class="info-grid">
-    <div class="info-card fade-in"><h3>Pool Club Day Pass</h3><p>Reserve access to Barcelona’s best pool bars and day clubs. Bring the lads, stay cool, and keep the party rolling.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Pool Club Pass</a></div>
-    <div class="info-card fade-in"><h3>Boat Party & Catamaran</h3><p>Hit the Mediterranean on a private boat party with music, drinks and a view of Barcelona from the sea.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Boat Party</a></div>
-    <div class="info-card fade-in"><h3>Tapas & Nightlife Tour</h3><p>Secure a guided evening tour with top tapas stops and nightlife access. Perfect for keeping the group together after dark.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Nightlife Tour</a></div>
+    <div class="info-card fade-in"><h3>Pool Club Day Pass</h3><p>Reserve access to Barcelona’s best pool bars and day clubs. Bring the lads, stay cool, and keep the party rolling.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Pool Club Pass</a></div>
+    <div class="info-card fade-in"><h3>Boat Party & Catamaran</h3><p>Hit the Mediterranean on a private boat party with music, drinks and a view of Barcelona from the sea.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Boat Party</a></div>
+    <div class="info-card fade-in"><h3>Tapas & Nightlife Tour</h3><p>Secure a guided evening tour with top tapas stops and nightlife access. Perfect for keeping the group together after dark.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Nightlife Tour</a></div>
   </div>
   <p style="margin-top:20px; opacity:.7; text-align:center;">Curated pick of stag-friendly pool bars, boat parties and Barcelona tours.</p>
 </section>
 
-<section id="suggestion-section" style="display:none;">
-  <h2 class="section-title fade-in">Submit a Stag Suggestion</h2>
-  <div class="info-card fade-in" style="margin-top:20px; text-align:center;">
-    <h3>Suggest an Idea</h3>
-    <p style="opacity:.7; margin-bottom:12px;">Logged in crew can submit ideas for Joshua to approve.</p>
-    <input type="text" id="idea-input" placeholder="Your activity idea" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:60%;">
-    <button onclick="suggestIdea()" style="padding:8px 16px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Submit Idea</button>
-    <p id="idea-msg" style="margin-top:10px;"></p>
+<section>
+  <h2 class="section-title fade-in">More Activities (Price + Distance)</h2>
+  <div class="info-grid">
+    <div class="info-card fade-in">
+      <h3>Bunkers del Carmel Sunset</h3>
+      <p><strong>Price:</strong> Free (bring drinks/snacks)</p>
+      <p><strong>From Htop BCN City:</strong> ~2.7 km, 10-15 min taxi or 30-40 min walk.</p>
+      <p><a href="https://maps.google.com/?q=Bunkers+del+Carmel+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Montjuic Cable Car + Castle</h3>
+      <p><strong>Price:</strong> EUR 17-20 return cable car, castle entry around EUR 9.</p>
+      <p><strong>From Htop BCN City:</strong> ~6.5 km, 25-35 min by metro+walk or 20 min taxi.</p>
+      <p><a href="https://maps.google.com/?q=Montjuic+Cable+Car+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Go Karting (Indoor)</h3>
+      <p><strong>Price:</strong> EUR 20-35 per race (8-10 mins), group packs often available.</p>
+      <p><strong>From Htop BCN City:</strong> ~4-8 km depending venue, usually 15-25 min taxi.</p>
+      <p><a href="https://www.google.com/maps/search/indoor+karting+barcelona" target="_blank" rel="noopener noreferrer">Find Karting Venues</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Escape Room (Team Activity)</h3>
+      <p><strong>Price:</strong> EUR 18-30 per person depending room size and theme.</p>
+      <p><strong>From Htop BCN City:</strong> most central venues are ~2-5 km, 10-20 min taxi/metro.</p>
+      <p><a href="https://www.google.com/maps/search/escape+room+barcelona" target="_blank" rel="noopener noreferrer">Find Escape Rooms</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Beach Day at Barceloneta</h3>
+      <p><strong>Price:</strong> Free beach access, EUR 10-25 for beds/chairs and drinks.</p>
+      <p><strong>From Htop BCN City:</strong> ~5.3 km, 25-35 min by metro or 15-20 min taxi.</p>
+      <p><a href="https://maps.google.com/?q=Barceloneta+Beach+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Casino Barcelona</h3>
+      <p><strong>Price:</strong> Entry often free with ID; table minimums usually from EUR 5-10.</p>
+      <p><strong>From Htop BCN City:</strong> ~5.8 km, 20-30 min by metro or 15-20 min taxi.</p>
+      <p><a href="https://maps.google.com/?q=Casino+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Beer Bike / Party Bike</h3>
+      <p><strong>Price:</strong> EUR 30-45 per person for 1.5-2 hour group ride.</p>
+      <p><strong>From Htop BCN City:</strong> most departures in central areas ~3-5 km, 12-20 min taxi.</p>
+      <p><a href="https://www.google.com/maps/search/beer+bike+barcelona" target="_blank" rel="noopener noreferrer">Find Beer Bike Operators</a></p>
+    </div>
+    <div class="info-card fade-in">
+      <h3>Sagrada Familia Visit</h3>
+      <p><strong>Price:</strong> EUR 26-40 depending towers/audio options.</p>
+      <p><strong>From Htop BCN City:</strong> ~1.2 km, 12-18 min walk or 5 min taxi.</p>
+      <p><a href="https://maps.google.com/?q=Sagrada+Familia+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a></p>
+    </div>
   </div>
-  <div id="approved-ideas" style="margin-top:20px;"></div>
+  <p class="fade-in" style="font-size:12px; opacity:.55; margin-top:16px; line-height:1.6;">All prices are typical 2025-2026 ranges and can move with demand. For groups of 6, booking 1-2 weeks ahead usually gets better slots and bundle rates.</p>
 </section>
 
-<section id="bestman-approval-section" style="display:none;">
-  <h2 class="section-title fade-in">Best Man Approval</h2>
-  <div class="info-card fade-in" style="text-align:center;">
-    <input type="password" id="bm-bday" placeholder="Best Man Birthday" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
-    <button onclick="accessApproval()" style="padding:8px 16px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Access</button>
-    <div id="approval-panel" style="display:none; margin-top:20px;">
-      <h3>Pending Ideas</h3>
-      <div id="pending-ideas"></div>
-    </div>
-  </div>
-</section>
-  <div class="info-card fade-in" style="text-align:center;">
-    <input type="password" id="bm-bday" placeholder="Best Man Birthday" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
-    <button onclick="accessApproval()" style="padding:8px 16px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Access</button>
-    <div id="approval-panel" style="display:none; margin-top:20px;">
-      <h3>Pending Ideas</h3>
-      <div id="pending-ideas"></div>
-    </div>
-  </div>
-</section>
+
 
 <section>
   <h2 class="section-title fade-in">Stag Do Drinking Game</h2>
@@ -422,9 +659,52 @@
 <section>
   <h2 class="section-title fade-in">Challenge Generator</h2>
   <div class="info-card fade-in" style="text-align:center;">
-    <p>Generate a random stag do challenge!</p>
+    <p>Generate an approved challenge with filters.</p>
+    <select id="challenge-filter-type" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
+      <option value="all">All Types</option>
+      <option value="Drinking">Drinking</option>
+      <option value="Dares">Dares</option>
+      <option value="Team">Team</option>
+      <option value="Chill">Chill</option>
+    </select>
+    <select id="challenge-filter-difficulty" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
+      <option value="all">All Difficulty</option>
+      <option value="Easy">Easy</option>
+      <option value="Medium">Medium</option>
+      <option value="Chaos">Chaos</option>
+    </select>
     <button onclick="getChallenge()" style="padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Generate Challenge</button>
+    <button onclick="skipChallenge()" style="padding:10px 20px; background:transparent; color:var(--gold); border:1px solid rgba(212,168,67,.45); cursor:pointer; border-radius:2px; margin-left:6px;">Skip</button>
+    <button onclick="markChallengeComplete()" style="padding:10px 20px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer; border-radius:2px; margin-left:6px;">Mark Completed</button>
     <p id="random-challenge" style="margin-top:10px; font-weight:bold;"></p>
+    <p id="random-challenge-meta" style="margin-top:6px; opacity:.6;"></p>
+    <p id="challenge-complete-msg" style="margin-top:6px; opacity:.7;"></p>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Team Battle Mode</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p style="opacity:.7; margin-bottom:10px;">Set team names, assign current challenge, and track score.</p>
+    <input type="text" id="team-a-name" placeholder="Team A name" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
+    <input type="text" id="team-b-name" placeholder="Team B name" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
+    <button onclick="saveTeamNames()" style="padding:8px 14px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Save Teams</button>
+    <p id="team-scoreboard" style="margin-top:12px; font-weight:600;"></p>
+    <button onclick="addTeamPoint('A')" style="padding:8px 14px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px; margin-right:6px;">+1 Team A</button>
+    <button onclick="addTeamPoint('B')" style="padding:8px 14px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">+1 Team B</button>
+    <button onclick="resetTeamScores()" style="padding:8px 14px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer; border-radius:2px; margin-left:6px;">Reset</button>
+    <p id="team-assignment" style="margin-top:12px; opacity:.75;"></p>
+    <button onclick="assignCurrentChallengeToRandomTeam()" style="padding:8px 14px; background:transparent; color:var(--gold); border:1px solid rgba(212,168,67,.45); cursor:pointer; border-radius:2px;">Assign Current Challenge</button>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Punishment Wheel</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p>Failed or refused challenge? Spin for punishment.</p>
+    <button onclick="spinPunishmentWheel()" style="padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Spin Wheel</button>
+    <p id="punishment-result" style="margin-top:12px; font-weight:bold;"></p>
+    <p id="punishment-history" style="margin-top:8px; opacity:.65;"></p>
   </div>
 </section>
 
@@ -445,26 +725,6 @@
 </section>
 
 <section>
-  <h2 class="section-title fade-in">Budget Tracker</h2>
-  <div class="info-card fade-in">
-    <input type="text" id="expense-desc" placeholder="Expense description" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
-    <input type="number" id="expense-amount" placeholder="Amount (€)" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
-    <button onclick="addExpense()" style="padding:8px 16px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Add Expense</button>
-    <div id="expenses" style="margin-top:20px;"></div>
-    <div id="total" style="margin-top:10px; font-weight:bold;"></div>
-  </div>
-</section>
-
-<section>
-  <h2 class="section-title fade-in">Photo Gallery</h2>
-  <div class="info-card fade-in" style="text-align:center;">
-    <input type="file" id="photo-input" accept="image/*" style="margin:10px;">
-    <button onclick="addPhoto()" style="padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Add Photo</button>
-    <div id="gallery" style="margin-top:20px; display:flex; flex-wrap:wrap; gap:10px;"></div>
-  </div>
-</section>
-
-<section>
   <h2 class="section-title fade-in">Stag Do Poll</h2>
   <div class="info-card fade-in" style="text-align:center;">
     <h3>What's your favorite part of stag dos?</h3>
@@ -478,6 +738,15 @@
       <p>Results:</p>
       <div id="results"></div>
     </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">End-of-Night Wrap</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p>Generate a quick summary card for the night.</p>
+    <button onclick="generateWrapUp()" style="padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Generate Wrap-Up</button>
+    <div id="wrap-output" style="margin-top:14px; text-align:left; opacity:.9;"></div>
   </div>
 </section>
 
@@ -518,150 +787,497 @@
   updateProgress();
   setInterval(updateProgress, 60000);
 
-  const groomBday = "170997";
-  const bmBday = "160698";
-  let pendingIdeas = JSON.parse(localStorage.getItem('pendingIdeas')) || [];
-  let approvedIdeas = JSON.parse(localStorage.getItem('approvedIdeas')) || [];
+  const PUBLIC_MODE = true;
+  let crewBdayState = 'public';
 
-  function suggestIdea() {
-    const idea = document.getElementById('idea-input').value.trim();
-    const msg = document.getElementById('idea-msg');
-    const crewBday = localStorage.getItem('crewBday');
-    if (!crewBday) {
-      msg.textContent = 'Log in with your birthday to submit ideas.';
+  function supportsLocalStorage() {
+    try { return typeof localStorage !== 'undefined' && localStorage !== null; } catch (e) { return false; }
+  }
+
+  function safeJSONParse(raw, fallback) {
+    if (!raw) return fallback;
+    try { return JSON.parse(raw); } catch (e) { return fallback; }
+  }
+
+  function clearElement(el) {
+    if (!el) return;
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  function makeActionButton(label, styleText, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.style.cssText = styleText;
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
+  function loadJSON(key, fallback) {
+    if (!supportsLocalStorage()) return fallback;
+    const item = localStorage.getItem(key);
+    return safeJSONParse(item, fallback);
+  }
+
+  function saveJSON(key, value) {
+    if (!supportsLocalStorage()) return;
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function getCrewBday() {
+    // Keep access state in-memory only to reduce persistence abuse.
+    return crewBdayState;
+  }
+
+  function setCrewBday(value) {
+    crewBdayState = value || '';
+  }
+
+  let pendingChallenges = loadJSON('pendingChallenges', []);
+  let approvedChallenges = loadJSON('approvedChallenges', []);
+  let challengeVoteLog = loadJSON('challengeVoteLog', {});
+  let challengeReportLog = loadJSON('challengeReportLog', {});
+  let challengeSubmissionLog = loadJSON('challengeSubmissionLog', {});
+  let shownChallengeIds = [];
+  let completedChallengeIds = loadJSON('completedChallengeIds', []);
+  let punishmentHistory = loadJSON('punishmentHistory', []);
+  let currentChallenge = null;
+  let teamBattle = loadJSON('teamBattle', {
+    nameA: 'Team A',
+    nameB: 'Team B',
+    scoreA: 0,
+    scoreB: 0,
+    currentAssignment: null
+  });
+
+  function normalizeTitle(value) {
+    return String(value || '').toLowerCase().trim().replace(/\s+/g, ' ');
+  }
+
+  function getTodayKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function getCurrentCrewKey() {
+    return 'public';
+  }
+
+  function isAllowedCrewBday(bday) {
+    return PUBLIC_MODE ? true : false;
+  }
+
+  function saveChallengeData() {
+    saveJSON('pendingChallenges', pendingChallenges);
+    saveJSON('approvedChallenges', approvedChallenges);
+    saveJSON('challengeVoteLog', challengeVoteLog);
+    saveJSON('challengeReportLog', challengeReportLog);
+    saveJSON('challengeSubmissionLog', challengeSubmissionLog);
+    saveJSON('completedChallengeIds', completedChallengeIds);
+    saveJSON('punishmentHistory', punishmentHistory);
+    saveJSON('teamBattle', teamBattle);
+  }
+
+  function getChallengeKey(challenge) {
+    if (!challenge) return '';
+    return challenge.id || ('fallback:' + normalizeTitle(challenge.title));
+  }
+
+  function updateTeamBattleUI() {
+    const teamAInput = document.getElementById('team-a-name');
+    const teamBInput = document.getElementById('team-b-name');
+    const scoreboard = document.getElementById('team-scoreboard');
+    const assignment = document.getElementById('team-assignment');
+    if (teamAInput) teamAInput.value = teamBattle.nameA;
+    if (teamBInput) teamBInput.value = teamBattle.nameB;
+    if (scoreboard) {
+      scoreboard.textContent = teamBattle.nameA + ': ' + teamBattle.scoreA + ' | ' + teamBattle.nameB + ': ' + teamBattle.scoreB;
+    }
+    if (assignment) {
+      assignment.textContent = teamBattle.currentAssignment
+        ? 'Assigned: ' + teamBattle.currentAssignment.teamName + ' -> ' + teamBattle.currentAssignment.challengeTitle
+        : 'No challenge assigned yet.';
+    }
+  }
+
+  function saveTeamNames() {
+    const teamA = document.getElementById('team-a-name').value.trim();
+    const teamB = document.getElementById('team-b-name').value.trim();
+    if (teamA) teamBattle.nameA = teamA;
+    if (teamB) teamBattle.nameB = teamB;
+    saveChallengeData();
+    updateTeamBattleUI();
+  }
+
+  function addTeamPoint(team) {
+    if (team === 'A') teamBattle.scoreA += 1;
+    if (team === 'B') teamBattle.scoreB += 1;
+    saveChallengeData();
+    updateTeamBattleUI();
+  }
+
+  function resetTeamScores() {
+    teamBattle.scoreA = 0;
+    teamBattle.scoreB = 0;
+    teamBattle.currentAssignment = null;
+    saveChallengeData();
+    updateTeamBattleUI();
+  }
+
+  function assignCurrentChallengeToRandomTeam() {
+    if (!currentChallenge) {
+      const assignment = document.getElementById('team-assignment');
+      if (assignment) assignment.textContent = 'Generate a challenge first.';
+      return;
+    }
+    const pickA = Math.random() < 0.5;
+    const teamName = pickA ? teamBattle.nameA : teamBattle.nameB;
+    teamBattle.currentAssignment = {
+      team: pickA ? 'A' : 'B',
+      teamName,
+      challengeKey: getChallengeKey(currentChallenge),
+      challengeTitle: currentChallenge.title
+    };
+    saveChallengeData();
+    updateTeamBattleUI();
+  }
+
+  function markChallengeComplete() {
+    const msg = document.getElementById('challenge-complete-msg');
+    if (!currentChallenge) {
+      msg.textContent = 'Generate a challenge before marking complete.';
       msg.style.color = '#C9382A';
       return;
     }
-    if (!idea) {
-      msg.textContent = 'Please enter your idea.';
+    const key = getChallengeKey(currentChallenge);
+    if (completedChallengeIds.includes(key)) {
+      msg.textContent = 'Already marked completed.';
       msg.style.color = '#C9382A';
       return;
     }
-    if (crewBday === groomBday) {
-      msg.textContent = "The groom can't suggest ideas!";
-      msg.style.color = '#C9382A';
-      return;
+    completedChallengeIds.push(key);
+    if (teamBattle.currentAssignment && teamBattle.currentAssignment.challengeKey === key) {
+      if (teamBattle.currentAssignment.team === 'A') teamBattle.scoreA += 1;
+      if (teamBattle.currentAssignment.team === 'B') teamBattle.scoreB += 1;
+      teamBattle.currentAssignment = null;
+      updateTeamBattleUI();
     }
-    pendingIdeas.push({bday: crewBday, idea});
-    localStorage.setItem('pendingIdeas', JSON.stringify(pendingIdeas));
-    msg.textContent = 'Idea submitted for approval!';
+    saveChallengeData();
+    msg.textContent = 'Challenge marked complete.';
     msg.style.color = 'var(--gold)';
-    document.getElementById('idea-input').value = '';
+  }
+
+  function spinPunishmentWheel() {
+    const punishments = [
+      'Buy the next round.',
+      'Do 15 squats right now.',
+      'Finish your drink in one go.',
+      'Sing one full chorus chosen by the lads.',
+      'Give a 30-second speech about the groom.',
+      'Swap seats with the person opposite for 10 minutes.',
+      'Hand over your phone for one playlist song.',
+      'Order chips for the table.'
+    ];
+    const chosen = punishments[Math.floor(Math.random() * punishments.length)];
+    punishmentHistory.unshift(chosen);
+    punishmentHistory = punishmentHistory.slice(0, 5);
+    document.getElementById('punishment-result').textContent = chosen;
+    document.getElementById('punishment-history').textContent = 'Recent: ' + punishmentHistory.join(' | ');
+    saveChallengeData();
+  }
+
+  function generateWrapUp() {
+    const wrap = document.getElementById('wrap-output');
+    const approvedCount = approvedChallenges.filter(item => !item.hidden).length;
+    const completedCount = completedChallengeIds.length;
+    const pendingCount = pendingChallenges.length;
+    const topChallenge = approvedChallenges
+      .filter(item => !item.hidden)
+      .sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
+    const winningTeam = teamBattle.scoreA === teamBattle.scoreB
+      ? 'Draw'
+      : (teamBattle.scoreA > teamBattle.scoreB ? teamBattle.nameA : teamBattle.nameB);
+    const submitters = {};
+    approvedChallenges.forEach(item => {
+      submitters[item.suggestedBy] = (submitters[item.suggestedBy] || 0) + 1;
+    });
+    let topSubmitter = 'N/A';
+    let topSubmitterCount = 0;
+    Object.entries(submitters).forEach(([name, count]) => {
+      if (count > topSubmitterCount) {
+        topSubmitter = name;
+        topSubmitterCount = count;
+      }
+    });
+    const lines = [
+      ['Approved Challenges', String(approvedCount)],
+      ['Completed Challenges', String(completedCount)],
+      ['Pending Approval', String(pendingCount)],
+      ['Top Voted Challenge', topChallenge ? topChallenge.title + ' (' + (topChallenge.votes || 0) + ')' : 'N/A'],
+      ['Winning Team', winningTeam + ' (' + teamBattle.scoreA + '-' + teamBattle.scoreB + ')'],
+      ['Top Contributor', topSubmitter + ' (' + topSubmitterCount + ')']
+    ];
+    clearElement(wrap);
+    lines.forEach(([label, value]) => {
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = label + ':';
+      p.appendChild(strong);
+      p.appendChild(document.createTextNode(' ' + value));
+      wrap.appendChild(p);
+    });
+  }
+
+  function suggestChallenge() {
+    const titleInput = document.getElementById('challenge-title');
+    const notesInput = document.getElementById('challenge-notes');
+    const typeInput = document.getElementById('challenge-type');
+    const difficultyInput = document.getElementById('challenge-difficulty');
+    const msg = document.getElementById('challenge-msg');
+    const crew = getCurrentCrewKey();
+    if (!crew) {
+      msg.textContent = 'Log in with your crew access code to submit challenges.';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    const title = titleInput.value.trim();
+    const notes = notesInput.value.trim();
+    const type = typeInput.value;
+    const difficulty = difficultyInput.value;
+    if (title.length < 3) {
+      msg.textContent = 'Add a challenge title (at least 3 characters).';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    const normalized = normalizeTitle(title);
+    const duplicatePending = pendingChallenges.some(item => normalizeTitle(item.title) === normalized);
+    const duplicateApproved = approvedChallenges.some(item => normalizeTitle(item.title) === normalized);
+    if (duplicatePending || duplicateApproved) {
+      msg.textContent = 'That challenge already exists.';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    const todayKey = getTodayKey();
+    const submissionKey = crew + ':' + todayKey;
+    const submissionsToday = challengeSubmissionLog[submissionKey] || 0;
+    if (submissionsToday >= 4) {
+      msg.textContent = 'Daily limit reached (4 challenges per crew member).';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    challengeSubmissionLog[submissionKey] = submissionsToday + 1;
+    pendingChallenges.push({
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
+      title,
+      type,
+      difficulty,
+      notes,
+      suggestedBy: crew,
+      createdAt: Date.now(),
+      votes: 0,
+      reports: 0,
+      hidden: false
+    });
+    saveChallengeData();
+    msg.textContent = 'Challenge submitted for best man approval.';
+    msg.style.color = 'var(--gold)';
+    titleInput.value = '';
+    notesInput.value = '';
+    displayPendingChallenges();
   }
 
   function accessApproval() {
-    const bday = document.getElementById('bm-bday').value;
-    if (bday === bmBday) {
-      document.getElementById('approval-panel').style.display = 'block';
-      displayPending();
-    } else {
-      alert('Wrong birthday!');
-    }
+    alert('Approval mode is disabled on the public site.');
   }
 
   function updateCrewAccess() {
-    const crewBday = localStorage.getItem('crewBday');
     const suggestionSection = document.getElementById('suggestion-section');
     const bestmanSection = document.getElementById('bestman-approval-section');
     const secretBooking = document.getElementById('crew-only-booking');
-    const loggedIn = crewBday && crewBday !== '';
-    if (suggestionSection) suggestionSection.style.display = loggedIn ? 'block' : 'none';
-    if (bestmanSection) bestmanSection.style.display = loggedIn ? 'block' : 'none';
-    if (secretBooking) secretBooking.style.display = loggedIn ? 'block' : 'none';
-    if (loggedIn && crewBday === bmBday) {
-      document.getElementById('approval-panel').style.display = 'block';
-      displayPending();
-    }
+    const loginOverlay = document.getElementById('login-overlay');
+    const logoutButton = document.getElementById('crew-logout-btn');
+    if (suggestionSection) suggestionSection.style.display = 'none';
+    if (bestmanSection) bestmanSection.style.display = 'none';
+    if (secretBooking) secretBooking.style.display = 'none';
+    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (logoutButton) logoutButton.style.display = 'none';
+    document.body.classList.remove('overlay-active');
   }
 
   function crewLogin() {
-    const bdayField = document.getElementById('crew-login-bday');
-    const bday = bdayField.value.trim();
-    const msg = document.getElementById('crew-login-msg');
-    if (!/^[0-9]{6}$/.test(bday)) {
-      msg.textContent = 'Enter your birthday as DDMMYY.';
-      msg.style.color = '#C9382A';
-      return;
-    }
-    if (bday === groomBday) {
-      msg.textContent = 'Groom cannot unlock this section.';
-      msg.style.color = '#C9382A';
-      crewLogout();
-      return;
-    }
-    localStorage.setItem('crewLogin', 'true');
-    localStorage.setItem('crewBday', bday);
-    msg.textContent = 'Welcome, crew member. Secret schedule unlocked.';
-    msg.style.color = 'var(--gold)';
+    setCrewBday('public');
     updateCrewAccess();
   }
 
   function crewLogout() {
-    localStorage.removeItem('crewLogin');
-    localStorage.removeItem('crewBday');
-    const msg = document.getElementById('crew-login-msg');
-    if (msg) {
-      msg.textContent = 'Crew section locked.';
-      msg.style.color = '#C9382A';
-    }
+    setCrewBday('public');
     updateCrewAccess();
   }
 
   updateCrewAccess();
 
-  function displayPending() {
-    const container = document.getElementById('pending-ideas');
-    container.innerHTML = '';
-    pendingIdeas.forEach((item, index) => {
+  function displayPendingChallenges() {
+    const container = document.getElementById('pending-challenges');
+    if (!container) return;
+    clearElement(container);
+    if (!pendingChallenges.length) {
+      container.innerHTML = '<p style="opacity:.6;">No pending challenges.</p>';
+      return;
+    }
+    pendingChallenges.forEach(item => {
       const div = document.createElement('div');
       div.style.border = '1px solid rgba(212,168,67,.3)';
-      div.style.padding = '10px';
-      div.style.margin = '5px 0';
+      div.style.padding = '12px';
+      div.style.margin = '8px 0';
       div.style.background = 'var(--dark)';
-      div.innerHTML = `<p><strong>Idea:</strong> ${item.idea}</p>
-      <button onclick="approve(${index})" style="margin-right:10px; padding:5px 10px; background:var(--gold); color:var(--black); border:none; cursor:pointer;">Approve</button>
-      <button onclick="reject(${index})" style="padding:5px 10px; background:#C9382A; color:white; border:none; cursor:pointer;">Reject</button>`;
+
+      const title = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = item.title;
+      title.appendChild(strong);
+      div.appendChild(title);
+
+      const meta = document.createElement('p');
+      meta.style.opacity = '.7';
+      meta.style.fontSize = '12px';
+      meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + item.suggestedBy;
+      div.appendChild(meta);
+
+      const notes = document.createElement('p');
+      notes.style.opacity = '.75';
+      notes.textContent = item.notes || 'No extra notes.';
+      div.appendChild(notes);
+
+      div.appendChild(makeActionButton(
+        'Approve',
+        'margin-right:10px; padding:6px 12px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+        function () { approveChallenge(item.id); }
+      ));
+
+      div.appendChild(makeActionButton(
+        'Reject',
+        'padding:6px 12px; background:#C9382A; color:white; border:none; cursor:pointer;',
+        function () { rejectChallenge(item.id); }
+      ));
+
       container.appendChild(div);
     });
   }
 
-  function approve(index) {
-    const idea = pendingIdeas.splice(index, 1)[0];
-    approvedIdeas.push(idea);
-    localStorage.setItem('pendingIdeas', JSON.stringify(pendingIdeas));
-    localStorage.setItem('approvedIdeas', JSON.stringify(approvedIdeas));
-    displayPending();
-    displayApproved();
+  function approveChallenge(id) {
+    const index = pendingChallenges.findIndex(item => item.id === id);
+    if (index === -1) return;
+    const challenge = pendingChallenges.splice(index, 1)[0];
+    approvedChallenges.push(challenge);
+    saveChallengeData();
+    displayPendingChallenges();
+    displayApprovedChallenges();
   }
 
-  function reject(index) {
-    pendingIdeas.splice(index, 1);
-    localStorage.setItem('pendingIdeas', JSON.stringify(pendingIdeas));
-    displayPending();
+  function rejectChallenge(id) {
+    pendingChallenges = pendingChallenges.filter(item => item.id !== id);
+    saveChallengeData();
+    displayPendingChallenges();
   }
 
-  function displayApproved() {
-    const container = document.getElementById('approved-ideas');
-    container.innerHTML = '<h3>Approved Ideas</h3>';
-    approvedIdeas.forEach(item => {
+  function displayApprovedChallenges() {
+    const container = document.getElementById('approved-challenges');
+    if (!container) return;
+    const visibleChallenges = approvedChallenges
+      .filter(item => !item.hidden && (item.reports || 0) < 3)
+      .sort((a, b) => (b.votes || 0) - (a.votes || 0) || b.createdAt - a.createdAt);
+    container.innerHTML = '<h3>Approved Challenges</h3>';
+    if (!visibleChallenges.length) {
+      container.innerHTML += '<p style="opacity:.6;">No approved challenges yet.</p>';
+      return;
+    }
+    visibleChallenges.forEach(item => {
       const div = document.createElement('div');
       div.style.border = '1px solid rgba(212,168,67,.3)';
-      div.style.padding = '10px';
-      div.style.margin = '5px 0';
+      div.style.padding = '12px';
+      div.style.margin = '8px 0';
       div.style.background = 'var(--dark)';
-      div.innerHTML = `<p>${item.idea}</p>`;
+
+      const title = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = item.title;
+      title.appendChild(strong);
+      div.appendChild(title);
+
+      const meta = document.createElement('p');
+      meta.style.opacity = '.7';
+      meta.style.fontSize = '12px';
+      meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + item.suggestedBy;
+      div.appendChild(meta);
+
+      const notes = document.createElement('p');
+      notes.style.opacity = '.75';
+      notes.textContent = item.notes || 'No extra notes.';
+      div.appendChild(notes);
+
+      const score = document.createElement('p');
+      score.style.opacity = '.75';
+      score.style.marginBottom = '8px';
+      score.textContent = 'Score: ' + (item.votes || 0) + ' • Reports: ' + (item.reports || 0);
+      div.appendChild(score);
+
+      div.appendChild(makeActionButton(
+        '👍',
+        'margin-right:8px; padding:6px 10px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+        function () { voteChallenge(item.id, 1); }
+      ));
+
+      div.appendChild(makeActionButton(
+        '👎',
+        'margin-right:8px; padding:6px 10px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer;',
+        function () { voteChallenge(item.id, -1); }
+      ));
+
+      div.appendChild(makeActionButton(
+        'Report',
+        'padding:6px 10px; background:#C9382A; color:white; border:none; cursor:pointer;',
+        function () { reportChallenge(item.id); }
+      ));
+
       container.appendChild(div);
     });
   }
 
-  displayApproved();
+  function voteChallenge(id, delta) {
+    const crew = getCurrentCrewKey();
+    if (!crew) return;
+    const challenge = approvedChallenges.find(item => item.id === id);
+    if (!challenge) return;
+    const voteKey = crew + ':' + id;
+    const previousVote = challengeVoteLog[voteKey] || 0;
+    if (previousVote === delta) return;
+    challenge.votes = (challenge.votes || 0) + (delta - previousVote);
+    challengeVoteLog[voteKey] = delta;
+    saveChallengeData();
+    displayApprovedChallenges();
+  }
 
-  const pollResults = JSON.parse(localStorage.getItem('pollResults')) || {
+  function reportChallenge(id) {
+    const crew = getCurrentCrewKey();
+    if (!crew) return;
+    const challenge = approvedChallenges.find(item => item.id === id);
+    if (!challenge) return;
+    const reportKey = crew + ':' + id;
+    if (challengeReportLog[reportKey]) return;
+    challengeReportLog[reportKey] = true;
+    challenge.reports = (challenge.reports || 0) + 1;
+    if (challenge.reports >= 3) challenge.hidden = true;
+    saveChallengeData();
+    displayApprovedChallenges();
+  }
+
+  displayApprovedChallenges();
+
+  const pollResults = safeJSONParse(localStorage.getItem('pollResults'), {
     drinking: 0,
     adventures: 0,
     bonding: 0,
     surprises: 0
-  };
+  });
 
   function vote(choice) {
     if (!pollResults.hasOwnProperty(choice)) return;
@@ -672,13 +1288,44 @@
 
   function updatePollDisplay() {
     const results = document.getElementById('results');
-    const total = Object.values(pollResults).reduce((sum, value) => sum + value, 0);
-    results.innerHTML = '';
-    Object.entries(pollResults).forEach(([option, count]) => {
+    const keys = ['drinking', 'adventures', 'bonding', 'surprises'];
+    const total = keys.reduce((sum, key) => sum + (Number(pollResults[key]) || 0), 0);
+    clearElement(results);
+    keys.forEach(option => {
+      const count = Number(pollResults[option]) || 0;
       const bar = document.createElement('div');
       const percent = total ? Math.round((count / total) * 100) : 0;
       bar.style.margin = '8px 0';
-      bar.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:13px; opacity:.8; margin-bottom:4px;"><span>${option.charAt(0).toUpperCase() + option.slice(1)}</span><span>${count} vote${count === 1 ? '' : 's'}</span></div><div style="height:10px; width:100%; background:rgba(255,255,255,.08); border-radius:5px;"><div style="height:100%; width:${percent}%; background:var(--gold); border-radius:5px;"></div></div>`;
+
+      const header = document.createElement('div');
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.fontSize = '13px';
+      header.style.opacity = '.8';
+      header.style.marginBottom = '4px';
+
+      const optionLabel = document.createElement('span');
+      optionLabel.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+      const voteLabel = document.createElement('span');
+      voteLabel.textContent = count + ' vote' + (count === 1 ? '' : 's');
+      header.appendChild(optionLabel);
+      header.appendChild(voteLabel);
+
+      const track = document.createElement('div');
+      track.style.height = '10px';
+      track.style.width = '100%';
+      track.style.background = 'rgba(255,255,255,.08)';
+      track.style.borderRadius = '5px';
+
+      const fill = document.createElement('div');
+      fill.style.height = '100%';
+      fill.style.width = percent + '%';
+      fill.style.background = 'var(--gold)';
+      fill.style.borderRadius = '5px';
+      track.appendChild(fill);
+
+      bar.appendChild(header);
+      bar.appendChild(track);
       results.appendChild(bar);
     });
     document.getElementById('poll-results').style.display = 'block';
@@ -722,19 +1369,53 @@
   }
 
   // Challenge Generator
-  const challenges = [
-    "Run around the block in your underwear.",
-    "Sing a song chosen by the group at the top of your lungs.",
-    "Do 20 burpees in the hotel lobby.",
-    "Call a random contact and say 'I'm getting married!'",
-    "Eat something spicy without drinking water.",
-    "Tell a joke that makes everyone laugh.",
-    "Switch clothes with someone for 10 minutes.",
-    "Propose a toast to the groom."
+  const fallbackChallenges = [
+    { title: "Run around the block in your underwear.", type: "Dares", difficulty: "Chaos", notes: "Old school classic." },
+    { title: "Sing a song chosen by the group at the top of your lungs.", type: "Dares", difficulty: "Medium", notes: "No backing track." },
+    { title: "Do 20 burpees in the hotel lobby.", type: "Team", difficulty: "Chaos", notes: "Fast reps only." },
+    { title: "Call a random contact and say 'I'm getting married!'.", type: "Dares", difficulty: "Medium", notes: "Speaker mode mandatory." },
+    { title: "Eat something spicy without drinking water.", type: "Drinking", difficulty: "Medium", notes: "No tap-out." },
+    { title: "Tell a joke that makes everyone laugh.", type: "Chill", difficulty: "Easy", notes: "Crowd decides." },
+    { title: "Switch clothes with someone for 10 minutes.", type: "Team", difficulty: "Easy", notes: "Full swap." },
+    { title: "Propose a toast to the groom.", type: "Chill", difficulty: "Easy", notes: "Keep it heartfelt." }
   ];
+
+  function getFilteredApprovedChallenges(includeShown) {
+    const selectedType = document.getElementById('challenge-filter-type').value;
+    const selectedDifficulty = document.getElementById('challenge-filter-difficulty').value;
+    let pool = approvedChallenges.filter(item => !item.hidden && (item.reports || 0) < 3);
+    if (selectedType !== 'all') pool = pool.filter(item => item.type === selectedType);
+    if (selectedDifficulty !== 'all') pool = pool.filter(item => item.difficulty === selectedDifficulty);
+    if (!includeShown) pool = pool.filter(item => !shownChallengeIds.includes(item.id));
+    return pool;
+  }
+
+  function renderChallengeResult(challenge) {
+    currentChallenge = challenge;
+    document.getElementById('random-challenge').textContent = challenge.title;
+    document.getElementById('random-challenge-meta').textContent = challenge.type + ' • ' + challenge.difficulty + (challenge.notes ? ' • ' + challenge.notes : '');
+    const msg = document.getElementById('challenge-complete-msg');
+    if (msg) msg.textContent = '';
+  }
+
   function getChallenge() {
-    const random = challenges[Math.floor(Math.random() * challenges.length)];
-    document.getElementById('random-challenge').textContent = random;
+    let pool = getFilteredApprovedChallenges(false);
+    if (!pool.length) {
+      shownChallengeIds = [];
+      pool = getFilteredApprovedChallenges(true);
+    }
+    if (!pool.length) {
+      const fallback = fallbackChallenges[Math.floor(Math.random() * fallbackChallenges.length)];
+      renderChallengeResult(fallback);
+      return;
+    }
+    const random = pool[Math.floor(Math.random() * pool.length)];
+    shownChallengeIds.push(random.id);
+    renderChallengeResult(random);
+  }
+
+  function skipChallenge() {
+    getChallenge();
   }
 
   // Random Quote
@@ -759,7 +1440,7 @@
   ];
   function initPackingList() {
     const container = document.getElementById('packing-list');
-    const checked = JSON.parse(localStorage.getItem('packingChecked')) || {};
+    const checked = safeJSONParse(localStorage.getItem('packingChecked'), {});
     packingItems.forEach(item => {
       const div = document.createElement('div');
       div.style.display = 'flex';
@@ -783,78 +1464,14 @@
     });
   }
   initPackingList();
+  updateTeamBattleUI();
+  if (punishmentHistory.length) {
+    const result = document.getElementById('punishment-result');
+    const history = document.getElementById('punishment-history');
+    if (result) result.textContent = punishmentHistory[0];
+    if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
+  }
 
-  // Budget Tracker
-  let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-  function addExpense() {
-    const desc = document.getElementById('expense-desc').value;
-    const amount = parseFloat(document.getElementById('expense-amount').value);
-    if (desc && amount) {
-      expenses.push({desc, amount});
-      localStorage.setItem('expenses', JSON.stringify(expenses));
-      displayExpenses();
-      document.getElementById('expense-desc').value = '';
-      document.getElementById('expense-amount').value = '';
-    }
-  }
-  function displayExpenses() {
-    const container = document.getElementById('expenses');
-    container.innerHTML = '';
-    let total = 0;
-    expenses.forEach((exp, index) => {
-      total += exp.amount;
-      const div = document.createElement('div');
-      div.style.display = 'flex';
-      div.style.justifyContent = 'space-between';
-      div.style.padding = '5px';
-      div.style.borderBottom = '1px solid rgba(255,255,255,.1)';
-      div.innerHTML = `<span>${exp.desc}</span><span>€${exp.amount.toFixed(2)}</span><button onclick="removeExpense(${index})" style="margin-left:10px; background:#C9382A; color:white; border:none; cursor:pointer;">X</button>`;
-      container.appendChild(div);
-    });
-    document.getElementById('total').textContent = `Total: €${total.toFixed(2)} | Per Person: €${(total/6).toFixed(2)}`;
-  }
-  function removeExpense(index) {
-    expenses.splice(index, 1);
-    localStorage.setItem('expenses', JSON.stringify(expenses));
-    displayExpenses();
-  }
-  displayExpenses();
-
-  // Photo Gallery
-  let photos = JSON.parse(localStorage.getItem('photos')) || [];
-  function addPhoto() {
-    const file = document.getElementById('photo-input').files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        photos.push(e.target.result);
-        localStorage.setItem('photos', JSON.stringify(photos));
-        displayGallery();
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-  function displayGallery() {
-    const container = document.getElementById('gallery');
-    container.innerHTML = '';
-    photos.forEach((photo, index) => {
-      const img = document.createElement('img');
-      img.src = photo;
-      img.style.width = '150px';
-      img.style.height = '150px';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '5px';
-      img.style.cursor = 'pointer';
-      img.onclick = () => {
-        photos.splice(index, 1);
-        localStorage.setItem('photos', JSON.stringify(photos));
-        displayGallery();
-      };
-      container.appendChild(img);
-    });
-  }
-  displayGallery();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
