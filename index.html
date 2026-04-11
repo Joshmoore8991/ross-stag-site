@@ -178,21 +178,6 @@
     transform: scale(0.98);
   }
   
-  /* Welcome Banner */
-  #welcome-banner {
-    animation: slideDown .5s ease-out;
-  }
-  @keyframes slideDown {
-    from {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
   /* Primary buttons (gold background) */
   button[style*="background:var(--gold)"],
   button[style*="background: var(--gold)"] {
@@ -484,17 +469,11 @@
 <div id="login-overlay">
   <div class="login-box">
     <h2>Crew Login</h2>
-    <p>Enter your name and birthday to unlock the lads-only schedule.</p>
-    <input type="text" id="crew-login-name" placeholder="Your name or nickname" style="margin-top:12px;">
-    <input type="password" id="crew-login-bday" placeholder="Birthday (DDMMYY)">
-    <button onclick="crewLogin()" style="margin-top:8px;">Unlock</button>
+    <p>Enter your crew access code to unlock the lads-only schedule and ideas board.</p>
+    <input type="password" id="crew-login-bday" placeholder="6-digit code">
+    <button onclick="crewLogin()">Unlock</button>
     <p id="crew-login-msg" style="margin-top:14px; opacity:.85;"></p>
   </div>
-</div>
-
-<div id="welcome-banner" style="display:none; position:fixed; top:0; left:0; right:0; background:linear-gradient(135deg, rgba(212,168,67,.95), rgba(244,164,35,.95)); padding:20px; text-align:center; z-index:9998; box-shadow:0 4px 16px rgba(212,168,67,.3); animation:slideDown .5s ease-out;">
-  <h3 id="welcome-text" style="color:#0A0A0A; font-family:'Bebas Neue',sans-serif; letter-spacing:2px; margin:0; font-size:24px;"></h3>
-  <p id="welcome-subtitle" style="color:rgba(10,10,10,.8); margin:6px 0 0 0; font-size:13px;"></p>
 </div>
 
 <div class="hero">
@@ -1125,24 +1104,6 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  function getStoredItem(key) {
-    if (!supportsLocalStorage()) return null;
-    try {
-      return localStorage.getItem(key);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function setStoredItem(key, value) {
-    if (!supportsLocalStorage()) return;
-    try {
-      localStorage.setItem(key, value);
-    } catch (e) {
-      // Ignore storage write failures so core UI keeps working.
-    }
-  }
-
   function getCrewBday() {
     // Keep access state in-memory only to reduce persistence abuse.
     return crewBdayState;
@@ -1622,8 +1583,7 @@
       alert('Admin access is for Joshua only.');
       return;
     }
-    const approvalPanel = document.getElementById('approval-panel');
-    if (approvalPanel) approvalPanel.style.display = 'block';
+    document.getElementById('approval-panel').style.display = 'block';
     displayPendingChallenges();
     displayPendingScheduleSuggestions();
   }
@@ -1647,37 +1607,28 @@
     if (loginOverlay) loginOverlay.style.display = loggedIn ? 'none' : 'flex';
     if (logoutButton) logoutButton.style.display = loggedIn ? 'block' : 'none';
     document.body.classList.toggle('overlay-active', !loggedIn);
-    const approvalPanel = document.getElementById('approval-panel');
     if (isAdmin) {
-      if (approvalPanel) approvalPanel.style.display = 'block';
+      document.getElementById('approval-panel').style.display = 'block';
       displayPendingChallenges();
       displayPendingScheduleSuggestions();
     } else {
-      if (approvalPanel) approvalPanel.style.display = 'none';
+      document.getElementById('approval-panel').style.display = 'none';
     }
     if (loggedIn) displayApprovedChallenges();
     displayApprovedScheduleSuggestions();
   }
 
   function crewLogin() {
-    const nameField = document.getElementById('crew-login-name');
     const bdayField = document.getElementById('crew-login-bday');
-    const name = nameField.value.trim();
     const bday = bdayField.value.trim();
     const msg = document.getElementById('crew-login-msg');
-    
-    if (!name || name.length < 2) {
-      msg.textContent = 'Enter your name or nickname.';
-      msg.style.color = '#C9382A';
-      return;
-    }
     if (!/^[0-9]{6}$/.test(bday)) {
-      msg.textContent = 'Enter your birthday as DDMMYY.';
+      msg.textContent = 'Enter your 6-digit crew access code.';
       msg.style.color = '#C9382A';
       return;
     }
     if (bday === groomBday) {
-      msg.textContent = 'Ross cannot unlock this section. Enter a crew birthday.';
+      msg.textContent = 'Ross cannot unlock this section. Use a valid crew access code.';
       msg.style.color = '#C9382A';
       setCrewBday('');
       bdayField.value = '';
@@ -1689,15 +1640,11 @@
       msg.style.color = '#C9382A';
       return;
     }
-    
     setCrewBday(bday);
-    saveCrewName(name);
     bdayField.value = '';
-    nameField.value = '';
-    msg.textContent = 'Welcome, ' + name + '! Unlocking the lads-only schedule...';
+    msg.textContent = 'Welcome, crew member. Secret schedule unlocked.';
     msg.style.color = 'var(--gold)';
     updateCrewAccess();
-    showWelcomeBanner(name);
   }
 
   function crewLogout() {
@@ -1708,50 +1655,6 @@
       msg.style.color = '#C9382A';
     }
     updateCrewAccess();
-  }
-  
-  function saveCrewName(name) {
-    setStoredItem('crewName', name);
-  }
-  
-  function getCrewName() {
-    return getStoredItem('crewName') || 'Lad';
-  }
-  
-  function showWelcomeBanner(name) {
-    const banner = document.getElementById('welcome-banner');
-    const welcomeText = document.getElementById('welcome-text');
-    const welcomeSubtitle = document.getElementById('welcome-subtitle');
-    
-    if (!banner) return;
-    
-    const welcomeMessages = [
-      'You legend!',
-      'Vamos!',
-      'Let\'s go, lad!',
-      'The crew awaits!',
-      'Time for chaos!',
-      'Buckle up!',
-      'Welcome back!',
-      'It\'s on!'
-    ];
-    
-    const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    
-    welcomeText.textContent = 'Welcome, ' + name + '! ' + randomMessage;
-    welcomeSubtitle.textContent = 'Secret schedule unlocked • Challenges available • Lads only';
-    
-    banner.style.display = 'block';
-    
-    setTimeout(() => {
-      banner.style.opacity = '0';
-      banner.style.transition = 'opacity .5s ease-out';
-      setTimeout(() => {
-        banner.style.display = 'none';
-        banner.style.opacity = '1';
-        banner.style.transition = 'all .3s ease';
-      }, 500);
-    }, 3500);
   }
 
   updateCrewAccess();
@@ -1913,7 +1816,7 @@
 
   displayApprovedChallenges();
 
-  const pollResults = safeJSONParse(getStoredItem('pollResults'), {
+  const pollResults = safeJSONParse(localStorage.getItem('pollResults'), {
     drinking: 0,
     adventures: 0,
     bonding: 0,
@@ -1923,7 +1826,7 @@
   function vote(choice) {
     if (!pollResults.hasOwnProperty(choice)) return;
     pollResults[choice] += 1;
-    setStoredItem('pollResults', JSON.stringify(pollResults));
+    localStorage.setItem('pollResults', JSON.stringify(pollResults));
     updatePollDisplay();
   }
 
@@ -1981,14 +1884,14 @@
     if (body.classList.contains('light-theme')) {
       body.classList.remove('light-theme');
       button.textContent = '🌙';
-      setStoredItem('theme', 'dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       body.classList.add('light-theme');
       button.textContent = '☀️';
-      setStoredItem('theme', 'light');
+      localStorage.setItem('theme', 'light');
     }
   }
-  if (getStoredItem('theme') === 'light') {
+  if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light-theme');
     document.getElementById('theme-toggle').textContent = '☀️';
   }
@@ -2081,7 +1984,7 @@
   ];
   function initPackingList() {
     const container = document.getElementById('packing-list');
-    const checked = safeJSONParse(getStoredItem('packingChecked'), {});
+    const checked = safeJSONParse(localStorage.getItem('packingChecked'), {});
     packingItems.forEach(item => {
       const div = document.createElement('div');
       div.style.display = 'flex';
@@ -2093,7 +1996,7 @@
       checkbox.checked = checked[item] || false;
       checkbox.onchange = () => {
         checked[item] = checkbox.checked;
-        setStoredItem('packingChecked', JSON.stringify(checked));
+        localStorage.setItem('packingChecked', JSON.stringify(checked));
       };
       const label = document.createElement('label');
       label.htmlFor = item;
