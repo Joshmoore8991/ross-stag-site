@@ -70,7 +70,6 @@
   .flight-route .airports { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--cream); letter-spacing:3px; display:flex; align-items:center; gap:12px; }
   .flight-route .airports .arrow { color:var(--gold); font-size:18px; }
   .flight-meta { font-size:13px; opacity:.5; margin-top:4px; line-height:1.6; }
-  .flight-ref { font-size:12px; opacity:.35; letter-spacing:2px; font-family:monospace; }
 
   .hotel-card { background:var(--dark); border:1px solid rgba(212,168,67,.12); border-radius:10px; padding:32px; box-shadow:0 4px 16px rgba(0,0,0,.3); transition:all .3s ease; }
   .hotel-name { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--gold); letter-spacing:3px; }
@@ -330,9 +329,6 @@
   .light-theme .flight-meta {
     color: rgba(26,26,26,.55);
   }
-  .light-theme .flight-ref {
-    color: rgba(26,26,26,.35);
-  }
   .light-theme .hotel-name {
     color: #D4A843;
   }
@@ -528,7 +524,7 @@
       <div class="flight-meta">Sun 3 May &#183; Departs 06:10 &#183; Arrives 09:50 local &#183; 2h 40m</div>
       <div class="flight-meta">EasyJet EZY3001</div>
     </div>
-    <div class="flight-ref">KBMV8M2</div>
+
   </div>
   <div class="flight-card fade-in">
     <div class="flight-direction">Return</div>
@@ -537,7 +533,7 @@
       <div class="flight-meta">Wed 6 May &#183; Departs 14:00 &#183; Arrives 15:55 local &#183; 2h 55m</div>
       <div class="flight-meta">EasyJet EZY3002</div>
     </div>
-    <div class="flight-ref">KBMV8M2</div>
+
   </div>
   <p class="fade-in" style="font-size:12px; opacity:.4; margin-top:16px; line-height:1.6;">Hand luggage only (45x36x20cm). No hold bags. Check-in opens 30 days before at easyjet.com.</p>
 </section>
@@ -553,7 +549,7 @@
       <div class="hotel-detail-item"><div class="hotel-detail-label">Nights</div><div class="hotel-detail-value">3</div></div>
       <div class="hotel-detail-item"><div class="hotel-detail-label">Rooms</div><div class="hotel-detail-value">3 Triple</div></div>
       <div class="hotel-detail-item"><div class="hotel-detail-label">Board</div><div class="hotel-detail-value">Room Only</div></div>
-      <div class="hotel-detail-item"><div class="hotel-detail-label">Ref</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">OTBH2189476</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Code</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">OTBH2189476</div></div>
     </div>
     <p style="font-size:12px; opacity:.4; margin-top:20px; line-height:1.6;">Tourism tax ~&#8364;1.10/person/night. Hotel may request a security deposit at check-in.</p>
     <p><a href="https://maps.google.com/?q=Htop+BCN+City,+Calle+Travessera+De+Gracia,+Barcelona+08025" target="_blank" rel="noopener noreferrer" style="color:var(--gold); text-decoration:none;">View Hotel on Google Maps</a></p>
@@ -568,7 +564,7 @@
     <div class="hotel-details">
       <div class="hotel-detail-item"><div class="hotel-detail-label">Arrival Pickup</div><div class="hotel-detail-value">3 May, 09:50</div></div>
       <div class="hotel-detail-item"><div class="hotel-detail-label">Return Pickup</div><div class="hotel-detail-value">6 May (TBC)</div></div>
-      <div class="hotel-detail-item"><div class="hotel-detail-label">Ref</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">RT-4125725</div></div>
+      <div class="hotel-detail-item"><div class="hotel-detail-label">Code</div><div class="hotel-detail-value" style="font-size:12px;font-family:monospace;">RT-4125725</div></div>
       <div class="hotel-detail-item"><div class="hotel-detail-label">Emergency</div><div class="hotel-detail-value" style="font-size:11px;">+34 871 556 827</div></div>
     </div>
     <p style="font-size:12px; opacity:.4; margin-top:20px; line-height:1.6;">Driver meets you at arrivals with a name sign. Return pickup time available 24hrs before at customer.suntransfers.com/on-the-beach.</p>
@@ -594,7 +590,7 @@
   <h2 class="section-title fade-in">Trip Schedule</h2>
   <div class="schedule-item fade-in">
     <div class="schedule-time">Before Go</div>
-    <div class="schedule-info"><h3>Final Checks</h3><p>Final payment complete. EasyJet check-in is open. Keep passports, boarding passes and hotel ref ready.</p></div>
+    <div class="schedule-info"><h3>Final Checks</h3><p>Final payment complete. EasyJet check-in is open. Keep passports, boarding passes and hotel details ready.</p></div>
   </div>
   <div class="schedule-item fade-in">
     <div class="schedule-time">3 May<br>04:00</div>
@@ -612,7 +608,7 @@
     <div class="schedule-time">4 May<br>Day 2</div>
     <div class="schedule-info"><h3>Big Activity Day</h3><p>Late breakfast, daytime activity window, then dinner and main night session.</p></div>
   </div>
-  <div class="schedule-item fade-in" id="crew-only-booking" style="display:none;">
+  <div class="schedule-item fade-in" id="crew-only-optional" style="display:none;">
     <div class="schedule-time">4 May<br>Optional</div>
     <div class="schedule-info"><h3>Optional Activity Slot</h3><p>Free block for group plans, weather backup, or extra activities.</p></div>
   </div>
@@ -634,7 +630,7 @@
     <div class="rule-card fade-in"><div class="rule-num">02</div><h3>The Groom Drinks Free</h3><p>Ross's wallet stays at the hotel. Sort it between you.</p></div>
     <div class="rule-card fade-in"><div class="rule-num">03</div><h3>No Early Exits</h3><p>You signed up for the full 3 nights. See it through.</p></div>
     <div class="rule-card fade-in"><div class="rule-num">04</div><h3>Best Man's Word is Law</h3><p>Challenges will be issued. They will be accepted.</p></div>
-    <div class="rule-card fade-in"><div class="rule-num">05</div><h3>Hand Luggage Only</h3><p>No hold bags booked. Pack light, lads.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">05</div><h3>Hand Luggage Only</h3><p>No hold bags included. Pack light, lads.</p></div>
     <div class="rule-card fade-in"><div class="rule-num">06</div><h3>Passports Checked</h3><p>If yours is expired, that's on you. Check it now.</p></div>
   </div>
 </section>
@@ -642,7 +638,7 @@
 <section>
   <h2 class="section-title fade-in">Need to Know</h2>
   <div class="info-grid">
-    <div class="info-card fade-in"><h3>Booking Ref</h3><p style="font-family:monospace;font-size:16px;opacity:1;color:var(--gold);">MYB14642185B</p><p>On the Beach reference. Keep it safe.</p></div>
+    <div class="info-card fade-in"><h3>Trip Code</h3><p style="font-family:monospace;font-size:16px;opacity:1;color:var(--gold);">MYB14642185B</p><p>On the Beach code. Keep it safe.</p></div>
     <div class="info-card fade-in"><h3>In-Resort Support</h3><p><a href="tel:+443330031934">+44 (0) 333 003 1934</a></p><p>On the Beach support if anything goes wrong.</p></div>
     <div class="info-card fade-in"><h3>Transfer Emergency</h3><p><a href="tel:+34871556827">+34 871 556 827</a></p><p>Suntransfers 24/7. Also: <a href="tel:+442045879973">+44 20 4587 9973</a></p></div>
     <div class="info-card fade-in"><h3>Travel Advice</h3><p><a href="https://www.gov.uk/foreign-travel-advice/spain" target="_blank" rel="noopener noreferrer">gov.uk/foreign-travel-advice/spain</a></p><p>Passport &amp; visa info for Spain.</p></div>
@@ -721,13 +717,13 @@
       <h3>Lower League Picks (Barcelona)</h3>
       <p><strong>CE Europa (Nou Sardenya):</strong> Often one of the best-value local matchday options in the city.</p>
       <p><strong>UE Sant Andreu (Narcis Sala):</strong> Proper old-school atmosphere and usually good for groups.</p>
-      <p>Ticket guide: typically around EUR 10 to EUR 25, with easier late booking than top-flight games.</p>
+      <p>Ticket guide: typically around EUR 10 to EUR 25, with easier late access than top-flight games.</p>
       <p><a href="https://www.ceeuropa.cat/" target="_blank" rel="noopener noreferrer">CE Europa Club Site</a> | <a href="https://www.uesantandreu.cat/" target="_blank" rel="noopener noreferrer">UE Sant Andreu Club Site</a></p>
       <p style="opacity:.45;">Check each club's fixtures page once May 2026 dates are finalized.</p>
     </div>
     <div class="info-card fade-in">
       <h3>Backup Plan: Matchday Screening</h3>
-      <p>If no home fixture lands on your exact dates, book a football-focused sports bar night.</p>
+      <p>If no home fixture lands on your exact dates, plan a football-focused sports bar night.</p>
       <p>Budget: around EUR 15 to EUR 35 per person with food and drinks.</p>
       <p><a href="https://www.google.com/maps/search/sports+bar+barcelona" target="_blank" rel="noopener noreferrer">Find Sports Bars in Barcelona</a></p>
       <p style="opacity:.45;">Best for keeping the lads together when kickoff times shift.</p>
@@ -806,11 +802,11 @@
 </section>
 
 <section>
-  <h2 class="section-title fade-in">Book Barcelona Experiences</h2>
+  <h2 class="section-title fade-in">Barcelona Experiences</h2>
   <div class="info-grid">
-    <div class="info-card fade-in"><h3>Pool Club Day Pass</h3><p>Reserve access to Barcelona’s best pool bars and day clubs. Bring the lads, stay cool, and keep the party rolling.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Pool Club Pass</a></div>
-    <div class="info-card fade-in"><h3>Boat Party & Catamaran</h3><p>Hit the Mediterranean on a private boat party with music, drinks and a view of Barcelona from the sea.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Boat Party</a></div>
-    <div class="info-card fade-in"><h3>Tapas & Nightlife Tour</h3><p>Secure a guided evening tour with top tapas stops and nightlife access. Perfect for keeping the group together after dark.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">Book Nightlife Tour</a></div>
+    <div class="info-card fade-in"><h3>Pool Club Day Pass</h3><p>Access Barcelona's best pool bars and day clubs. Bring the lads, stay cool, and keep the party rolling.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">View Pool Club Pass</a></div>
+    <div class="info-card fade-in"><h3>Boat Party & Catamaran</h3><p>Hit the Mediterranean on a private boat party with music, drinks and a view of Barcelona from the sea.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">View Boat Party</a></div>
+    <div class="info-card fade-in"><h3>Tapas & Nightlife Tour</h3><p>Secure a guided evening tour with top tapas stops and nightlife access. Perfect for keeping the group together after dark.</p><a href="https://www.getyourguide.com/barcelona-l59/" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; padding:10px 20px; background:var(--gold); color:var(--black); text-decoration:none; border-radius:2px;">View Nightlife Tour</a></div>
   </div>
   <p style="margin-top:20px; opacity:.7; text-align:center;">Curated pick of stag-friendly pool bars, boat parties and Barcelona tours.</p>
 </section>
@@ -867,7 +863,7 @@
       <p><a href="https://maps.google.com/?q=Sagrada+Familia+Barcelona" target="_blank" rel="noopener noreferrer">Open in Maps</a></p>
     </div>
   </div>
-  <p class="fade-in" style="font-size:12px; opacity:.55; margin-top:16px; line-height:1.6;">All prices are typical 2025-2026 ranges and can move with demand. For groups of 6, booking 1-2 weeks ahead usually gets better slots and bundle rates.</p>
+  <p class="fade-in" style="font-size:12px; opacity:.55; margin-top:16px; line-height:1.6;">All prices are typical 2025-2026 ranges and can move with demand. For groups of 6, planning 1-2 weeks ahead usually gets better slots and bundle rates.</p>
 </section>
 
 <section id="suggestion-section" style="display:none;">
@@ -970,6 +966,38 @@
 </section>
 
 <section>
+  <h2 class="section-title fade-in">Daily Mission Leaderboard</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p style="opacity:.7; margin-bottom:10px;">Create missions, assign a team, and award points on completion.</p>
+    <input type="text" id="mission-title" placeholder="Mission title" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:55%;">
+    <input type="number" id="mission-points" min="1" max="10" value="1" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:90px;">
+    <select id="mission-team" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;">
+      <option value="A">Team A</option>
+      <option value="B">Team B</option>
+    </select>
+    <button onclick="addMission()" style="padding:8px 14px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Add Mission</button>
+    <button onclick="resetMissions()" style="padding:8px 14px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer; border-radius:2px; margin-left:6px;">Reset Missions</button>
+    <p id="mission-msg" style="margin-top:10px;"></p>
+    <div id="mission-board" style="margin-top:14px; text-align:left;"></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title fade-in">Shared Expense Splitter</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p style="opacity:.7; margin-bottom:10px;">Track spend and instantly see who owes what.</p>
+    <select id="expense-payer" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;"></select>
+    <input type="number" id="expense-amount" min="0.01" step="0.01" placeholder="Amount" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:140px;">
+    <input type="text" id="expense-note" placeholder="What was it for?" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:45%;">
+    <button onclick="addExpense()" style="padding:8px 14px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Add Expense</button>
+    <button onclick="clearExpenses()" style="padding:8px 14px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer; border-radius:2px; margin-left:6px;">Clear</button>
+    <p id="expense-msg" style="margin-top:10px;"></p>
+    <div id="expense-summary" style="margin-top:14px; text-align:left;"></div>
+    <div id="expense-list" style="margin-top:8px; text-align:left;"></div>
+  </div>
+</section>
+
+<section>
   <h2 class="section-title fade-in">Punishment Wheel</h2>
   <div class="info-card fade-in" style="text-align:center;">
     <p>Failed or refused challenge? Spin for punishment.</p>
@@ -998,15 +1026,12 @@
 <section>
   <h2 class="section-title fade-in">Stag Do Poll</h2>
   <div class="info-card fade-in" style="text-align:center;">
-    <h3>What's your favorite part of stag dos?</h3>
-    <div id="poll-options">
-      <button onclick="vote('drinking')" style="margin:5px; padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Drinking Games</button>
-      <button onclick="vote('adventures')" style="margin:5px; padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Adventures & Activities</button>
-      <button onclick="vote('bonding')" style="margin:5px; padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Lads Bonding</button>
-      <button onclick="vote('surprises')" style="margin:5px; padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;">Surprises</button>
-    </div>
-    <div id="poll-results" style="display:none; margin-top:20px;">
-      <p>Results:</p>
+    <h3>Choose a poll and vote</h3>
+    <select id="poll-topic" onchange="selectPollTopic()" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px;"></select>
+    <p id="poll-question" style="margin-top:8px; opacity:.8;"></p>
+    <div id="poll-options" style="margin-top:8px;"></div>
+    <div id="poll-results" style="display:block; margin-top:20px;">
+      <p>Results</p>
       <div id="results"></div>
     </div>
   </div>
@@ -1133,6 +1158,41 @@
     scoreB: 0,
     currentAssignment: null
   });
+  const crewMembers = ['Joshua', 'Emmanuel', 'Ross', 'Kelan', 'Jack', 'Ciaran'];
+  let missionBoard = loadJSON('missionBoard', []);
+  let expenseEntries = loadJSON('expenseEntries', []);
+  let pollBoard = loadJSON('pollBoard', {
+    selected: 'favorite',
+    polls: {
+      favorite: {
+        question: "What's your favorite part of stag dos?",
+        options: {
+          drinking: { label: 'Drinking Games', votes: 0 },
+          adventures: { label: 'Adventures & Activities', votes: 0 },
+          bonding: { label: 'Lads Bonding', votes: 0 },
+          surprises: { label: 'Surprises', votes: 0 }
+        }
+      },
+      dinner: {
+        question: 'Preferred main dinner style?',
+        options: {
+          tapas: { label: 'Tapas Crawl', votes: 0 },
+          steak: { label: 'Steakhouse', votes: 0 },
+          seafood: { label: 'Seafood Spot', votes: 0 },
+          quick: { label: 'Quick Pizza Then Bars', votes: 0 }
+        }
+      },
+      kickoff: {
+        question: 'Best first-night kickoff plan?',
+        options: {
+          rooftop: { label: 'Rooftop Drinks', votes: 0 },
+          barhop: { label: 'Bar Hop', votes: 0 },
+          beach: { label: 'Beachfront Start', votes: 0 },
+          chill: { label: 'Chill Start, Late Finish', votes: 0 }
+        }
+      }
+    }
+  });
 
   function normalizeTitle(value) {
     return String(value || '').toLowerCase().trim().replace(/\s+/g, ' ');
@@ -1169,6 +1229,9 @@
     saveJSON('completedChallengeIds', completedChallengeIds);
     saveJSON('punishmentHistory', punishmentHistory);
     saveJSON('teamBattle', teamBattle);
+    saveJSON('missionBoard', missionBoard);
+    saveJSON('expenseEntries', expenseEntries);
+    saveJSON('pollBoard', pollBoard);
   }
 
   function getChallengeKey(challenge) {
@@ -1593,7 +1656,7 @@
     let crewBday = getCrewBday();
     const suggestionSection = document.getElementById('suggestion-section');
     const bestmanSection = document.getElementById('bestman-approval-section');
-    const secretBooking = document.getElementById('crew-only-booking');
+    const secretOptional = document.getElementById('crew-only-optional');
     const loginOverlay = document.getElementById('login-overlay');
     const logoutButton = document.getElementById('crew-logout-btn');
     if (!isAllowedCrewBday(crewBday)) {
@@ -1604,7 +1667,7 @@
     const isAdmin = crewBday === bmBday;
     if (suggestionSection) suggestionSection.style.display = loggedIn ? 'block' : 'none';
     if (bestmanSection) bestmanSection.style.display = isAdmin ? 'block' : 'none';
-    if (secretBooking) secretBooking.style.display = loggedIn ? 'block' : 'none';
+    if (secretOptional) secretOptional.style.display = loggedIn ? 'block' : 'none';
     if (loginOverlay) loginOverlay.style.display = loggedIn ? 'none' : 'flex';
     if (logoutButton) logoutButton.style.display = loggedIn ? 'block' : 'none';
     document.body.classList.toggle('overlay-active', !loggedIn);
@@ -1817,31 +1880,288 @@
 
   displayApprovedChallenges();
 
-  const pollResults = safeJSONParse(localStorage.getItem('pollResults'), {
-    drinking: 0,
-    adventures: 0,
-    bonding: 0,
-    surprises: 0
-  });
-
-  function vote(choice) {
-    if (!pollResults.hasOwnProperty(choice)) return;
-    pollResults[choice] += 1;
-    localStorage.setItem('pollResults', JSON.stringify(pollResults));
-    updatePollDisplay();
+  function addMission() {
+    const titleField = document.getElementById('mission-title');
+    const pointsField = document.getElementById('mission-points');
+    const teamField = document.getElementById('mission-team');
+    const msg = document.getElementById('mission-msg');
+    if (!titleField || !pointsField || !teamField || !msg) return;
+    const title = titleField.value.trim();
+    const points = Number(pointsField.value);
+    const team = teamField.value;
+    if (title.length < 3) {
+      msg.textContent = 'Mission title must be at least 3 characters.';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    if (!Number.isFinite(points) || points < 1 || points > 10) {
+      msg.textContent = 'Points must be between 1 and 10.';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    missionBoard.unshift({
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
+      title,
+      points,
+      team,
+      completed: false,
+      createdAt: Date.now()
+    });
+    saveChallengeData();
+    titleField.value = '';
+    pointsField.value = '1';
+    msg.textContent = 'Mission added.';
+    msg.style.color = 'var(--gold)';
+    renderMissionBoard();
   }
 
-  function updatePollDisplay() {
-    const results = document.getElementById('results');
-    const keys = ['drinking', 'adventures', 'bonding', 'surprises'];
-    const total = keys.reduce((sum, key) => sum + (Number(pollResults[key]) || 0), 0);
-    clearElement(results);
-    keys.forEach(option => {
-      const count = Number(pollResults[option]) || 0;
-      const bar = document.createElement('div');
-      const percent = total ? Math.round((count / total) * 100) : 0;
-      bar.style.margin = '8px 0';
+  function completeMission(id) {
+    const mission = missionBoard.find(item => item.id === id);
+    if (!mission || mission.completed) return;
+    mission.completed = true;
+    if (mission.team === 'A') teamBattle.scoreA += mission.points;
+    if (mission.team === 'B') teamBattle.scoreB += mission.points;
+    saveChallengeData();
+    updateTeamBattleUI();
+    renderMissionBoard();
+  }
 
+  function resetMissions() {
+    missionBoard = [];
+    saveChallengeData();
+    renderMissionBoard();
+  }
+
+  function renderMissionBoard() {
+    const board = document.getElementById('mission-board');
+    if (!board) return;
+    clearElement(board);
+    const pending = missionBoard.filter(item => !item.completed);
+    const done = missionBoard.filter(item => item.completed);
+
+    const lead = document.createElement('p');
+    lead.style.fontWeight = '600';
+    lead.style.marginBottom = '10px';
+    lead.textContent = 'Leaderboard: ' + teamBattle.nameA + ' ' + teamBattle.scoreA + ' - ' + teamBattle.scoreB + ' ' + teamBattle.nameB;
+    board.appendChild(lead);
+
+    const pendingTitle = document.createElement('p');
+    pendingTitle.style.opacity = '.8';
+    pendingTitle.textContent = 'Pending Missions';
+    board.appendChild(pendingTitle);
+    if (!pending.length) {
+      const none = document.createElement('p');
+      none.style.opacity = '.6';
+      none.textContent = 'No pending missions.';
+      board.appendChild(none);
+    }
+    pending.forEach(item => {
+      const row = document.createElement('div');
+      row.style.border = '1px solid rgba(212,168,67,.25)';
+      row.style.padding = '10px';
+      row.style.margin = '8px 0';
+      row.style.background = 'var(--dark)';
+      const t = document.createElement('p');
+      t.innerHTML = '<strong>' + item.title + '</strong> (' + item.points + ' pts)';
+      row.appendChild(t);
+      const m = document.createElement('p');
+      m.style.opacity = '.7';
+      m.style.fontSize = '12px';
+      m.textContent = 'Assigned to ' + (item.team === 'A' ? teamBattle.nameA : teamBattle.nameB);
+      row.appendChild(m);
+      row.appendChild(makeActionButton(
+        'Mark Complete',
+        'padding:6px 12px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+        function () { completeMission(item.id); }
+      ));
+      board.appendChild(row);
+    });
+
+    const doneTitle = document.createElement('p');
+    doneTitle.style.opacity = '.8';
+    doneTitle.style.marginTop = '10px';
+    doneTitle.textContent = 'Completed Missions';
+    board.appendChild(doneTitle);
+    if (!done.length) {
+      const noneDone = document.createElement('p');
+      noneDone.style.opacity = '.6';
+      noneDone.textContent = 'No completed missions yet.';
+      board.appendChild(noneDone);
+      return;
+    }
+    done.slice(0, 8).forEach(item => {
+      const row = document.createElement('p');
+      row.style.opacity = '.7';
+      row.textContent = '✓ ' + item.title + ' (' + item.points + ' pts to ' + (item.team === 'A' ? teamBattle.nameA : teamBattle.nameB) + ')';
+      board.appendChild(row);
+    });
+  }
+
+  function populateExpensePayerOptions() {
+    const select = document.getElementById('expense-payer');
+    if (!select) return;
+    clearElement(select);
+    crewMembers.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+  }
+
+  function addExpense() {
+    const payer = document.getElementById('expense-payer');
+    const amount = document.getElementById('expense-amount');
+    const note = document.getElementById('expense-note');
+    const msg = document.getElementById('expense-msg');
+    if (!payer || !amount || !note || !msg) return;
+    const numericAmount = Number(amount.value);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      msg.textContent = 'Enter an amount greater than 0.';
+      msg.style.color = '#C9382A';
+      return;
+    }
+    expenseEntries.unshift({
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
+      payer: payer.value,
+      amount: Math.round(numericAmount * 100) / 100,
+      note: note.value.trim() || 'General',
+      createdAt: Date.now()
+    });
+    saveChallengeData();
+    amount.value = '';
+    note.value = '';
+    msg.textContent = 'Expense saved.';
+    msg.style.color = 'var(--gold)';
+    renderExpenseBoard();
+  }
+
+  function removeExpense(id) {
+    expenseEntries = expenseEntries.filter(item => item.id !== id);
+    saveChallengeData();
+    renderExpenseBoard();
+  }
+
+  function clearExpenses() {
+    expenseEntries = [];
+    saveChallengeData();
+    renderExpenseBoard();
+  }
+
+  function renderExpenseBoard() {
+    const summary = document.getElementById('expense-summary');
+    const list = document.getElementById('expense-list');
+    if (!summary || !list) return;
+    clearElement(summary);
+    clearElement(list);
+
+    const total = expenseEntries.reduce(function (sum, item) { return sum + Number(item.amount || 0); }, 0);
+    const perHead = crewMembers.length ? (total / crewMembers.length) : 0;
+    const balances = {};
+    crewMembers.forEach(function (name) {
+      balances[name] = -perHead;
+    });
+    expenseEntries.forEach(function (item) {
+      balances[item.payer] = (balances[item.payer] || 0) + Number(item.amount || 0);
+    });
+
+    const headline = document.createElement('p');
+    headline.style.fontWeight = '600';
+    headline.textContent = 'Total: £' + total.toFixed(2) + ' | Split each: £' + perHead.toFixed(2);
+    summary.appendChild(headline);
+
+    crewMembers.forEach(function (name) {
+      const val = Number(balances[name] || 0);
+      const row = document.createElement('p');
+      row.style.opacity = '.75';
+      row.textContent = name + ': ' + (val >= 0 ? 'gets back £' : 'owes £') + Math.abs(val).toFixed(2);
+      summary.appendChild(row);
+    });
+
+    if (!expenseEntries.length) {
+      const empty = document.createElement('p');
+      empty.style.opacity = '.6';
+      empty.style.marginTop = '8px';
+      empty.textContent = 'No expenses added yet.';
+      list.appendChild(empty);
+      return;
+    }
+
+    expenseEntries.slice(0, 20).forEach(function (item) {
+      const row = document.createElement('div');
+      row.style.border = '1px solid rgba(212,168,67,.2)';
+      row.style.padding = '10px';
+      row.style.margin = '8px 0';
+      row.style.background = 'var(--dark)';
+      const text = document.createElement('p');
+      text.innerHTML = '<strong>' + item.payer + '</strong> paid £' + Number(item.amount).toFixed(2) + ' for ' + item.note;
+      row.appendChild(text);
+      row.appendChild(makeActionButton(
+        'Remove',
+        'padding:6px 10px; background:#C9382A; color:white; border:none; cursor:pointer;',
+        function () { removeExpense(item.id); }
+      ));
+      list.appendChild(row);
+    });
+  }
+
+  function selectPollTopic() {
+    const select = document.getElementById('poll-topic');
+    if (!select) return;
+    pollBoard.selected = select.value;
+    saveChallengeData();
+    renderPollBoard();
+  }
+
+  function vote(optionKey) {
+    const selectedPoll = pollBoard.polls[pollBoard.selected];
+    if (!selectedPoll || !selectedPoll.options[optionKey]) return;
+    selectedPoll.options[optionKey].votes += 1;
+    saveChallengeData();
+    renderPollBoard();
+  }
+
+  function renderPollBoard() {
+    const select = document.getElementById('poll-topic');
+    const question = document.getElementById('poll-question');
+    const optionsWrap = document.getElementById('poll-options');
+    const results = document.getElementById('results');
+    if (!select || !question || !optionsWrap || !results) return;
+
+    clearElement(select);
+    Object.keys(pollBoard.polls).forEach(function (key) {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = key.charAt(0).toUpperCase() + key.slice(1) + ' Poll';
+      if (pollBoard.selected === key) option.selected = true;
+      select.appendChild(option);
+    });
+
+    const selectedPoll = pollBoard.polls[pollBoard.selected] || pollBoard.polls.favorite;
+    question.textContent = selectedPoll.question;
+    clearElement(optionsWrap);
+    clearElement(results);
+
+    Object.keys(selectedPoll.options).forEach(function (key) {
+      const opt = selectedPoll.options[key];
+      optionsWrap.appendChild(makeActionButton(
+        opt.label,
+        'margin:5px; padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;',
+        function () { vote(key); }
+      ));
+    });
+
+    const total = Object.keys(selectedPoll.options).reduce(function (sum, key) {
+      return sum + Number(selectedPoll.options[key].votes || 0);
+    }, 0);
+
+    Object.keys(selectedPoll.options).forEach(function (key) {
+      const opt = selectedPoll.options[key];
+      const count = Number(opt.votes || 0);
+      const percent = total ? Math.round((count / total) * 100) : 0;
+
+      const row = document.createElement('div');
+      row.style.margin = '8px 0';
       const header = document.createElement('div');
       header.style.display = 'flex';
       header.style.justifyContent = 'space-between';
@@ -1849,11 +2169,11 @@
       header.style.opacity = '.8';
       header.style.marginBottom = '4px';
 
-      const optionLabel = document.createElement('span');
-      optionLabel.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+      const label = document.createElement('span');
+      label.textContent = opt.label;
       const voteLabel = document.createElement('span');
       voteLabel.textContent = count + ' vote' + (count === 1 ? '' : 's');
-      header.appendChild(optionLabel);
+      header.appendChild(label);
       header.appendChild(voteLabel);
 
       const track = document.createElement('div');
@@ -1861,7 +2181,6 @@
       track.style.width = '100%';
       track.style.background = 'rgba(255,255,255,.08)';
       track.style.borderRadius = '5px';
-
       const fill = document.createElement('div');
       fill.style.height = '100%';
       fill.style.width = percent + '%';
@@ -1869,14 +2188,11 @@
       fill.style.borderRadius = '5px';
       track.appendChild(fill);
 
-      bar.appendChild(header);
-      bar.appendChild(track);
-      results.appendChild(bar);
+      row.appendChild(header);
+      row.appendChild(track);
+      results.appendChild(row);
     });
-    document.getElementById('poll-results').style.display = 'block';
   }
-
-  updatePollDisplay();
 
   // Theme Toggle
   function toggleTheme() {
@@ -2010,6 +2326,10 @@
   }
   initPackingList();
   updateTeamBattleUI();
+  renderMissionBoard();
+  populateExpensePayerOptions();
+  renderExpenseBoard();
+  renderPollBoard();
   if (punishmentHistory.length) {
     const result = document.getElementById('punishment-result');
     const history = document.getElementById('punishment-history');
