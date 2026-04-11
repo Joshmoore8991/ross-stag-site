@@ -586,7 +586,7 @@
   </div>
 </section>
 
-<section>
+<section id="trip-schedule-section">
   <h2 class="section-title fade-in">Trip Schedule</h2>
   <div class="schedule-item fade-in">
     <div class="schedule-time">Before Go</div>
@@ -622,6 +622,10 @@
   </div>
   <div id="approved-schedule-items" style="margin-top:10px;"></div>
 </section>
+
+<p id="groom-schedule-locked-msg" style="display:none; max-width:900px; margin:16px auto 0; padding:0 24px; font-size:13px; opacity:.75;">
+  Ross: the detailed schedule unlocks automatically on 3 May 2026.
+</p>
 
 <section>
   <h2 class="section-title fade-in">The Rules</h2>
@@ -1233,6 +1237,11 @@
 
   function getTodayKey() {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  function canGroomViewSchedule() {
+    const unlockAt = new Date('2026-05-03T00:00:00').getTime();
+    return Date.now() >= unlockAt;
   }
 
   function getCurrentCrewKey() {
@@ -1899,6 +1908,8 @@
     const suggestionSection = document.getElementById('suggestion-section');
     const bestmanSection = document.getElementById('bestman-approval-section');
     const secretOptional = document.getElementById('crew-only-optional');
+    const tripScheduleSection = document.getElementById('trip-schedule-section');
+    const groomScheduleLockedMsg = document.getElementById('groom-schedule-locked-msg');
     const loginOverlay = document.getElementById('login-overlay');
     const logoutButton = document.getElementById('crew-logout-btn');
     if (!isAllowedCrewBday(crewBday)) {
@@ -1908,9 +1919,12 @@
     const loggedIn = crewBday && crewBday !== '';
     const isGroom = crewBday === groomBday;
     const isAdmin = crewBday === bmBday;
+    const groomScheduleLocked = loggedIn && isGroom && !canGroomViewSchedule();
     if (suggestionSection) suggestionSection.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
     if (bestmanSection) bestmanSection.style.display = isAdmin ? 'block' : 'none';
     if (secretOptional) secretOptional.style.display = loggedIn ? 'block' : 'none';
+    if (tripScheduleSection) tripScheduleSection.style.display = groomScheduleLocked ? 'none' : 'block';
+    if (groomScheduleLockedMsg) groomScheduleLockedMsg.style.display = groomScheduleLocked ? 'block' : 'none';
     if (loginOverlay) loginOverlay.style.display = loggedIn ? 'none' : 'flex';
     if (logoutButton) logoutButton.style.display = loggedIn ? 'block' : 'none';
     document.body.classList.toggle('overlay-active', !loggedIn);
