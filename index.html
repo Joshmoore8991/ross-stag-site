@@ -1099,6 +1099,7 @@
   const groomBday = '170997';
   const bmBday = '180997';
   const allowedCrewBdays = new Set([
+    groomBday,
     bmBday,
     '160698',
     '270597',
@@ -1933,14 +1934,6 @@
     if (!/^[0-9]{6}$/.test(bday)) {
       msg.textContent = 'Enter your 6-digit crew access code.';
       msg.style.color = '#C9382A';
-      return;
-    }
-    if (bday === groomBday) {
-      msg.textContent = 'Hello ' + getCrewDisplayName(bday) + '. You can view the page, but this section stays locked for you.';
-      msg.style.color = '#C9382A';
-      setCrewBday('');
-      bdayField.value = '';
-      updateCrewAccess();
       return;
     }
     if (!isAllowedCrewBday(bday)) {
