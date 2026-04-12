@@ -56,9 +56,9 @@
   const bmBday = '180997';
   const defaultCrewCodes = [
     bmBday,
-    '160698',
-    '270597',
-    '140697',
+    '230997',
+    '270298',
+    '120398',
     '201197',
     '080997',
     '240598',
@@ -68,13 +68,16 @@
     loadJSON('allowedCrewBdays', defaultCrewCodes).filter(code => /^[0-9]{6}$/.test(String(code || '')))
   );
   defaultCrewCodes.forEach(function (code) { allowedCrewBdays.add(code); });
+  allowedCrewBdays.delete('160698');
+  allowedCrewBdays.delete('270597');
+  allowedCrewBdays.delete('140697');
   allowedCrewBdays.add(bmBday);
   const crewNameByBday = {
     '170997': 'Ross',
     '180997': 'Joshua',
-    '160698': 'Emmanuel',
-    '270597': 'Kelan',
-    '140697': 'Jack',
+    '230997': 'Emmanuel',
+    '270298': 'Kelan',
+    '120398': 'Jack',
     '240598': 'Ciaran'
   };
   let crewBdayState = '';
