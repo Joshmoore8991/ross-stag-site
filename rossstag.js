@@ -2194,30 +2194,6 @@
     getChallenge();
   }
 
-  // Random Quote
-  const quotes = [
-    "\"A stag do is not complete without chaos.\"",
-    "\"Barcelona: Where the party never stops.\"",
-    "\"Friends that stag together, stay together.\"",
-    "\"May your last night of freedom be legendary.\"",
-    "\"Barcelona nights, unforgettable sights.\"",
-    "\"The groom's wallet is off-limits!\"",
-    "\"Lads on tour: Maximum fun, zero regrets.\"",
-    "\"From Belfast to Barcelona: Let's go!\"",
-    "\"What happens in Barcelona stays in Barcelona.\"",
-    "\"A best man's job is 10% speeches, 90% chaos.\"",
-    "\"Ross didn't choose this life. Joshua chose it for him.\"",
-    "\"May your sangria be cold and your stories be warm.\"",
-    "\"One last ride before the bride.\"",
-    "\"Six lads, one city, zero limits.\"",
-    "\"Somewhere between sunburn and sangria, legends are made.\"",
-    "\"The only rule: there are no rules. Except Ross pays.\""
-  ];
-  function getQuote() {
-    const random = quotes[Math.floor(Math.random() * quotes.length)];
-    document.getElementById('random-quote').textContent = random;
-  }
-
   // Packing Checklist
   const packingItems = [
     "Passport", "Flight tickets", "Hotel key", "Phone charger", "Toothbrush", "Deodorant", "Shirts", "Trousers", "Underwear", "Socks", "Shoes", "Jacket", "Sunglasses", "Hat", "Swimwear", "Towels", "Medications", "Cash/Euros", "Credit cards", "ID", "Good vibes"
