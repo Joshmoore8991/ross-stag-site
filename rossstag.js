@@ -208,6 +208,14 @@
     '120398': 'Jack',
     '240598': 'Ciaran'
   };
+  const crewMemberIdByBday = {
+    '170997': 'ross',
+    '160698': 'joshua',
+    '230997': 'emmanuel',
+    '270298': 'kelan',
+    '120398': 'jack',
+    '240598': 'ciaran'
+  };
   const crewPersonalizationByBday = {
     '170997': {
       title: 'Groom Mode: Ross In The Building',
@@ -400,6 +408,7 @@
     && !!supabaseAnonKey;
   let challengeSyncInFlight = false;
   let challengeSyncQueued = false;
+  let challengeSyncTimer = null;
   let lastChallengeSyncHash = '';
   let scheduleSubmissionLog = loadJSON('scheduleSubmissionLog', {});
   let siteChangeSubmissionLog = loadJSON('siteChangeSubmissionLog', {});
@@ -707,6 +716,18 @@
 
   function queueChallengeStateSync(force) {
     if (!challengeCloudSyncEnabled) return;
+    if (!force) {
+      if (challengeSyncTimer) clearTimeout(challengeSyncTimer);
+      challengeSyncTimer = setTimeout(function () {
+        challengeSyncTimer = null;
+        queueChallengeStateSync(true);
+      }, 1200);
+      return;
+    }
+    if (challengeSyncTimer) {
+      clearTimeout(challengeSyncTimer);
+      challengeSyncTimer = null;
+    }
     const payload = getChallengeStatePayload();
     const payloadHash = hashChallengePayload(payload);
     if (!force && payloadHash && payloadHash === lastChallengeSyncHash) return;
@@ -1769,8 +1790,9 @@
     const subtitleInput = document.getElementById('lads-custom-subtitle');
     const roleInput = document.getElementById('lads-custom-role');
     const customizerMsg = document.getElementById('lads-customizer-msg');
-    const cards = Array.from(document.querySelectorAll('.lad-card[data-code]'));
+    const cards = Array.from(document.querySelectorAll('.lad-card[data-member]'));
     const activeCode = getCrewBday();
+    const activeMemberId = crewMemberIdByBday[activeCode] || '';
 
     cards.forEach(function (card) {
       card.classList.remove('current-user');
@@ -1803,7 +1825,7 @@
       customizerMsg.removeAttribute('data-code');
     }
 
-    const activeCard = document.querySelector('.lad-card[data-code="' + activeCode + '"]');
+    const activeCard = activeMemberId ? document.querySelector('.lad-card[data-member="' + activeMemberId + '"]') : null;
     if (!activeCard) return;
 
     activeCard.classList.add('current-user');
@@ -2683,6 +2705,10 @@
     if (result) result.textContent = punishmentHistory[0];
     if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
   }
+
+  window.addEventListener('beforeunload', function () {
+    queueChallengeStateSync(true);
+  });
 
   // ── Scroll-to-top button ──
   (function () {
