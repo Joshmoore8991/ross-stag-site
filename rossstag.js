@@ -166,6 +166,10 @@
       role: 'Momentum Manager'
     }
   };
+  let crewPersonalizationOverrides = loadJSON('crewPersonalizationOverrides', {});
+  if (!crewPersonalizationOverrides || typeof crewPersonalizationOverrides !== 'object' || Array.isArray(crewPersonalizationOverrides)) {
+    crewPersonalizationOverrides = {};
+  }
   let crewBdayState = '';
 
   function getCrewDisplayName(bday) {
@@ -250,6 +254,28 @@
 
   function setCrewBday(value) {
     crewBdayState = value || '';
+  }
+
+  function getBaseCrewPersonalization(code) {
+    return crewPersonalizationByBday[code] || {
+      title: 'Welcome Back, ' + getCrewDisplayName(code),
+      subtitle: 'Crew mode is active. Keep the lads moving.',
+      role: 'Crew Member'
+    };
+  }
+
+  function getCrewPersonalization(code) {
+    const base = getBaseCrewPersonalization(code);
+    const override = crewPersonalizationOverrides[code] || {};
+    return {
+      title: sanitizeText(override.title || base.title, 90) || base.title,
+      subtitle: sanitizeText(override.subtitle || base.subtitle, 180) || base.subtitle,
+      role: sanitizeText(override.role || base.role, 40) || base.role
+    };
+  }
+
+  function saveCrewPersonalizationOverrides() {
+    saveJSON('crewPersonalizationOverrides', crewPersonalizationOverrides);
   }
 
   let pendingChallenges = loadJSON('pendingChallenges', []);
@@ -1081,6 +1107,11 @@
   function updateLadsPersonalization() {
     const titleEl = document.getElementById('lads-title');
     const subtitleEl = document.getElementById('lads-subtitle');
+    const customizer = document.getElementById('lads-customizer');
+    const titleInput = document.getElementById('lads-custom-title');
+    const subtitleInput = document.getElementById('lads-custom-subtitle');
+    const roleInput = document.getElementById('lads-custom-role');
+    const customizerMsg = document.getElementById('lads-customizer-msg');
     const cards = Array.from(document.querySelectorAll('.lad-card[data-code]'));
     const activeCode = getCrewBday();
 
@@ -1094,17 +1125,26 @@
     if (!activeCode) {
       if (titleEl) titleEl.textContent = 'The Lads';
       if (subtitleEl) subtitleEl.textContent = 'Crew roll call is locked until login.';
+      if (customizer) customizer.style.display = 'none';
+      if (customizerMsg) {
+        customizerMsg.textContent = '';
+        customizerMsg.removeAttribute('data-code');
+      }
       return;
     }
 
-    const profile = crewPersonalizationByBday[activeCode] || {
-      title: 'Welcome Back, ' + getCrewDisplayName(activeCode),
-      subtitle: 'Crew mode is active. Keep the lads moving.',
-      role: 'Crew Member'
-    };
+    const profile = getCrewPersonalization(activeCode);
 
     if (titleEl) titleEl.textContent = profile.title;
     if (subtitleEl) subtitleEl.textContent = profile.subtitle;
+    if (customizer) customizer.style.display = 'block';
+    if (titleInput && document.activeElement !== titleInput) titleInput.value = profile.title;
+    if (subtitleInput && document.activeElement !== subtitleInput) subtitleInput.value = profile.subtitle;
+    if (roleInput && document.activeElement !== roleInput) roleInput.value = profile.role;
+    if (customizerMsg && customizerMsg.getAttribute('data-code') !== activeCode) {
+      customizerMsg.textContent = '';
+      customizerMsg.removeAttribute('data-code');
+    }
 
     const activeCard = document.querySelector('.lad-card[data-code="' + activeCode + '"]');
     if (!activeCard) return;
@@ -1112,6 +1152,49 @@
     activeCard.classList.add('current-user');
     const roleEl = activeCard.querySelector('.lad-role');
     if (roleEl && profile.role) roleEl.textContent = profile.role;
+  }
+
+  function saveMyCrewPersonalization() {
+    const activeCode = getCrewBday();
+    if (!activeCode) return;
+    const titleInput = document.getElementById('lads-custom-title');
+    const subtitleInput = document.getElementById('lads-custom-subtitle');
+    const roleInput = document.getElementById('lads-custom-role');
+    const msg = document.getElementById('lads-customizer-msg');
+    const base = getBaseCrewPersonalization(activeCode);
+
+    const title = sanitizeText(titleInput ? titleInput.value : '', 90) || base.title;
+    const subtitle = sanitizeText(subtitleInput ? subtitleInput.value : '', 180) || base.subtitle;
+    const role = sanitizeText(roleInput ? roleInput.value : '', 40) || base.role;
+
+    crewPersonalizationOverrides[activeCode] = {
+      title: title,
+      subtitle: subtitle,
+      role: role
+    };
+    saveCrewPersonalizationOverrides();
+    updateLadsPersonalization();
+    if (msg) {
+      msg.textContent = 'Saved. This profile will load every time you log in.';
+      msg.style.color = 'var(--gold)';
+      msg.setAttribute('data-code', activeCode);
+    }
+  }
+
+  function resetMyCrewPersonalization() {
+    const activeCode = getCrewBday();
+    if (!activeCode) return;
+    const msg = document.getElementById('lads-customizer-msg');
+    if (Object.prototype.hasOwnProperty.call(crewPersonalizationOverrides, activeCode)) {
+      delete crewPersonalizationOverrides[activeCode];
+      saveCrewPersonalizationOverrides();
+    }
+    updateLadsPersonalization();
+    if (msg) {
+      msg.textContent = 'Reset to default profile for this crew member.';
+      msg.style.color = 'var(--gold)';
+      msg.setAttribute('data-code', activeCode);
+    }
   }
 
   function updateCrewAccess() {

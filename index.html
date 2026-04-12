@@ -103,6 +103,19 @@
 <section id="trip-schedule-section">
   <h2 class="section-title fade-in" id="lads-title">The Lads</h2>
   <p class="lads-subtitle fade-in" id="lads-subtitle">Crew roll call is locked until login.</p>
+  <div class="lads-customizer fade-in" id="lads-customizer" style="display:none;">
+    <h3>My Crew Profile</h3>
+    <div class="lads-customizer-row">
+      <input type="text" id="lads-custom-title" placeholder="Your personal heading">
+      <input type="text" id="lads-custom-role" placeholder="Your role label">
+    </div>
+    <textarea id="lads-custom-subtitle" rows="2" placeholder="Your personal subtitle"></textarea>
+    <div class="lads-customizer-actions">
+      <button type="button" class="btn btn-gold btn-sm" onclick="saveMyCrewPersonalization()">Save My Profile</button>
+      <button type="button" class="btn btn-outline-light btn-sm" onclick="resetMyCrewPersonalization()">Reset</button>
+    </div>
+    <p id="lads-customizer-msg"></p>
+  </div>
   <div class="lads-grid">
     <div class="lad-card fade-in" data-code="180997" data-default-role="Best Man"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Best Man</div></div>
     <div class="lad-card fade-in" data-code="230997" data-default-role="Lad"><div class="lad-avatar">EP</div><div class="lad-name">Emmanuel Pascual</div><div class="lad-role">Lad</div></div>
