@@ -1155,6 +1155,10 @@
       saveJSON('packingChecked', packingChecked);
       saveCrewPersonalizationOverrides();
       refreshChallengeUiFromState();
+      if (getCrewBday() && !isAllowedCrewBday(getCrewBday())) {
+        setCrewBday('');
+      }
+      updateCrewAccess();
       return true;
     } catch (e) {
       return false;
@@ -1185,6 +1189,10 @@
         });
       });
       crewAliasToCode = nextAliasMap;
+      if (getCrewBday() && !isAllowedCrewBday(getCrewBday())) {
+        setCrewBday('');
+      }
+      updateCrewAccess();
       return true;
     } catch (e) {
       return false;
@@ -1644,6 +1652,7 @@
   }
 
   function approveSiteChangeSuggestion(id) {
+    if (!requireAdminSession()) return;
     const index = pendingSiteChangeSuggestions.findIndex(item => item.id === id);
     if (index === -1) return;
     const entry = pendingSiteChangeSuggestions.splice(index, 1)[0];
@@ -1654,6 +1663,8 @@
   }
 
   function rejectSiteChangeSuggestion(id) {
+    if (!requireAdminSession()) return;
+    if (!confirmModerationAction('Reject this site change suggestion?')) return;
     pendingSiteChangeSuggestions = pendingSiteChangeSuggestions.filter(item => item.id !== id);
     saveChallengeData();
     displayPendingSiteChangeSuggestions();
@@ -1831,6 +1842,7 @@
   }
 
   function approveActivitySuggestion(id) {
+    if (!requireAdminSession()) return;
     var index = pendingActivitySuggestions.findIndex(function (i) { return i.id === id; });
     if (index === -1) return;
     var entry = pendingActivitySuggestions.splice(index, 1)[0];
@@ -1842,6 +1854,8 @@
   }
 
   function rejectActivitySuggestion(id) {
+    if (!requireAdminSession()) return;
+    if (!confirmModerationAction('Reject this activity suggestion?')) return;
     pendingActivitySuggestions = pendingActivitySuggestions.filter(function (i) { return i.id !== id; });
     saveChallengeData();
     displayPendingActivitySuggestions();
@@ -2001,6 +2015,7 @@
   }
 
   function approveScheduleSuggestion(id) {
+    if (!requireAdminSession()) return;
     const index = pendingScheduleSuggestions.findIndex(item => item.id === id);
     if (index === -1) return;
     const entry = pendingScheduleSuggestions.splice(index, 1)[0];
@@ -2011,6 +2026,8 @@
   }
 
   function rejectScheduleSuggestion(id) {
+    if (!requireAdminSession()) return;
+    if (!confirmModerationAction('Reject this schedule suggestion?')) return;
     pendingScheduleSuggestions = pendingScheduleSuggestions.filter(item => item.id !== id);
     saveChallengeData();
     displayPendingScheduleSuggestions();
@@ -2063,8 +2080,7 @@
   }
 
   function accessApproval() {
-    const crew = getCrewBday();
-    if (crew !== bmBday) {
+    if (!isAdminSessionActive()) {
       showToast('Admin access is for Joshua only.', 3000);
       return;
     }
@@ -2076,7 +2092,24 @@
     displayPendingSiteChangeSuggestions();
   }
 
+  function isAdminSessionActive() {
+    const crew = getCrewBday();
+    return crew === bmBday && isAllowedCrewBday(crew);
+  }
+
+  function requireAdminSession() {
+    if (isAdminSessionActive()) return true;
+    showToast('Admin access is for Joshua only.', 3000);
+    return false;
+  }
+
+  function confirmModerationAction(message) {
+    if (typeof window === 'undefined' || typeof window.confirm !== 'function') return true;
+    return window.confirm(message);
+  }
+
   function displayJoshuaApprovalList() {
+    if (!isAdminSessionActive()) return;
     const container = document.getElementById('joshua-approval-list');
     if (!container) return;
     clearElement(container);
@@ -2118,8 +2151,7 @@
   }
 
   function addCrewCodeByJoshua() {
-    const crew = getCrewBday();
-    if (crew !== bmBday) return;
+    if (!requireAdminSession()) return;
     const input = document.getElementById('approval-new-code');
     const msg = document.getElementById('approval-code-msg');
     if (!input || !msg) return;
@@ -2150,9 +2182,8 @@
   }
 
   function removeCrewCodeByJoshua(code) {
-    const crew = getCrewBday();
     const msg = document.getElementById('approval-code-msg');
-    if (crew !== bmBday) return;
+    if (!requireAdminSession()) return;
     if (!allowedCrewBdays.has(code)) return;
     allowedCrewBdays.delete(code);
     saveAllowedCrewCodes();
@@ -2310,7 +2341,7 @@
     }
     const loggedIn = crewBday && crewBday !== '';
     const isGroom = crewBday === groomBday;
-    const isAdmin = crewBday === bmBday;
+    const isAdmin = isAdminSessionActive();
     const groomUnlockDate = new Date('2026-05-03T09:50:00').getTime();
     const groomUnlocked = isGroom && Date.now() >= groomUnlockDate;
     const canViewSchedule = !!loggedIn && (isAdmin || !isGroom || groomUnlocked);
@@ -2415,6 +2446,13 @@
     }
     clearLoginFailures();
     setCrewBday(bday);
+    if (!isAllowedCrewBday(getCrewBday())) {
+      setCrewBday('');
+      msg.textContent = 'Access code not recognized. Ask Joshua to add it.';
+      msg.style.color = '#C9382A';
+      shakeLoginBox();
+      return;
+    }
     bdayField.value = '';
     var isAdmin = bday === bmBday;
     if (bday === groomBday) {
@@ -2443,6 +2481,19 @@
   }
 
   function crewLogout() {
+    const activeCode = getCrewBday();
+    if (activeCode) {
+      Object.keys(challengeVoteLog).forEach(function (key) {
+        if (key.indexOf(activeCode + ':') === 0) delete challengeVoteLog[key];
+      });
+      Object.keys(challengeReportLog).forEach(function (key) {
+        if (key.indexOf(activeCode + ':') === 0) delete challengeReportLog[key];
+      });
+      Object.keys(activityVoteLog).forEach(function (key) {
+        if (key.indexOf(activeCode + ':') === 0) delete activityVoteLog[key];
+      });
+      saveChallengeData();
+    }
     setCrewBday('');
     applyTripDetails({});
     const msg = document.getElementById('crew-login-msg');
@@ -2507,6 +2558,7 @@
   }
 
   function approveChallenge(id) {
+    if (!requireAdminSession()) return;
     const index = pendingChallenges.findIndex(item => item.id === id);
     if (index === -1) return;
     const challenge = pendingChallenges.splice(index, 1)[0];
@@ -2517,6 +2569,8 @@
   }
 
   function rejectChallenge(id) {
+    if (!requireAdminSession()) return;
+    if (!confirmModerationAction('Reject this challenge suggestion?')) return;
     pendingChallenges = pendingChallenges.filter(item => item.id !== id);
     saveChallengeData();
     displayPendingChallenges();
