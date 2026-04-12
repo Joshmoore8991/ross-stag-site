@@ -711,6 +711,99 @@
   }
   .text-center { text-align: center; }
   .mt-20 { margin-top: 20px; }
+
+  /* ── Poll Results ── */
+  .poll-row { margin: 10px 0; }
+  .poll-row-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    opacity: .85;
+    margin-bottom: 5px;
+  }
+  .poll-bar-track {
+    height: 10px;
+    width: 100%;
+    background: rgba(255,255,255,.08);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .poll-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--sun));
+    border-radius: 5px;
+    width: 0%;
+    transition: width .6s ease;
+  }
+  .light-theme .poll-bar-track { background: rgba(0,0,0,.08); }
+
+  /* ── Dynamic Card (JS-created panels) ── */
+  .dynamic-card {
+    border: 1px solid rgba(212,168,67,.2);
+    padding: 14px;
+    margin: 8px 0;
+    background: var(--dark);
+    border-radius: 10px;
+    transition: border-color .2s;
+  }
+  .dynamic-card:hover { border-color: rgba(212,168,67,.35); }
+  .dynamic-card-meta {
+    opacity: .7;
+    font-size: 12px;
+    margin: 4px 0;
+  }
+  .dynamic-card-text { opacity: .78; margin: 4px 0; }
+  .dynamic-card-score { opacity: .75; margin-bottom: 8px; }
+  .dynamic-card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* ── Packing Checklist ── */
+  .packing-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    transition: background .2s;
+    cursor: pointer;
+  }
+  .packing-item:hover { background: rgba(212,168,67,.06); }
+  .packing-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .packing-item label {
+    cursor: pointer;
+    font-size: 14px;
+    transition: opacity .2s;
+  }
+  .packing-item.checked label {
+    text-decoration: line-through;
+    opacity: .45;
+  }
+  .packing-progress {
+    font-size: 12px;
+    opacity: .6;
+    margin-bottom: 12px;
+    letter-spacing: .5px;
+  }
+
+  /* ── Countdown trip-started state ── */
+  .countdown.trip-active {
+    border-color: rgba(212,168,67,.35);
+    box-shadow: 0 8px 40px rgba(212,168,67,.15);
+  }
+  .countdown.trip-complete .countdown-num {
+    color: var(--accent);
+  }
+  .countdown.trip-complete .countdown-label {
+    color: var(--gold);
+    opacity: 1;
+    font-weight: 600;
+  }
   button:active {
     transform: scale(0.97) !important;
   }
@@ -1029,7 +1122,7 @@
     background: rgba(255,255,255,.08);
     box-shadow: 0 0 16px rgba(212,168,67,.2);
   }
-  #login-overlay button {
+  #login-overlay .login-submit-btn {
     width: 100%;
     padding: 14px;
     border: none;
@@ -1042,7 +1135,7 @@
     font-size: 15px;
     letter-spacing: 0.5px;
   }
-  #login-overlay button:hover {
+  #login-overlay .login-submit-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(212,168,67,.4);
   }

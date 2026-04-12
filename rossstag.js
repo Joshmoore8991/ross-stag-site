@@ -1,7 +1,13 @@
 ﻿  const target = new Date('2026-05-03T06:10:00').getTime();
   function tick() {
+    const cdEl = document.querySelector('.countdown');
     const diff = target - Date.now();
-    if (diff < 0) { ['days','hours','mins','secs'].forEach(id => document.getElementById(id).textContent = '00'); return; }
+    if (diff < 0) {
+      ['days','hours','mins','secs'].forEach(id => document.getElementById(id).textContent = '00');
+      if (cdEl) { cdEl.classList.remove('trip-active'); cdEl.classList.add('trip-complete'); }
+      return;
+    }
+    if (cdEl && diff < 7 * 864e5) { cdEl.classList.add('trip-active'); }
     document.getElementById('days').textContent = String(Math.floor(diff/864e5)).padStart(2,'0');
     document.getElementById('hours').textContent = String(Math.floor((diff%864e5)/36e5)).padStart(2,'0');
     document.getElementById('mins').textContent = String(Math.floor((diff%36e5)/6e4)).padStart(2,'0');
@@ -492,7 +498,15 @@
       'Give a 30-second speech about the groom.',
       'Swap seats with the person opposite for 10 minutes.',
       'Hand over your phone for one playlist song.',
-      'Order chips for the table.'
+      'Order chips for the table.',
+      'Wear your shirt inside-out for the next round.',
+      'Post a selfie with a stranger to the group chat.',
+      'Do a lap of the bar on your knees.',
+      'Let the group send one text from your phone.',
+      'Speak only in Spanish for the next 10 minutes.',
+      'Serenade the groom with a love ballad.',
+      'Give a piggyback to the nearest lad.',
+      'Down a glass of water – hydration punishment.'
     ];
     const chosen = punishments[Math.floor(Math.random() * punishments.length)];
     punishmentHistory.unshift(chosen);
@@ -769,11 +783,7 @@
     pendingSiteChangeSuggestions
       .sort((a, b) => b.createdAt - a.createdAt)
       .forEach(item => {
-        const div = document.createElement('div');
-        div.style.border = '1px solid rgba(212,168,67,.3)';
-        div.style.padding = '12px';
-        div.style.margin = '8px 0';
-        div.style.background = 'var(--dark)';
+        const div = makeCard();
 
         const title = document.createElement('p');
         const strong = document.createElement('strong');
@@ -782,12 +792,12 @@
         div.appendChild(title);
 
         const sectionLine = document.createElement('p');
-        sectionLine.style.opacity = '.75';
+        sectionLine.className = 'dynamic-card-meta';
         sectionLine.textContent = 'Section: ' + item.sectionName + ' • by ' + item.suggestedBy;
         div.appendChild(sectionLine);
 
         const details = document.createElement('p');
-        details.style.opacity = '.75';
+        details.className = 'dynamic-card-text';
         details.textContent = item.details;
         div.appendChild(details);
 
@@ -802,17 +812,19 @@
           div.appendChild(linkWrap);
         }
 
-        div.appendChild(makeActionButton(
+        const actions = document.createElement('div');
+        actions.className = 'dynamic-card-actions';
+        actions.appendChild(makeActionButton(
           'Approve',
-          'btn btn-approve btn-sm mr-6',
+          'btn btn-approve btn-sm',
           function () { approveSiteChangeSuggestion(item.id); }
         ));
-
-        div.appendChild(makeActionButton(
+        actions.appendChild(makeActionButton(
           'Reject',
           'btn btn-danger btn-sm',
           function () { rejectSiteChangeSuggestion(item.id); }
         ));
+        div.appendChild(actions);
 
         container.appendChild(div);
       });
@@ -851,11 +863,7 @@
     approvedSiteChangeSuggestions
       .sort((a, b) => b.createdAt - a.createdAt)
       .forEach(item => {
-        const card = document.createElement('div');
-        card.style.border = '1px solid rgba(212,168,67,.2)';
-        card.style.padding = '12px';
-        card.style.margin = '8px 0';
-        card.style.background = 'var(--dark)';
+        const card = makeCard();
 
         const title = document.createElement('p');
         const strong = document.createElement('strong');
@@ -864,12 +872,12 @@
         card.appendChild(title);
 
         const sectionLine = document.createElement('p');
-        sectionLine.style.opacity = '.75';
+        sectionLine.className = 'dynamic-card-meta';
         sectionLine.textContent = 'Section: ' + item.sectionName + ' • by ' + item.suggestedBy;
         card.appendChild(sectionLine);
 
         const details = document.createElement('p');
-        details.style.opacity = '.75';
+        details.className = 'dynamic-card-text';
         details.textContent = item.details;
         card.appendChild(details);
 
@@ -901,11 +909,7 @@
     pendingScheduleSuggestions
       .sort((a, b) => b.createdAt - a.createdAt)
       .forEach(item => {
-        const div = document.createElement('div');
-        div.style.border = '1px solid rgba(212,168,67,.3)';
-        div.style.padding = '12px';
-        div.style.margin = '8px 0';
-        div.style.background = 'var(--dark)';
+        const div = makeCard();
 
         const title = document.createElement('p');
         const strong = document.createElement('strong');
@@ -914,13 +918,12 @@
         div.appendChild(title);
 
         const meta = document.createElement('p');
-        meta.style.opacity = '.7';
-        meta.style.fontSize = '12px';
+        meta.className = 'dynamic-card-meta';
         meta.textContent = item.day + ' • ' + item.time + ' • by ' + item.suggestedBy;
         div.appendChild(meta);
 
         const details = document.createElement('p');
-        details.style.opacity = '.75';
+        details.className = 'dynamic-card-text';
         details.textContent = item.details;
         div.appendChild(details);
 
@@ -935,17 +938,19 @@
           div.appendChild(linkWrap);
         }
 
-        div.appendChild(makeActionButton(
+        const actions = document.createElement('div');
+        actions.className = 'dynamic-card-actions';
+        actions.appendChild(makeActionButton(
           'Approve',
-          'btn btn-approve btn-sm mr-6',
+          'btn btn-approve btn-sm',
           function () { approveScheduleSuggestion(item.id); }
         ));
-
-        div.appendChild(makeActionButton(
+        actions.appendChild(makeActionButton(
           'Reject',
           'btn btn-danger btn-sm',
           function () { rejectScheduleSuggestion(item.id); }
         ));
+        div.appendChild(actions);
 
         container.appendChild(div);
       });
@@ -1042,12 +1047,10 @@
       .forEach(code => rows.push({ label: 'Crew Member', code: code, note: 'Crew access', removable: true }));
 
     rows.forEach(item => {
-      const row = document.createElement('div');
+      const row = makeCard();
       row.style.display = 'flex';
       row.style.justifyContent = 'space-between';
       row.style.alignItems = 'center';
-      row.style.margin = '6px 0';
-      row.style.opacity = '.88';
 
       const text = document.createElement('span');
       text.textContent = item.label + ': ' + item.code + ' - ' + item.note;
@@ -1325,6 +1328,12 @@
 
   updateCrewAccess();
 
+  function makeCard() {
+    const div = document.createElement('div');
+    div.className = 'dynamic-card';
+    return div;
+  }
+
   function displayPendingChallenges() {
     const container = document.getElementById('pending-challenges');
     if (!container) return;
@@ -1334,11 +1343,7 @@
       return;
     }
     pendingChallenges.forEach(item => {
-      const div = document.createElement('div');
-      div.style.border = '1px solid rgba(212,168,67,.3)';
-      div.style.padding = '12px';
-      div.style.margin = '8px 0';
-      div.style.background = 'var(--dark)';
+      const div = makeCard();
 
       const title = document.createElement('p');
       const strong = document.createElement('strong');
@@ -1347,27 +1352,28 @@
       div.appendChild(title);
 
       const meta = document.createElement('p');
-      meta.style.opacity = '.7';
-      meta.style.fontSize = '12px';
+      meta.className = 'dynamic-card-meta';
       meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + item.suggestedBy;
       div.appendChild(meta);
 
       const notes = document.createElement('p');
-      notes.style.opacity = '.75';
+      notes.className = 'dynamic-card-text';
       notes.textContent = item.notes || 'No extra notes.';
       div.appendChild(notes);
 
-      div.appendChild(makeActionButton(
+      const actions = document.createElement('div');
+      actions.className = 'dynamic-card-actions';
+      actions.appendChild(makeActionButton(
         'Approve',
-        'btn btn-approve btn-sm mr-6',
+        'btn btn-approve btn-sm',
         function () { approveChallenge(item.id); }
       ));
-
-      div.appendChild(makeActionButton(
+      actions.appendChild(makeActionButton(
         'Reject',
         'btn btn-danger btn-sm',
         function () { rejectChallenge(item.id); }
       ));
+      div.appendChild(actions);
 
       container.appendChild(div);
     });
@@ -1401,11 +1407,7 @@
       return;
     }
     visibleChallenges.forEach(item => {
-      const div = document.createElement('div');
-      div.style.border = '1px solid rgba(212,168,67,.3)';
-      div.style.padding = '12px';
-      div.style.margin = '8px 0';
-      div.style.background = 'var(--dark)';
+      const div = makeCard();
 
       const title = document.createElement('p');
       const strong = document.createElement('strong');
@@ -1414,39 +1416,38 @@
       div.appendChild(title);
 
       const meta = document.createElement('p');
-      meta.style.opacity = '.7';
-      meta.style.fontSize = '12px';
+      meta.className = 'dynamic-card-meta';
       meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + item.suggestedBy;
       div.appendChild(meta);
 
       const notes = document.createElement('p');
-      notes.style.opacity = '.75';
+      notes.className = 'dynamic-card-text';
       notes.textContent = item.notes || 'No extra notes.';
       div.appendChild(notes);
 
       const score = document.createElement('p');
-      score.style.opacity = '.75';
-      score.style.marginBottom = '8px';
+      score.className = 'dynamic-card-score';
       score.textContent = 'Score: ' + (item.votes || 0) + ' • Reports: ' + (item.reports || 0);
       div.appendChild(score);
 
-      div.appendChild(makeActionButton(
+      const actions = document.createElement('div');
+      actions.className = 'dynamic-card-actions';
+      actions.appendChild(makeActionButton(
         '👍',
-        'btn btn-gold btn-sm mr-6',
+        'btn btn-gold btn-sm',
         function () { voteChallenge(item.id, 1); }
       ));
-
-      div.appendChild(makeActionButton(
+      actions.appendChild(makeActionButton(
         '👎',
-        'btn btn-outline-light btn-sm mr-6',
+        'btn btn-outline-light btn-sm',
         function () { voteChallenge(item.id, -1); }
       ));
-
-      div.appendChild(makeActionButton(
+      actions.appendChild(makeActionButton(
         'Report',
         'btn btn-danger btn-sm',
         function () { reportChallenge(item.id); }
       ));
+      div.appendChild(actions);
 
       container.appendChild(div);
     });
@@ -1548,7 +1549,7 @@
     board.appendChild(lead);
 
     const pendingTitle = document.createElement('p');
-    pendingTitle.style.opacity = '.8';
+    pendingTitle.className = 'dynamic-card-text';
     pendingTitle.textContent = 'Pending Missions';
     board.appendChild(pendingTitle);
     if (!pending.length) {
@@ -1558,11 +1559,7 @@
       board.appendChild(none);
     }
     pending.forEach(item => {
-      const row = document.createElement('div');
-      row.style.border = '1px solid rgba(212,168,67,.25)';
-      row.style.padding = '10px';
-      row.style.margin = '8px 0';
-      row.style.background = 'var(--dark)';
+      const row = makeCard();
       const t = document.createElement('p');
       const titleStrong = document.createElement('strong');
       titleStrong.textContent = item.title;
@@ -1570,8 +1567,7 @@
       t.appendChild(document.createTextNode(' (' + item.points + ' pts)'));
       row.appendChild(t);
       const m = document.createElement('p');
-      m.style.opacity = '.7';
-      m.style.fontSize = '12px';
+      m.className = 'dynamic-card-meta';
       m.textContent = 'Assigned to ' + (item.team === 'A' ? teamBattle.nameA : teamBattle.nameB);
       row.appendChild(m);
       row.appendChild(makeActionButton(
@@ -1583,7 +1579,7 @@
     });
 
     const doneTitle = document.createElement('p');
-    doneTitle.style.opacity = '.8';
+    doneTitle.className = 'dynamic-card-text';
     doneTitle.style.marginTop = '10px';
     doneTitle.textContent = 'Completed Missions';
     board.appendChild(doneTitle);
@@ -1596,7 +1592,7 @@
     }
     done.slice(0, 8).forEach(item => {
       const row = document.createElement('p');
-      row.style.opacity = '.7';
+      row.className = 'dynamic-card-score';
       row.textContent = '✓ ' + item.title + ' (' + item.points + ' pts to ' + (item.team === 'A' ? teamBattle.nameA : teamBattle.nameB) + ')';
       board.appendChild(row);
     });
@@ -1678,7 +1674,7 @@
     crewMembers.forEach(function (name) {
       const val = Number(balances[name] || 0);
       const row = document.createElement('p');
-      row.style.opacity = '.75';
+      row.className = 'dynamic-card-text';
       row.textContent = name + ': ' + (val >= 0 ? 'gets back £' : 'owes £') + Math.abs(val).toFixed(2);
       summary.appendChild(row);
     });
@@ -1693,11 +1689,7 @@
     }
 
     expenseEntries.slice(0, 20).forEach(function (item) {
-      const row = document.createElement('div');
-      row.style.border = '1px solid rgba(212,168,67,.2)';
-      row.style.padding = '10px';
-      row.style.margin = '8px 0';
-      row.style.background = 'var(--dark)';
+      const row = makeCard();
       const text = document.createElement('p');
       const payerStrong = document.createElement('strong');
       payerStrong.textContent = item.payer;
@@ -1769,31 +1761,22 @@
       const percent = total ? Math.round((count / total) * 100) : 0;
 
       const row = document.createElement('div');
-      row.style.margin = '8px 0';
+      row.className = 'poll-row';
       const header = document.createElement('div');
-      header.style.display = 'flex';
-      header.style.justifyContent = 'space-between';
-      header.style.fontSize = '13px';
-      header.style.opacity = '.8';
-      header.style.marginBottom = '4px';
+      header.className = 'poll-row-header';
 
       const label = document.createElement('span');
       label.textContent = opt.label;
       const voteLabel = document.createElement('span');
-      voteLabel.textContent = count + ' vote' + (count === 1 ? '' : 's');
+      voteLabel.textContent = count + ' vote' + (count === 1 ? '' : 's') + ' (' + percent + '%)';
       header.appendChild(label);
       header.appendChild(voteLabel);
 
       const track = document.createElement('div');
-      track.style.height = '10px';
-      track.style.width = '100%';
-      track.style.background = 'rgba(255,255,255,.08)';
-      track.style.borderRadius = '5px';
+      track.className = 'poll-bar-track';
       const fill = document.createElement('div');
-      fill.style.height = '100%';
-      fill.style.width = percent + '%';
-      fill.style.background = 'var(--gold)';
-      fill.style.borderRadius = '5px';
+      fill.className = 'poll-bar-fill';
+      requestAnimationFrame(function () { fill.style.width = percent + '%'; });
       track.appendChild(fill);
 
       row.appendChild(header);
@@ -1849,7 +1832,15 @@
     "High-five everyone and say 'Vamos!'",
     "Order a round for the table.",
     "Dance like nobody's watching for 30 seconds.",
-    "Share your worst hangover story."
+    "Share your worst hangover story.",
+    "Swap drinks with the person on your left.",
+    "Everyone drinks while the groom tells a childhood secret.",
+    "Last person to touch their nose drinks.",
+    "Name three things the groom can't live without – wrong answers only.",
+    "Take a sip every time someone says 'Barcelona'.",
+    "Do your best impression of the groom – group votes, loser drinks.",
+    "Text someone 'I love you' and show the reply – or drink.",
+    "Everyone votes: who's most likely to get lost tonight? That person drinks."
   ];
   function getDrinkingChallenge() {
     const random = drinkingChallenges[Math.floor(Math.random() * drinkingChallenges.length)];
@@ -1865,7 +1856,15 @@
     { title: "Eat something spicy without drinking water.", type: "Drinking", difficulty: "Medium", notes: "No tap-out." },
     { title: "Tell a joke that makes everyone laugh.", type: "Chill", difficulty: "Easy", notes: "Crowd decides." },
     { title: "Switch clothes with someone for 10 minutes.", type: "Team", difficulty: "Easy", notes: "Full swap." },
-    { title: "Propose a toast to the groom.", type: "Chill", difficulty: "Easy", notes: "Keep it heartfelt." }
+    { title: "Propose a toast to the groom.", type: "Chill", difficulty: "Easy", notes: "Keep it heartfelt." },
+    { title: "Get a stranger to take a group selfie with you.", type: "Dares", difficulty: "Easy", notes: "Bonus if they join a round." },
+    { title: "Carry the groom on your back for 30 metres.", type: "Team", difficulty: "Chaos", notes: "No dropping allowed." },
+    { title: "Recreate a famous movie scene on La Rambla.", type: "Dares", difficulty: "Medium", notes: "Group picks the film." },
+    { title: "Order food entirely in Spanish.", type: "Chill", difficulty: "Easy", notes: "Google translate counts." },
+    { title: "Do a conga line through the nearest bar.", type: "Team", difficulty: "Medium", notes: "Minimum 4 lads." },
+    { title: "Compose a freestyle rap about the groom.", type: "Dares", difficulty: "Medium", notes: "At least 8 bars." },
+    { title: "Dance battle: two lads, crowd picks the winner.", type: "Team", difficulty: "Chaos", notes: "Loser buys drinks." },
+    { title: "Hold a plank while the group finishes a pint.", type: "Team", difficulty: "Chaos", notes: "No knees allowed." }
   ];
 
   function getFilteredApprovedChallenges(includeShown) {
@@ -1915,7 +1914,15 @@
     "\"Barcelona nights, unforgettable sights.\"",
     "\"The groom's wallet is off-limits!\"",
     "\"Lads on tour: Maximum fun, zero regrets.\"",
-    "\"From Belfast to Barcelona: Let's go!\""
+    "\"From Belfast to Barcelona: Let's go!\"",
+    "\"What happens in Barcelona stays in Barcelona.\"",
+    "\"A best man's job is 10% speeches, 90% chaos.\"",
+    "\"Ross didn't choose this life. Joshua chose it for him.\"",
+    "\"May your sangria be cold and your stories be warm.\"",
+    "\"One last ride before the bride.\"",
+    "\"Six lads, one city, zero limits.\"",
+    "\"Somewhere between sunburn and sangria, legends are made.\"",
+    "\"The only rule: there are no rules. Except Ross pays.\""
   ];
   function getQuote() {
     const random = quotes[Math.floor(Math.random() * quotes.length)];
@@ -1930,23 +1937,33 @@
     const container = document.getElementById('packing-list');
     if (!container) return;
     const checked = loadJSON('packingChecked', {});
+    const total = packingItems.length;
+    const doneCount = packingItems.filter(item => checked[item]).length;
+
+    const progress = document.createElement('p');
+    progress.className = 'packing-progress';
+    progress.id = 'packing-progress';
+    progress.textContent = doneCount + ' / ' + total + ' packed' + (doneCount === total ? ' — Ready to go!' : '');
+    container.appendChild(progress);
+
     packingItems.forEach(item => {
       const div = document.createElement('div');
-      div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.margin = '5px 0';
+      div.className = 'packing-item' + (checked[item] ? ' checked' : '');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-      checkbox.id = item;
+      checkbox.id = 'pack-' + item.replace(/\s+/g, '-');
       checkbox.checked = checked[item] || false;
       checkbox.onchange = () => {
         checked[item] = checkbox.checked;
+        div.classList.toggle('checked', checkbox.checked);
         saveJSON('packingChecked', checked);
+        const updatedCount = packingItems.filter(i => checked[i]).length;
+        const prog = document.getElementById('packing-progress');
+        if (prog) prog.textContent = updatedCount + ' / ' + total + ' packed' + (updatedCount === total ? ' — Ready to go!' : '');
       };
       const label = document.createElement('label');
-      label.htmlFor = item;
+      label.htmlFor = checkbox.id;
       label.textContent = item;
-      label.style.marginLeft = '10px';
       div.appendChild(checkbox);
       div.appendChild(label);
       container.appendChild(div);
