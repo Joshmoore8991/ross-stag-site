@@ -391,6 +391,7 @@
 
   function saveCrewPersonalizationOverrides() {
     saveJSON('crewPersonalizationOverrides', crewPersonalizationOverrides);
+    queueChallengeStateSync(false);
   }
 
   let pendingChallenges = loadJSON('pendingChallenges', []);
@@ -581,6 +582,145 @@
     };
   }
 
+  function sanitizeMissionEntry(item) {
+    if (!item || typeof item !== 'object') return null;
+    const title = sanitizeText(item.title, 140);
+    const team = item.team === 'B' ? 'B' : 'A';
+    const points = clampNumber(item.points, 1, 10, 1);
+    if (title.length < 3) return null;
+    return {
+      id: sanitizeText(item.id, 64) || (Date.now().toString() + Math.random().toString(36).slice(2, 7)),
+      title: title,
+      points: points,
+      team: team,
+      completed: !!item.completed,
+      createdAt: clampNumber(item.createdAt, 0, 9999999999999, Date.now())
+    };
+  }
+
+  function sanitizeExpenseEntry(item) {
+    if (!item || typeof item !== 'object') return null;
+    const payerRaw = sanitizeText(item.payer, 40);
+    const payer = crewMembers.includes(payerRaw) ? payerRaw : crewMembers[0];
+    const amount = clampNumber(item.amount, 0.01, 100000, 0);
+    if (!amount) return null;
+    return {
+      id: sanitizeText(item.id, 64) || (Date.now().toString() + Math.random().toString(36).slice(2, 7)),
+      payer: payer,
+      amount: Math.round(amount * 100) / 100,
+      note: sanitizeText(item.note, 140) || 'General',
+      createdAt: clampNumber(item.createdAt, 0, 9999999999999, Date.now())
+    };
+  }
+
+  function sanitizeCompletedChallenges(list) {
+    if (!Array.isArray(list)) return [];
+    const out = [];
+    const seen = new Set();
+    list.forEach(function (item) {
+      const key = sanitizeText(item, 96);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      out.push(key);
+    });
+    return out.slice(0, MAX_SYNC_LOG_KEYS);
+  }
+
+  function sanitizePunishmentHistory(list) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .map(function (item) { return sanitizeText(item, 220); })
+      .filter(Boolean)
+      .slice(0, 25);
+  }
+
+  function sanitizeTeamBattle(value) {
+    const state = value && typeof value === 'object' ? value : {};
+    const assignment = state.currentAssignment && typeof state.currentAssignment === 'object'
+      ? state.currentAssignment
+      : null;
+    const cleanAssignment = assignment
+      ? {
+        team: assignment.team === 'B' ? 'B' : 'A',
+        teamName: sanitizeText(assignment.teamName, 40),
+        challengeKey: sanitizeText(assignment.challengeKey, 96),
+        challengeTitle: sanitizeText(assignment.challengeTitle, 140)
+      }
+      : null;
+    return {
+      nameA: sanitizeText(state.nameA, 40) || 'Team A',
+      nameB: sanitizeText(state.nameB, 40) || 'Team B',
+      scoreA: clampNumber(state.scoreA, 0, 9999, 0),
+      scoreB: clampNumber(state.scoreB, 0, 9999, 0),
+      currentAssignment: cleanAssignment
+    };
+  }
+
+  function sanitizePollBoardState(value) {
+    const fallback = {
+      selected: 'favorite',
+      polls: {
+        favorite: {
+          question: "What's your favorite part of stag dos?",
+          options: {
+            drinking: { label: 'Drinking Games', votes: 0 },
+            adventures: { label: 'Adventures & Activities', votes: 0 },
+            bonding: { label: 'Lads Bonding', votes: 0 },
+            surprises: { label: 'Surprises', votes: 0 }
+          }
+        }
+      }
+    };
+    const source = value && typeof value === 'object' ? value : {};
+    const sourcePolls = source.polls && typeof source.polls === 'object' ? source.polls : {};
+    const outPolls = {};
+    Object.entries(sourcePolls).slice(0, 15).forEach(function (entry) {
+      const pollKey = sanitizeText(entry[0], 40).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      const poll = entry[1] && typeof entry[1] === 'object' ? entry[1] : null;
+      if (!pollKey || !poll) return;
+      const options = {};
+      const optionEntries = poll.options && typeof poll.options === 'object' ? Object.entries(poll.options) : [];
+      optionEntries.slice(0, 12).forEach(function (optEntry) {
+        const optionKey = sanitizeText(optEntry[0], 40).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        const option = optEntry[1] && typeof optEntry[1] === 'object' ? optEntry[1] : null;
+        if (!optionKey || !option) return;
+        const label = sanitizeText(option.label, 80);
+        if (!label) return;
+        options[optionKey] = {
+          label: label,
+          votes: clampNumber(option.votes, 0, 100000, 0)
+        };
+      });
+      if (!Object.keys(options).length) return;
+      outPolls[pollKey] = {
+        question: sanitizeText(poll.question, 180) || 'Crew Poll',
+        options: options
+      };
+    });
+    const polls = Object.keys(outPolls).length ? outPolls : fallback.polls;
+    const selected = sanitizeText(source.selected, 40).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    return {
+      selected: polls[selected] ? selected : Object.keys(polls)[0],
+      polls: polls
+    };
+  }
+
+  function sanitizeCrewOverrides(value) {
+    const map = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const out = {};
+    Object.entries(map).forEach(function (entry) {
+      const code = normalizeCrewCode(entry[0]);
+      const data = entry[1] && typeof entry[1] === 'object' ? entry[1] : null;
+      if (!code || !isAllowedCrewBday(code) || !data) return;
+      out[code] = {
+        title: sanitizeText(data.title, 90),
+        subtitle: sanitizeText(data.subtitle, 180),
+        role: sanitizeText(data.role, 40)
+      };
+    });
+    return out;
+  }
+
   function sanitizeList(list, sanitizer) {
     if (!Array.isArray(list)) return [];
     const out = [];
@@ -611,7 +751,14 @@
       pendingActivitySuggestions: sanitizeList(state.pendingActivitySuggestions, sanitizeActivityEntry),
       approvedActivitySuggestions: sanitizeList(state.approvedActivitySuggestions, sanitizeActivityEntry),
       activitySubmissionLog: sanitizeLogMap(state.activitySubmissionLog, true),
-      activityVoteLog: sanitizeLogMap(state.activityVoteLog, true)
+      activityVoteLog: sanitizeLogMap(state.activityVoteLog, true),
+      completedChallengeIds: sanitizeCompletedChallenges(state.completedChallengeIds),
+      punishmentHistory: sanitizePunishmentHistory(state.punishmentHistory),
+      teamBattle: sanitizeTeamBattle(state.teamBattle),
+      missionBoard: sanitizeList(state.missionBoard, sanitizeMissionEntry),
+      expenseEntries: sanitizeList(state.expenseEntries, sanitizeExpenseEntry),
+      pollBoard: sanitizePollBoardState(state.pollBoard),
+      crewPersonalizationOverrides: sanitizeCrewOverrides(state.crewPersonalizationOverrides)
     };
   }
 
@@ -646,6 +793,7 @@
     saveJSON('missionBoard', missionBoard);
     saveJSON('expenseEntries', expenseEntries);
     saveJSON('pollBoard', pollBoard);
+    saveCrewPersonalizationOverrides();
     queueChallengeStateSync(false);
   }
 
@@ -665,7 +813,14 @@
       pendingActivitySuggestions: pendingActivitySuggestions,
       approvedActivitySuggestions: approvedActivitySuggestions,
       activitySubmissionLog: activitySubmissionLog,
-      activityVoteLog: activityVoteLog
+      activityVoteLog: activityVoteLog,
+      completedChallengeIds: completedChallengeIds,
+      punishmentHistory: punishmentHistory,
+      teamBattle: teamBattle,
+      missionBoard: missionBoard,
+      expenseEntries: expenseEntries,
+      pollBoard: pollBoard,
+      crewPersonalizationOverrides: crewPersonalizationOverrides
     });
   }
 
@@ -694,6 +849,26 @@
     approvedActivitySuggestions = safe.approvedActivitySuggestions;
     activitySubmissionLog = safe.activitySubmissionLog;
     activityVoteLog = safe.activityVoteLog;
+    completedChallengeIds = safe.completedChallengeIds;
+    punishmentHistory = safe.punishmentHistory;
+    teamBattle = safe.teamBattle;
+    missionBoard = safe.missionBoard;
+    expenseEntries = safe.expenseEntries;
+    pollBoard = safe.pollBoard;
+    crewPersonalizationOverrides = safe.crewPersonalizationOverrides;
+  }
+
+  function refreshChallengeUiFromState() {
+    updateTeamBattleUI();
+    renderMissionBoard();
+    populateExpensePayerOptions();
+    renderExpenseBoard();
+    renderPollBoard();
+    updateLadsPersonalization();
+    const result = document.getElementById('punishment-result');
+    const history = document.getElementById('punishment-history');
+    if (result) result.textContent = punishmentHistory.length ? punishmentHistory[0] : '';
+    if (history) history.textContent = punishmentHistory.length ? ('Recent: ' + punishmentHistory.join(' | ')) : '';
   }
 
   function getSupabaseChallengeEndpoint(query) {
@@ -791,6 +966,14 @@
       saveJSON('approvedActivitySuggestions', approvedActivitySuggestions);
       saveJSON('activitySubmissionLog', activitySubmissionLog);
       saveJSON('activityVoteLog', activityVoteLog);
+      saveJSON('completedChallengeIds', completedChallengeIds);
+      saveJSON('punishmentHistory', punishmentHistory);
+      saveJSON('teamBattle', teamBattle);
+      saveJSON('missionBoard', missionBoard);
+      saveJSON('expenseEntries', expenseEntries);
+      saveJSON('pollBoard', pollBoard);
+      saveCrewPersonalizationOverrides();
+      refreshChallengeUiFromState();
       return true;
     } catch (e) {
       return false;
@@ -2689,22 +2872,12 @@
     });
   }
   initPackingList();
-  updateTeamBattleUI();
-  renderMissionBoard();
-  populateExpensePayerOptions();
-  renderExpenseBoard();
-  renderPollBoard();
+  refreshChallengeUiFromState();
   loadCrewLoginProfilesFromCloud();
   loadChallengeStateFromCloud().then(function (loaded) {
     if (!loaded) return;
     updateCrewAccess();
   });
-  if (punishmentHistory.length) {
-    const result = document.getElementById('punishment-result');
-    const history = document.getElementById('punishment-history');
-    if (result) result.textContent = punishmentHistory[0];
-    if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
-  }
 
   window.addEventListener('beforeunload', function () {
     queueChallengeStateSync(true);
