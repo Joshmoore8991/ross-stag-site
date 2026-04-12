@@ -247,7 +247,7 @@
     '170997': 'Ross',
     '160698': 'Joshua',
     '230997': 'Emmanuel',
-    '270298': 'Kelan',
+    '270298': 'Kealen',
     '120398': 'Jack',
     '240598': 'Ciaran'
   };
@@ -255,7 +255,7 @@
     '170997': 'ross',
     '160698': 'joshua',
     '230997': 'emmanuel',
-    '270298': 'kelan',
+    '270298': 'kealen',
     '120398': 'jack',
     '240598': 'ciaran'
   };
@@ -276,7 +276,7 @@
       role: 'Vibes Captain'
     },
     '270298': {
-      title: 'Kelan Has Joined The Crew',
+      title: 'Kealen Has Joined The Crew',
       subtitle: 'Challenge engine activated. Keep the lads moving.',
       role: 'Challenge Specialist'
     },
@@ -299,8 +299,8 @@
     emmanuelpascual: '230997',
     ross: '170997',
     rosswightman: '170997',
-    kelan: '270298',
-    kelanboylan: '270298',
+    kealen: '270298',
+    kealenboylan: '270298',
     jack: '120398',
     jackdoherty: '120398',
     ciaran: '240598',
@@ -442,12 +442,26 @@
   let challengeVoteLog = loadJSON('challengeVoteLog', {});
   let challengeReportLog = loadJSON('challengeReportLog', {});
   let challengeSubmissionLog = loadJSON('challengeSubmissionLog', {});
-  const netlifyFunctionBase = '/.netlify/functions';
+  const supabaseUrlMeta = document.querySelector('meta[name="supabase-url"]');
+  const supabaseAnonKeyMeta = document.querySelector('meta[name="supabase-anon-key"]');
+  const supabaseUrlRaw = (typeof window !== 'undefined' && window.__SUPABASE_URL)
+    || (supabaseUrlMeta ? supabaseUrlMeta.getAttribute('content') : '')
+    || '';
+  const supabaseAnonKeyRaw = (typeof window !== 'undefined' && window.__SUPABASE_ANON_KEY)
+    || (supabaseAnonKeyMeta ? supabaseAnonKeyMeta.getAttribute('content') : '')
+    || '';
+  const supabaseUrl = sanitizeText(supabaseUrlRaw, 300).replace(/\/+$/, '');
+  const supabaseAnonKey = sanitizeText(supabaseAnonKeyRaw, 600);
+  const supabaseRestBase = supabaseUrl ? (supabaseUrl + '/rest/v1') : '';
   const challengeCloudSyncEnabled = typeof window !== 'undefined'
-    && /^https?:$/i.test(window.location.protocol || '');
+    && /^https?:$/i.test(window.location.protocol || '')
+    && !!supabaseRestBase
+    && !!supabaseAnonKey;
+  const challengeCloudPollIntervalMs = 4000;
   let challengeSyncInFlight = false;
   let challengeSyncQueued = false;
   let challengeSyncTimer = null;
+  let challengeCloudPollTimer = null;
   let lastChallengeSyncHash = '';
   let scheduleSubmissionLog = loadJSON('scheduleSubmissionLog', {});
   let siteChangeSubmissionLog = loadJSON('siteChangeSubmissionLog', {});
@@ -462,7 +476,27 @@
   let shownChallengeIds = [];
   let completedChallengeIds = loadJSON('completedChallengeIds', []);
   let punishmentHistory = loadJSON('punishmentHistory', []);
+  let challengeMetrics = loadJSON('challengeMetrics', {
+    generated: 0,
+    completed: 0,
+    skipped: 0,
+    expired: 0
+  });
+  let challengeHistory = loadJSON('challengeHistory', []);
+  let packingChecked = loadJSON('packingChecked', {});
   let currentChallenge = null;
+  let currentChallengeOutcome = '';
+  let currentChallengeDeadline = 0;
+  let currentChallengeLimitMinutes = 0;
+  let challengeTimerInterval = null;
+  let challengeTimerWarningSent = false;
+  let challengeTimerExpiredSent = false;
+  let challengeNotificationPermissionAttempted = false;
+  const challengeAutoTimeByDifficulty = {
+    Easy: 15,
+    Medium: 10,
+    Chaos: 7
+  };
   let teamBattle = loadJSON('teamBattle', {
     nameA: 'Team A',
     nameB: 'Team B',
@@ -470,7 +504,7 @@
     scoreB: 0,
     currentAssignment: null
   });
-  const crewMembers = ['Joshua', 'Emmanuel', 'Ross', 'Kelan', 'Jack', 'Ciaran'];
+  const crewMembers = ['Joshua', 'Emmanuel', 'Ross', 'Kealen', 'Jack', 'Ciaran'];
   let missionBoard = loadJSON('missionBoard', []);
   let expenseEntries = loadJSON('expenseEntries', []);
   let pollBoard = loadJSON('pollBoard', {
@@ -664,6 +698,31 @@
     return out.slice(0, MAX_SYNC_LOG_KEYS);
   }
 
+  function sanitizeChallengeMetrics(value) {
+    var source = value && typeof value === 'object' ? value : {};
+    return {
+      generated: clampNumber(source.generated, 0, 999999, 0),
+      completed: clampNumber(source.completed, 0, 999999, 0),
+      skipped: clampNumber(source.skipped, 0, 999999, 0),
+      expired: clampNumber(source.expired, 0, 999999, 0)
+    };
+  }
+
+  function sanitizeChallengeHistory(list) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .map(function (item) {
+        if (!item || typeof item !== 'object') return null;
+        return {
+          title: sanitizeText(item.title, 120),
+          outcome: sanitizeText(item.outcome, 20).toLowerCase(),
+          when: clampNumber(item.when, 0, 9999999999999, Date.now())
+        };
+      })
+      .filter(function (item) { return item && item.title; })
+      .slice(0, 12);
+  }
+
   function sanitizePunishmentHistory(list) {
     if (!Array.isArray(list)) return [];
     return list
@@ -759,6 +818,15 @@
     return out;
   }
 
+  function sanitizePackingState(value) {
+    const out = {};
+    const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    packingItems.forEach(function (item) {
+      out[item] = !!source[item];
+    });
+    return out;
+  }
+
   function sanitizeList(list, sanitizer) {
     if (!Array.isArray(list)) return [];
     const out = [];
@@ -796,7 +864,10 @@
       missionBoard: sanitizeList(state.missionBoard, sanitizeMissionEntry),
       expenseEntries: sanitizeList(state.expenseEntries, sanitizeExpenseEntry),
       pollBoard: sanitizePollBoardState(state.pollBoard),
-      crewPersonalizationOverrides: sanitizeCrewOverrides(state.crewPersonalizationOverrides)
+      crewPersonalizationOverrides: sanitizeCrewOverrides(state.crewPersonalizationOverrides),
+      challengeMetrics: sanitizeChallengeMetrics(state.challengeMetrics),
+      challengeHistory: sanitizeChallengeHistory(state.challengeHistory),
+      packingChecked: sanitizePackingState(state.packingChecked)
     };
   }
 
@@ -831,6 +902,9 @@
     saveJSON('missionBoard', missionBoard);
     saveJSON('expenseEntries', expenseEntries);
     saveJSON('pollBoard', pollBoard);
+    saveJSON('challengeMetrics', sanitizeChallengeMetrics(challengeMetrics));
+    saveJSON('challengeHistory', sanitizeChallengeHistory(challengeHistory));
+    saveJSON('packingChecked', packingChecked);
     saveCrewPersonalizationOverrides();
     queueChallengeStateSync(false);
   }
@@ -858,7 +932,10 @@
       missionBoard: missionBoard,
       expenseEntries: expenseEntries,
       pollBoard: pollBoard,
-      crewPersonalizationOverrides: crewPersonalizationOverrides
+      crewPersonalizationOverrides: crewPersonalizationOverrides,
+      challengeMetrics: challengeMetrics,
+      challengeHistory: challengeHistory,
+      packingChecked: packingChecked
     });
   }
 
@@ -894,6 +971,9 @@
     expenseEntries = safe.expenseEntries;
     pollBoard = safe.pollBoard;
     crewPersonalizationOverrides = safe.crewPersonalizationOverrides;
+    challengeMetrics = safe.challengeMetrics;
+    challengeHistory = safe.challengeHistory;
+    packingChecked = safe.packingChecked;
   }
 
   function refreshChallengeUiFromState() {
@@ -907,18 +987,16 @@
     const history = document.getElementById('punishment-history');
     if (result) result.textContent = punishmentHistory.length ? punishmentHistory[0] : '';
     if (history) history.textContent = punishmentHistory.length ? ('Recent: ' + punishmentHistory.join(' | ')) : '';
+    renderChallengeInsights();
+    initPackingList();
   }
 
-  function getFunctionEndpoint(name) {
-    return netlifyFunctionBase + '/' + name;
-  }
-
-  function getCrewAuthHeaders() {
+  function getSupabaseHeaders() {
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      apikey: supabaseAnonKey,
+      Authorization: 'Bearer ' + supabaseAnonKey
     };
-    const crewCode = getCrewBday();
-    if (crewCode) headers['x-crew-code'] = crewCode;
     return headers;
   }
 
@@ -966,18 +1044,18 @@
 
   async function loadTripDetailsFromCloud() {
     applyTripDetails({});
-    const crewCode = getCrewBday();
-    if (!crewCode) return false;
+    if (!challengeCloudSyncEnabled) return false;
     try {
-      const res = await fetch(getFunctionEndpoint('trip-details'), {
+      const res = await fetch(supabaseRestBase + '/trip_details?id=eq.1&select=details', {
         method: 'GET',
-        headers: Object.assign({}, getNoStoreHeaders(), getCrewAuthHeaders()),
+        headers: Object.assign({}, getNoStoreHeaders(), getSupabaseHeaders()),
         cache: 'no-store'
       });
       if (!res.ok) return false;
       const payload = await res.json();
-      if (!payload || !payload.ok || !payload.details) return false;
-      applyTripDetails(payload.details);
+      const row = Array.isArray(payload) ? payload[0] : null;
+      if (!row || !row.details || typeof row.details !== 'object') return false;
+      applyTripDetails(row.details);
       return true;
     } catch (e) {
       return false;
@@ -1006,18 +1084,24 @@
       return;
     }
     challengeSyncInFlight = true;
-    fetch(getFunctionEndpoint('challenge-state'), {
-      method: 'POST',
-      headers: getCrewAuthHeaders(),
-      body: JSON.stringify(payload)
+    fetch(supabaseRestBase + '/challenge_state?id=eq.1', {
+      method: 'PATCH',
+      headers: Object.assign({}, getNoStoreHeaders(), getSupabaseHeaders(), {
+        Prefer: 'return=representation'
+      }),
+      body: JSON.stringify({
+        state: payload,
+        updated_at: new Date().toISOString()
+      })
     })
       .then(function (res) {
         if (!res.ok) throw new Error('Sync failed');
         return res.json();
       })
       .then(function (body) {
-        if (!body || !body.ok || !body.state) return;
-        applyChallengeStatePayload(body.state);
+        const row = Array.isArray(body) ? body[0] : null;
+        if (!row || !row.state || typeof row.state !== 'object') return;
+        applyChallengeStatePayload(row.state);
         lastChallengeSyncHash = hashChallengePayload(getChallengeStatePayload());
       })
       .catch(function () {
@@ -1034,15 +1118,16 @@
   async function loadChallengeStateFromCloud() {
     if (!challengeCloudSyncEnabled) return false;
     try {
-      const res = await fetch(getFunctionEndpoint('challenge-state'), {
+      const res = await fetch(supabaseRestBase + '/challenge_state?id=eq.1&select=state', {
         method: 'GET',
-        headers: getNoStoreHeaders(),
+        headers: Object.assign({}, getNoStoreHeaders(), getSupabaseHeaders()),
         cache: 'no-store'
       });
       if (!res.ok) return false;
       const body = await res.json();
-      if (!body || !body.ok || !body.state) return false;
-      applyChallengeStatePayload(body.state);
+      const row = Array.isArray(body) ? body[0] : null;
+      if (!row || !row.state || typeof row.state !== 'object') return false;
+      applyChallengeStatePayload(row.state);
       lastChallengeSyncHash = hashChallengePayload(getChallengeStatePayload());
       saveJSON('pendingChallenges', pendingChallenges);
       saveJSON('approvedChallenges', approvedChallenges);
@@ -1065,6 +1150,9 @@
       saveJSON('missionBoard', missionBoard);
       saveJSON('expenseEntries', expenseEntries);
       saveJSON('pollBoard', pollBoard);
+      saveJSON('challengeMetrics', challengeMetrics);
+      saveJSON('challengeHistory', challengeHistory);
+      saveJSON('packingChecked', packingChecked);
       saveCrewPersonalizationOverrides();
       refreshChallengeUiFromState();
       return true;
@@ -1074,7 +1162,42 @@
   }
 
   async function loadCrewLoginProfilesFromCloud() {
-    return false;
+    if (!challengeCloudSyncEnabled) return false;
+    try {
+      const res = await fetch(supabaseRestBase + '/crew_login_profiles?select=crew_code,aliases,active', {
+        method: 'GET',
+        headers: Object.assign({}, getNoStoreHeaders(), getSupabaseHeaders()),
+        cache: 'no-store'
+      });
+      if (!res.ok) return false;
+      const rows = await res.json();
+      if (!Array.isArray(rows)) return false;
+      const nextAliasMap = Object.assign({}, defaultCrewAliasToCode);
+      rows.forEach(function (row) {
+        if (!row || row.active === false) return;
+        const code = normalizeCrewCode(row.crew_code);
+        if (!code || !isAllowedCrewBday(code)) return;
+        const aliases = Array.isArray(row.aliases) ? row.aliases : [];
+        aliases.forEach(function (alias) {
+          const key = normalizeCrewNameKey(alias);
+          if (!key) return;
+          nextAliasMap[key] = code;
+        });
+      });
+      crewAliasToCode = nextAliasMap;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function startChallengeCloudPolling() {
+    if (!challengeCloudSyncEnabled) return;
+    if (challengeCloudPollTimer) return;
+    challengeCloudPollTimer = setInterval(function () {
+      if (challengeSyncInFlight) return;
+      loadChallengeStateFromCloud();
+    }, challengeCloudPollIntervalMs);
   }
 
   function getChallengeKey(challenge) {
@@ -1151,6 +1274,12 @@
       msg.style.color = '#C9382A';
       return;
     }
+    if (currentChallengeDeadline && Date.now() > currentChallengeDeadline) {
+      msg.textContent = 'Time limit expired. Generate a new challenge.';
+      msg.style.color = '#C9382A';
+      updateChallengeTimerDisplay();
+      return;
+    }
     const key = getChallengeKey(currentChallenge);
     if (completedChallengeIds.includes(key)) {
       msg.textContent = 'Already marked completed.';
@@ -1164,9 +1293,11 @@
       teamBattle.currentAssignment = null;
       updateTeamBattleUI();
     }
+    recordChallengeOutcome('completed', currentChallenge);
     saveChallengeData();
     msg.textContent = 'Challenge marked complete.';
     msg.style.color = 'var(--gold)';
+    stopChallengeTimer('Challenge completed. Generate the next one.');
   }
 
   function spinPunishmentWheel() {
@@ -2876,14 +3007,240 @@
     return pool;
   }
 
+  function supportsBrowserNotifications() {
+    return typeof window !== 'undefined' && typeof Notification !== 'undefined';
+  }
+
+  function requestChallengeNotificationPermission() {
+    if (!supportsBrowserNotifications()) return;
+    if (Notification.permission !== 'default') return;
+    if (challengeNotificationPermissionAttempted) return;
+    challengeNotificationPermissionAttempted = true;
+    Notification.requestPermission().catch(function () {
+      // Ignore permission request failures and continue with in-page toasts.
+    });
+  }
+
+  function notifyChallengeTimer(title, body, tag) {
+    if (supportsBrowserNotifications() && Notification.permission === 'granted') {
+      try {
+        var note = new Notification(title, {
+          body: body,
+          tag: tag,
+          renotify: true,
+          silent: false
+        });
+        note.onclick = function () {
+          try {
+            window.focus();
+          } catch (e) {
+            // Focus may fail in some contexts.
+          }
+          note.close();
+        };
+        return;
+      } catch (e) {
+        // Fall through to toast fallback.
+      }
+    }
+    if (typeof showToast === 'function') showToast(body, 3500);
+  }
+
+  function getSelectedChallengeLimitMinutes(challenge) {
+    const limitSelect = document.getElementById('challenge-time-limit');
+    const selected = limitSelect ? String(limitSelect.value || 'auto') : 'auto';
+    if (selected !== 'auto') {
+      const direct = Number(selected);
+      if (Number.isFinite(direct) && direct > 0) return direct;
+    }
+    const difficulty = sanitizeText(challenge && challenge.difficulty, 24);
+    return challengeAutoTimeByDifficulty[difficulty] || 10;
+  }
+
+  function formatChallengeTimer(ms) {
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  }
+
+  function setChallengeTimerText(text, className) {
+    const el = document.getElementById('challenge-timer');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('challenge-timer-idle', 'challenge-timer-active', 'challenge-timer-warning', 'challenge-timer-expired');
+    el.classList.add(className || 'challenge-timer-idle');
+  }
+
+  function stopChallengeTimer(idleText) {
+    if (challengeTimerInterval) {
+      clearInterval(challengeTimerInterval);
+      challengeTimerInterval = null;
+    }
+    currentChallengeDeadline = 0;
+    currentChallengeLimitMinutes = 0;
+    challengeTimerWarningSent = false;
+    challengeTimerExpiredSent = false;
+    setChallengeTimerText(idleText || 'No active challenge timer.', 'challenge-timer-idle');
+  }
+
+  function formatOutcomeLabel(outcome) {
+    if (outcome === 'completed') return 'Completed';
+    if (outcome === 'skipped') return 'Skipped';
+    if (outcome === 'expired') return 'Expired';
+    return 'Updated';
+  }
+
+  function recordChallengeOutcome(outcome, challenge) {
+    if (!challenge || !outcome) return;
+    if (currentChallengeOutcome) return;
+    currentChallengeOutcome = outcome;
+
+    if (outcome === 'completed') challengeMetrics.completed += 1;
+    if (outcome === 'skipped') challengeMetrics.skipped += 1;
+    if (outcome === 'expired') challengeMetrics.expired += 1;
+
+    challengeHistory.unshift({
+      title: challenge.title,
+      outcome: outcome,
+      when: Date.now()
+    });
+    challengeHistory = sanitizeChallengeHistory(challengeHistory);
+    saveChallengeData();
+    renderChallengeInsights();
+  }
+
+  function renderChallengeInsights() {
+    challengeMetrics = sanitizeChallengeMetrics(challengeMetrics);
+    challengeHistory = sanitizeChallengeHistory(challengeHistory);
+
+    const insights = document.getElementById('challenge-insights');
+    const history = document.getElementById('challenge-history');
+    if (!insights || !history) return;
+
+    const generated = challengeMetrics.generated || 0;
+    const completed = challengeMetrics.completed || 0;
+    const skipped = challengeMetrics.skipped || 0;
+    const expired = challengeMetrics.expired || 0;
+    const resolved = completed + skipped + expired;
+    const completionRate = resolved ? Math.round((completed / resolved) * 100) : 0;
+
+    clearElement(insights);
+    var line1 = document.createElement('p');
+    line1.textContent = 'Generated: ' + generated + ' • Completed: ' + completed + ' • Completion rate: ' + completionRate + '%';
+    insights.appendChild(line1);
+    var line2 = document.createElement('p');
+    line2.textContent = 'Skipped: ' + skipped + ' • Expired: ' + expired;
+    insights.appendChild(line2);
+
+    clearElement(history);
+    var heading = document.createElement('div');
+    heading.className = 'challenge-history-title';
+    heading.textContent = 'Recent Outcomes';
+    history.appendChild(heading);
+
+    if (!challengeHistory.length) {
+      var empty = document.createElement('p');
+      empty.style.opacity = '.6';
+      empty.textContent = 'No challenge outcomes yet.';
+      history.appendChild(empty);
+      return;
+    }
+
+    challengeHistory.slice(0, 5).forEach(function (entry) {
+      var p = document.createElement('p');
+      p.textContent = formatOutcomeLabel(entry.outcome) + ': ' + entry.title;
+      history.appendChild(p);
+    });
+  }
+
+  function updateChallengeTimerDisplay() {
+    if (!currentChallenge || !currentChallengeDeadline) {
+      setChallengeTimerText('No active challenge timer.', 'challenge-timer-idle');
+      return;
+    }
+    const msLeft = currentChallengeDeadline - Date.now();
+    if (msLeft <= 0) {
+      setChallengeTimerText('Time expired for this challenge.', 'challenge-timer-expired');
+      if (!challengeTimerExpiredSent) {
+        challengeTimerExpiredSent = true;
+        recordChallengeOutcome('expired', currentChallenge);
+        notifyChallengeTimer('Challenge timer expired', 'Time is up for: ' + currentChallenge.title, 'challenge-expired');
+      }
+      return;
+    }
+
+    if (msLeft <= 60000 && !challengeTimerWarningSent) {
+      challengeTimerWarningSent = true;
+      notifyChallengeTimer('Challenge timer warning', '1 minute left: ' + currentChallenge.title, 'challenge-warning');
+    }
+
+    const formatted = formatChallengeTimer(msLeft);
+    if (msLeft <= 60000) {
+      setChallengeTimerText('Time left: ' + formatted + ' (final minute)', 'challenge-timer-warning');
+      return;
+    }
+    setChallengeTimerText('Time left: ' + formatted, 'challenge-timer-active');
+  }
+
+  function startChallengeTimer(challenge) {
+    if (challengeTimerInterval) {
+      clearInterval(challengeTimerInterval);
+      challengeTimerInterval = null;
+    }
+    currentChallengeLimitMinutes = getSelectedChallengeLimitMinutes(challenge);
+    currentChallengeDeadline = Date.now() + currentChallengeLimitMinutes * 60000;
+    currentChallengeOutcome = '';
+    challengeTimerWarningSent = false;
+    challengeTimerExpiredSent = false;
+    requestChallengeNotificationPermission();
+    updateChallengeTimerDisplay();
+    challengeTimerInterval = setInterval(updateChallengeTimerDisplay, 1000);
+  }
+
   function renderChallengeResult(challenge) {
+    if (currentChallenge && !currentChallengeOutcome && currentChallengeDeadline && Date.now() < currentChallengeDeadline) {
+      recordChallengeOutcome('skipped', currentChallenge);
+    }
     currentChallenge = challenge;
+    challengeMetrics.generated += 1;
+    saveChallengeData();
+    startChallengeTimer(challenge);
     const randomChallengeEl = document.getElementById('random-challenge');
     const randomMetaEl = document.getElementById('random-challenge-meta');
     if (randomChallengeEl) randomChallengeEl.textContent = challenge.title;
-    if (randomMetaEl) randomMetaEl.textContent = challenge.type + ' • ' + challenge.difficulty + (challenge.notes ? ' • ' + challenge.notes : '');
+    if (randomMetaEl) {
+      randomMetaEl.textContent = challenge.type + ' • ' + challenge.difficulty + ' • ' + currentChallengeLimitMinutes + ' min limit' + (challenge.notes ? ' • ' + challenge.notes : '');
+    }
     const msg = document.getElementById('challenge-complete-msg');
     if (msg) msg.textContent = '';
+    renderChallengeInsights();
+  }
+
+  function getChallengeWeight(challenge) {
+    var votes = Number(challenge && challenge.votes || 0);
+    var key = getChallengeKey(challenge);
+    var completedBoost = completedChallengeIds.includes(key) ? 0.7 : 1.2;
+    var voteBoost = Math.max(0.5, 1 + (votes * 0.2));
+    var difficultyBoost = challenge && challenge.difficulty === 'Chaos' ? 1.05 : 1;
+    return Math.max(0.2, voteBoost * completedBoost * difficultyBoost);
+  }
+
+  function pickWeightedChallenge(pool) {
+    if (!pool.length) return null;
+    var totalWeight = 0;
+    var weighted = pool.map(function (item) {
+      var weight = getChallengeWeight(item);
+      totalWeight += weight;
+      return { item: item, weight: weight };
+    });
+    if (totalWeight <= 0) return pool[Math.floor(Math.random() * pool.length)];
+    var pick = Math.random() * totalWeight;
+    for (var i = 0; i < weighted.length; i++) {
+      pick -= weighted[i].weight;
+      if (pick <= 0) return weighted[i].item;
+    }
+    return weighted[weighted.length - 1].item;
   }
 
   function getChallenge() {
@@ -2897,12 +3254,15 @@
       renderChallengeResult(fallback);
       return;
     }
-    const random = pool[Math.floor(Math.random() * pool.length)];
+    const random = pickWeightedChallenge(pool);
     shownChallengeIds.push(random.id);
     renderChallengeResult(random);
   }
 
   function skipChallenge() {
+    if (currentChallenge && !currentChallengeOutcome && currentChallengeDeadline && Date.now() < currentChallengeDeadline) {
+      recordChallengeOutcome('skipped', currentChallenge);
+    }
     getChallenge();
   }
 
@@ -2913,9 +3273,10 @@
   function initPackingList() {
     const container = document.getElementById('packing-list');
     if (!container) return;
-    const checked = loadJSON('packingChecked', {});
+    clearElement(container);
+    packingChecked = sanitizePackingState(packingChecked);
     const total = packingItems.length;
-    const doneCount = packingItems.filter(item => checked[item]).length;
+    const doneCount = packingItems.filter(item => packingChecked[item]).length;
 
     const progress = document.createElement('p');
     progress.className = 'packing-progress';
@@ -2925,16 +3286,16 @@
 
     packingItems.forEach(item => {
       const div = document.createElement('div');
-      div.className = 'packing-item' + (checked[item] ? ' checked' : '');
+      div.className = 'packing-item' + (packingChecked[item] ? ' checked' : '');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.id = 'pack-' + item.replace(/\s+/g, '-');
-      checkbox.checked = checked[item] || false;
+      checkbox.checked = packingChecked[item] || false;
       checkbox.onchange = () => {
-        checked[item] = checkbox.checked;
+        packingChecked[item] = checkbox.checked;
         div.classList.toggle('checked', checkbox.checked);
-        saveJSON('packingChecked', checked);
-        const updatedCount = packingItems.filter(i => checked[i]).length;
+        saveChallengeData();
+        const updatedCount = packingItems.filter(i => packingChecked[i]).length;
         const prog = document.getElementById('packing-progress');
         if (prog) prog.textContent = updatedCount + ' / ' + total + ' packed' + (updatedCount === total ? ' — Ready to go!' : '');
       };
@@ -2954,6 +3315,7 @@
     if (!loaded) return;
     updateCrewAccess();
   });
+  startChallengeCloudPolling();
 
   window.addEventListener('beforeunload', function () {
     queueChallengeStateSync(true);

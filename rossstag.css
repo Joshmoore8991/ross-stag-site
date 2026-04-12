@@ -762,6 +762,50 @@
   .dynamic-card-score { opacity: .75; margin-bottom: 8px; }
   .dynamic-card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 
+  .challenge-timer {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .challenge-timer-idle {
+    opacity: .55;
+  }
+  .challenge-timer-active {
+    color: var(--gold);
+    opacity: .95;
+  }
+  .challenge-timer-warning {
+    color: #F4A423;
+    opacity: 1;
+  }
+  .challenge-timer-expired {
+    color: var(--accent);
+    opacity: 1;
+  }
+  .challenge-insights,
+  .challenge-history {
+    margin-top: 10px;
+    text-align: left;
+    border: 1px solid rgba(212,168,67,.18);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.03);
+  }
+  .challenge-insights p,
+  .challenge-history p {
+    margin: 4px 0;
+    font-size: 13px;
+    opacity: .85;
+  }
+  .challenge-history-title {
+    font-size: 11px;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    opacity: .65;
+    margin-bottom: 6px;
+  }
+
   /* ── Packing Checklist ── */
   .packing-item {
     display: flex;

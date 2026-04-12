@@ -10,6 +10,7 @@ alter table public.challenge_state enable row level security;
 
 -- Ensure anonymous browser clients can use policies below.
 grant select on table public.challenge_state to anon;
+grant update on table public.challenge_state to anon;
 
 -- Recreate policies safely for repeatable setup runs.
 drop policy if exists "challenge_state_public_read" on public.challenge_state;
@@ -23,7 +24,12 @@ for select
 to anon
 using (true);
 
--- Writes are now handled through protected Netlify functions.
+create policy "challenge_state_public_update"
+on public.challenge_state
+for update
+to anon
+using (id = 1)
+with check (id = 1);
 
 -- Seed initial row used by the app.
 insert into public.challenge_state (id, state)
@@ -52,7 +58,7 @@ insert into public.crew_login_profiles (crew_code, aliases, active) values
   ('160698', array['josh', 'joshua', 'joshua moore', 'jm'], true),
   ('170997', array['ross', 'ross wightman', 'rw'], true),
   ('230997', array['emmanuel', 'emmanuel pascual', 'ep'], true),
-  ('270298', array['kelan', 'kelan boylan', 'kb'], true),
+  ('270298', array['kealen', 'kealen boylan', 'kb'], true),
   ('120398', array['jack', 'jack doherty', 'jd'], true),
   ('240598', array['ciaran', 'ciaran stone', 'cs'], true)
 on conflict (crew_code) do update
@@ -68,9 +74,15 @@ create table if not exists public.trip_details (
 );
 
 alter table public.trip_details enable row level security;
-revoke all on table public.trip_details from anon;
+grant select on table public.trip_details to anon;
 
 drop policy if exists "trip_details_public_read" on public.trip_details;
+
+create policy "trip_details_public_read"
+on public.trip_details
+for select
+to anon
+using (true);
 
 insert into public.trip_details (id, details)
 values (

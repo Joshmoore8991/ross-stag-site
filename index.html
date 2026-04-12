@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; font-src 'self' https: data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self';">
+<meta name="supabase-url" content="">
+<meta name="supabase-anon-key" content="">
 <meta name="description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun!">
 <meta name="theme-color" content="#0A0A0A">
 <title>BARCELONA STAG - May 2026</title>
@@ -124,7 +126,7 @@
     <div class="lad-card fade-in" data-member="joshua" data-default-role="Best Man"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Best Man</div></div>
     <div class="lad-card fade-in" data-member="emmanuel" data-default-role="Lad"><div class="lad-avatar">EP</div><div class="lad-name">Emmanuel Pascual</div><div class="lad-role">Lad</div></div>
     <div class="lad-card fade-in" data-member="ross" data-default-role="The Groom"><div class="lad-avatar">RW</div><div class="lad-name">Ross Wightman</div><div class="lad-role">The Groom</div></div>
-    <div class="lad-card fade-in" data-member="kelan" data-default-role="Lad"><div class="lad-avatar">KB</div><div class="lad-name">Kelan Boylan</div><div class="lad-role">Lad</div></div>
+    <div class="lad-card fade-in" data-member="kealen" data-default-role="Lad"><div class="lad-avatar">KB</div><div class="lad-name">Kealen Boylan</div><div class="lad-role">Lad</div></div>
     <div class="lad-card fade-in" data-member="jack" data-default-role="Lad"><div class="lad-avatar">JD</div><div class="lad-name">Jack Doherty</div><div class="lad-role">Lad</div></div>
     <div class="lad-card fade-in" data-member="ciaran" data-default-role="Lad"><div class="lad-avatar">CS</div><div class="lad-name">Ciaran Stone</div><div class="lad-role">Lad</div></div>
   </div>
@@ -653,12 +655,23 @@
       <option value="Medium">Medium</option>
       <option value="Chaos">Chaos</option>
     </select>
+    <select id="challenge-time-limit" class="form-input" aria-label="Challenge time limit">
+      <option value="auto">Auto time limit</option>
+      <option value="5">5 minutes</option>
+      <option value="10">10 minutes</option>
+      <option value="15">15 minutes</option>
+      <option value="20">20 minutes</option>
+      <option value="30">30 minutes</option>
+    </select>
     <button onclick="getChallenge()" class="btn btn-gold">Generate Challenge</button>
     <button onclick="skipChallenge()" class="btn btn-outline-gold ml-6">Skip</button>
     <button onclick="markChallengeComplete()" class="btn btn-outline-light ml-6">Mark Completed</button>
     <p id="random-challenge" style="margin-top:10px; font-weight:bold;"></p>
     <p id="random-challenge-meta" style="margin-top:6px; opacity:.6;"></p>
+    <p id="challenge-timer" class="challenge-timer challenge-timer-idle" aria-live="polite">No active challenge timer.</p>
     <p id="challenge-complete-msg" style="margin-top:6px; opacity:.7;"></p>
+    <div id="challenge-insights" class="challenge-insights" aria-live="polite"></div>
+    <div id="challenge-history" class="challenge-history" aria-live="polite"></div>
   </div>
 </section>
 

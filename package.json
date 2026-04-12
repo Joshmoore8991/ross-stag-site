@@ -1,8 +1,5 @@
 {
   "name": "rossstag-site",
   "private": true,
-  "version": "1.0.0",
-  "dependencies": {
-    "@netlify/blobs": "latest"
-  }
+  "version": "1.0.0"
 }
