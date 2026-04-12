@@ -16,11 +16,15 @@
 
 <div id="login-overlay" role="dialog" aria-modal="true" aria-labelledby="crew-login-title">
   <div class="login-box">
+    <div class="login-icon">&#x1F512;</div>
     <h2 id="crew-login-title">Crew Login</h2>
-    <p>Enter your crew access code to unlock the lads-only schedule and ideas board.</p>
-    <input type="password" id="crew-login-bday" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" aria-label="Crew access code">
-    <button type="button" onclick="crewLogin()">Unlock</button>
-    <p id="crew-login-msg" style="margin-top:14px; opacity:.85;"></p>
+    <p class="login-desc">Enter your crew access code to unlock the lads-only schedule and ideas board.</p>
+    <div class="login-input-wrap">
+      <input type="password" id="crew-login-bday" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" aria-label="Crew access code">
+      <button type="button" id="toggle-code-vis" class="toggle-vis-btn" aria-label="Show code" onclick="toggleCodeVisibility()">&#x1F441;</button>
+    </div>
+    <button type="button" class="btn btn-gold login-submit-btn" onclick="crewLogin()">&#x1F513; Unlock</button>
+    <p id="crew-login-msg" class="login-msg"></p>
   </div>
 </div>
 
@@ -117,7 +121,7 @@
     <p id="lads-customizer-msg"></p>
   </div>
   <div class="lads-grid">
-    <div class="lad-card fade-in" data-code="180997" data-default-role="Best Man"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Best Man</div></div>
+    <div class="lad-card fade-in" data-code="160698" data-default-role="Best Man"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Best Man</div></div>
     <div class="lad-card fade-in" data-code="230997" data-default-role="Lad"><div class="lad-avatar">EP</div><div class="lad-name">Emmanuel Pascual</div><div class="lad-role">Lad</div></div>
     <div class="lad-card fade-in" data-code="170997" data-default-role="The Groom"><div class="lad-avatar">RW</div><div class="lad-name">Ross Wightman</div><div class="lad-role">The Groom</div></div>
     <div class="lad-card fade-in" data-code="270298" data-default-role="Lad"><div class="lad-avatar">KB</div><div class="lad-name">Kelan Boylan</div><div class="lad-role">Lad</div></div>
@@ -524,16 +528,16 @@
 </section>
 
 <section id="bestman-approval-section" style="display:none;">
-  <h2 class="section-title fade-in">Best Man Approval</h2>
-  <div class="info-card fade-in" style="text-align:center;">
-    <button onclick="accessApproval()" class="btn btn-gold btn-sm">Access</button>
-    <div id="approval-panel" style="display:none; margin-top:20px;">
-      <h3>Joshua Crew Access List</h3>
-      <div style="margin:8px 0 12px 0;">
-        <input type="text" id="approval-new-code" placeholder="Add code (6 digits or DDMMYYYY)" style="padding:8px; margin:5px; border:1px solid rgba(212,168,67,.3); background:var(--dark); color:var(--cream); border-radius:2px; width:60%;">
+  <h2 class="section-title fade-in">&#x1F6E1; Best Man Admin</h2>
+  <div class="info-card fade-in admin-panel-card">
+    <div class="admin-badge">&#x1F451; Joshua &mdash; Admin Mode Active</div>
+    <div id="approval-panel" style="display:none; margin-top:16px;">
+      <h3>Crew Access List</h3>
+      <div class="admin-add-row">
+        <input type="text" id="approval-new-code" placeholder="Add code (6 digits or DDMMYYYY)" class="admin-input">
         <button onclick="addCrewCodeByJoshua()" class="btn btn-gold btn-sm">Add Code</button>
       </div>
-      <p id="approval-code-msg" style="opacity:.75; margin-bottom:8px;"></p>
+      <p id="approval-code-msg" class="admin-msg"></p>
       <div id="joshua-approval-list"></div>
       <h3>Pending Challenges</h3>
       <div id="pending-challenges"></div>

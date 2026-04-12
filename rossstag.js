@@ -106,9 +106,10 @@
   setInterval(updateProgress, 60000);
 
   const groomBday = '170997';
-  const bmBday = '180997';
+  const bmBday = '160698';
   const defaultCrewCodes = [
     bmBday,
+    '180997',
     '230997',
     '270298',
     '120398',
@@ -117,9 +118,11 @@
     '240598',
     '220997'
   ];
-  const legacyCrewCodes = ['160698', '270597', '140697'];
+  const legacyCrewCodes = ['270597', '140697'];
+  var loadedCrew = loadJSON('allowedCrewBdays', defaultCrewCodes);
+  if (!Array.isArray(loadedCrew)) loadedCrew = defaultCrewCodes;
   const allowedCrewBdays = new Set(
-    loadJSON('allowedCrewBdays', defaultCrewCodes)
+    loadedCrew
       .map(normalizeCrewCode)
       .filter(Boolean)
   );
@@ -128,7 +131,8 @@
   allowedCrewBdays.add(bmBday);
   const crewNameByBday = {
     '170997': 'Ross',
-    '180997': 'Joshua',
+    '160698': 'Joshua',
+    '180997': 'Crew',
     '230997': 'Emmanuel',
     '270298': 'Kelan',
     '120398': 'Jack',
@@ -140,7 +144,7 @@
       subtitle: 'All eyes on the groom. Keep him fed, watered, and on schedule.',
       role: 'The Main Character'
     },
-    '180997': {
+    '160698': {
       title: 'Best Man Console: Joshua Online',
       subtitle: 'Command center is unlocked. Approvals and chaos management are yours.',
       role: 'Best Man Controller'
@@ -191,11 +195,15 @@
     while (el.firstChild) el.removeChild(el.firstChild);
   }
 
-  function makeActionButton(label, styleText, onClick) {
+  function makeActionButton(label, styleOrClass, onClick) {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = label;
-    button.style.cssText = styleText;
+    if (styleOrClass && styleOrClass.indexOf(':') !== -1) {
+      button.style.cssText = styleOrClass;
+    } else if (styleOrClass) {
+      styleOrClass.split(' ').forEach(function (c) { if (c) button.classList.add(c); });
+    }
     button.addEventListener('click', onClick);
     return button;
   }
@@ -796,13 +804,13 @@
 
         div.appendChild(makeActionButton(
           'Approve',
-          'margin-right:10px; padding:6px 12px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+          'btn btn-approve btn-sm mr-6',
           function () { approveSiteChangeSuggestion(item.id); }
         ));
 
         div.appendChild(makeActionButton(
           'Reject',
-          'padding:6px 12px; background:#C9382A; color:white; border:none; cursor:pointer;',
+          'btn btn-danger btn-sm',
           function () { rejectSiteChangeSuggestion(item.id); }
         ));
 
@@ -929,13 +937,13 @@
 
         div.appendChild(makeActionButton(
           'Approve',
-          'margin-right:10px; padding:6px 12px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+          'btn btn-approve btn-sm mr-6',
           function () { approveScheduleSuggestion(item.id); }
         ));
 
         div.appendChild(makeActionButton(
           'Reject',
-          'padding:6px 12px; background:#C9382A; color:white; border:none; cursor:pointer;',
+          'btn btn-danger btn-sm',
           function () { rejectScheduleSuggestion(item.id); }
         ));
 
@@ -1008,7 +1016,7 @@
   function accessApproval() {
     const crew = getCrewBday();
     if (crew !== bmBday) {
-      alert('Admin access is for Joshua only.');
+      showToast('Admin access is for Joshua only.', 3000);
       return;
     }
     document.getElementById('approval-panel').style.display = 'block';
@@ -1048,7 +1056,7 @@
       if (item.removable) {
         row.appendChild(makeActionButton(
           'Remove',
-          'padding:4px 8px; background:#C9382A; color:white; border:none; cursor:pointer; border-radius:2px;',
+          'btn btn-danger btn-sm',
           function () { removeCrewCodeByJoshua(item.code); }
         ));
       }
@@ -1226,12 +1234,40 @@
       displayPendingChallenges();
       displayPendingScheduleSuggestions();
       displayPendingSiteChangeSuggestions();
+      document.body.classList.add('admin-mode');
+      setTimeout(function () {
+        var adminSec = document.getElementById('bestman-approval-section');
+        if (adminSec) adminSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 400);
     } else {
       document.getElementById('approval-panel').style.display = 'none';
+      document.body.classList.remove('admin-mode');
     }
     if (loggedIn) displayApprovedChallenges();
     displayApprovedScheduleSuggestions();
     displayApprovedSiteChangeSuggestions();
+  }
+
+  function shakeLoginBox() {
+    var box = document.querySelector('#login-overlay .login-box');
+    if (!box) return;
+    box.classList.add('login-shake');
+    setTimeout(function () { box.classList.remove('login-shake'); }, 500);
+  }
+
+  function toggleCodeVisibility() {
+    var input = document.getElementById('crew-login-bday');
+    var btn = document.getElementById('toggle-code-vis');
+    if (!input || !btn) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = '&#x1F441;&#x200D;&#x1F5E8;';
+      btn.setAttribute('aria-label', 'Hide code');
+    } else {
+      input.type = 'password';
+      btn.innerHTML = '&#x1F441;';
+      btn.setAttribute('aria-label', 'Show code');
+    }
   }
 
   function crewLogin() {
@@ -1241,21 +1277,31 @@
     if (!bday) {
       msg.textContent = 'Enter a valid access code (6 digits or DDMMYYYY).';
       msg.style.color = '#C9382A';
+      shakeLoginBox();
       return;
     }
     if (!isAllowedCrewBday(bday)) {
       msg.textContent = 'Access code not recognized. Ask Joshua to add it.';
       msg.style.color = '#C9382A';
+      shakeLoginBox();
       return;
     }
     setCrewBday(bday);
     bdayField.value = '';
-    msg.textContent = (bday === groomBday)
-      ? 'Hello Ross. You are logged in, but the schedule stays hidden for you.'
-      : 'Hello ' + getCrewDisplayName(bday) + '. Welcome, secret schedule unlocked.';
+    var isAdmin = bday === bmBday;
+    if (bday === groomBday) {
+      msg.textContent = 'Welcome, Ross. Schedule stays hidden for you.';
+    } else if (isAdmin) {
+      msg.textContent = 'Admin mode activated. Welcome, Joshua.';
+    } else {
+      msg.textContent = 'Welcome, ' + getCrewDisplayName(bday) + '. Schedule unlocked.';
+    }
     msg.style.color = 'var(--gold)';
     updateCrewAccess();
     showWelcomeGreeting(getCrewDisplayName(bday));
+    if (isAdmin) {
+      showToast('Admin panel loaded — scroll to Best Man Approval', 4000);
+    }
   }
 
   const crewLoginInput = document.getElementById('crew-login-bday');
@@ -1313,13 +1359,13 @@
 
       div.appendChild(makeActionButton(
         'Approve',
-        'margin-right:10px; padding:6px 12px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+        'btn btn-approve btn-sm mr-6',
         function () { approveChallenge(item.id); }
       ));
 
       div.appendChild(makeActionButton(
         'Reject',
-        'padding:6px 12px; background:#C9382A; color:white; border:none; cursor:pointer;',
+        'btn btn-danger btn-sm',
         function () { rejectChallenge(item.id); }
       ));
 
@@ -1386,19 +1432,19 @@
 
       div.appendChild(makeActionButton(
         '👍',
-        'margin-right:8px; padding:6px 10px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+        'btn btn-gold btn-sm mr-6',
         function () { voteChallenge(item.id, 1); }
       ));
 
       div.appendChild(makeActionButton(
         '👎',
-        'margin-right:8px; padding:6px 10px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer;',
+        'btn btn-outline-light btn-sm mr-6',
         function () { voteChallenge(item.id, -1); }
       ));
 
       div.appendChild(makeActionButton(
         'Report',
-        'padding:6px 10px; background:#C9382A; color:white; border:none; cursor:pointer;',
+        'btn btn-danger btn-sm',
         function () { reportChallenge(item.id); }
       ));
 
@@ -1530,7 +1576,7 @@
       row.appendChild(m);
       row.appendChild(makeActionButton(
         'Mark Complete',
-        'padding:6px 12px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
+        'btn btn-gold btn-sm',
         function () { completeMission(item.id); }
       ));
       board.appendChild(row);
@@ -1660,7 +1706,7 @@
       row.appendChild(text);
       row.appendChild(makeActionButton(
         'Remove',
-        'padding:6px 10px; background:#C9382A; color:white; border:none; cursor:pointer;',
+        'btn btn-danger btn-sm',
         function () { removeExpense(item.id); }
       ));
       list.appendChild(row);
@@ -1708,7 +1754,7 @@
       const opt = selectedPoll.options[key];
       optionsWrap.appendChild(makeActionButton(
         opt.label,
-        'margin:5px; padding:10px 20px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:2px;',
+        'btn btn-gold',
         function () { vote(key); }
       ));
     });
