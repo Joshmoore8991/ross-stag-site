@@ -65,6 +65,10 @@
     if (!insideNav) closeOpenMenus(null);
   });
 
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeOpenMenus(null);
+  });
+
   if (navMap.length) {
     setActiveNavLink(navMap[0].section.id);
     const navObserver = new IntersectionObserver(entries => {
@@ -83,9 +87,20 @@
     const now = Date.now();
     const progress = Math.min(100, Math.max(0, (now - start) / (end - start) * 100));
     document.getElementById('progress-fill').style.width = progress + '%';
+    const progressText = document.getElementById('progress-text');
+    if (!progressText) return;
+    if (now < start) {
+      const daysToStart = Math.ceil((start - now) / 864e5);
+      progressText.textContent = 'Trip prep starts in ' + daysToStart + ' day' + (daysToStart === 1 ? '' : 's');
+      return;
+    }
+    if (now >= end) {
+      progressText.textContent = 'Trip complete. Time for the stories.';
+      return;
+    }
     const daysPassed = Math.floor((now - start) / 864e5);
-    const daysLeft = Math.floor((end - now) / 864e5);
-    document.getElementById('progress-text').textContent = daysPassed + ' days down, ' + daysLeft + ' to go';
+    const daysLeft = Math.ceil((end - now) / 864e5);
+    progressText.textContent = daysPassed + ' days down, ' + daysLeft + ' to go';
   }
   updateProgress();
   setInterval(updateProgress, 60000);
@@ -102,13 +117,14 @@
     '240598',
     '220997'
   ];
+  const legacyCrewCodes = ['160698', '270597', '140697'];
   const allowedCrewBdays = new Set(
-    loadJSON('allowedCrewBdays', defaultCrewCodes).filter(code => /^[0-9]{6}$/.test(String(code || '')))
+    loadJSON('allowedCrewBdays', defaultCrewCodes)
+      .map(normalizeCrewCode)
+      .filter(Boolean)
   );
   defaultCrewCodes.forEach(function (code) { allowedCrewBdays.add(code); });
-  allowedCrewBdays.delete('160698');
-  allowedCrewBdays.delete('270597');
-  allowedCrewBdays.delete('140697');
+  legacyCrewCodes.forEach(function (code) { allowedCrewBdays.add(code); });
   allowedCrewBdays.add(bmBday);
   const crewNameByBday = {
     '170997': 'Ross',
@@ -184,8 +200,14 @@
 
   function normalizeCrewCode(value) {
     const digits = String(value || '').replace(/\D/g, '');
+    if (!digits) return '';
     if (digits.length === 6) return digits;
+    if (digits.length < 6) return digits.padStart(6, '0');
     if (digits.length === 8) return digits.slice(0, 4) + digits.slice(-2);
+    if (digits.length === 7) {
+      const padded = digits.padStart(8, '0');
+      return padded.slice(0, 4) + padded.slice(-2);
+    }
     return '';
   }
 
@@ -695,7 +717,7 @@
 
         const sectionLine = document.createElement('p');
         sectionLine.style.opacity = '.75';
-        sectionLine.textContent = 'Section: ' + item.sectionName + ' â€¢ by ' + item.suggestedBy;
+        sectionLine.textContent = 'Section: ' + item.sectionName + ' • by ' + item.suggestedBy;
         div.appendChild(sectionLine);
 
         const details = document.createElement('p');
@@ -777,7 +799,7 @@
 
         const sectionLine = document.createElement('p');
         sectionLine.style.opacity = '.75';
-        sectionLine.textContent = 'Section: ' + item.sectionName + ' â€¢ by ' + item.suggestedBy;
+        sectionLine.textContent = 'Section: ' + item.sectionName + ' • by ' + item.suggestedBy;
         card.appendChild(sectionLine);
 
         const details = document.createElement('p');
@@ -828,7 +850,7 @@
         const meta = document.createElement('p');
         meta.style.opacity = '.7';
         meta.style.fontSize = '12px';
-        meta.textContent = item.day + ' â€¢ ' + item.time + ' â€¢ by ' + item.suggestedBy;
+        meta.textContent = item.day + ' • ' + item.time + ' • by ' + item.suggestedBy;
         div.appendChild(meta);
 
         const details = document.createElement('p');
@@ -1083,6 +1105,15 @@
     updateCrewAccess();
   }
 
+  const crewLoginInput = document.getElementById('crew-login-bday');
+  if (crewLoginInput) {
+    crewLoginInput.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      crewLogin();
+    });
+  }
+
   function crewLogout() {
     setCrewBday('');
     const msg = document.getElementById('crew-login-msg');
@@ -1119,7 +1150,7 @@
       const meta = document.createElement('p');
       meta.style.opacity = '.7';
       meta.style.fontSize = '12px';
-      meta.textContent = item.type + ' â€¢ ' + item.difficulty + ' â€¢ by ' + item.suggestedBy;
+      meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + item.suggestedBy;
       div.appendChild(meta);
 
       const notes = document.createElement('p');
@@ -1186,7 +1217,7 @@
       const meta = document.createElement('p');
       meta.style.opacity = '.7';
       meta.style.fontSize = '12px';
-      meta.textContent = item.type + ' â€¢ ' + item.difficulty + ' â€¢ by ' + item.suggestedBy;
+      meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + item.suggestedBy;
       div.appendChild(meta);
 
       const notes = document.createElement('p');
@@ -1197,17 +1228,17 @@
       const score = document.createElement('p');
       score.style.opacity = '.75';
       score.style.marginBottom = '8px';
-      score.textContent = 'Score: ' + (item.votes || 0) + ' â€¢ Reports: ' + (item.reports || 0);
+      score.textContent = 'Score: ' + (item.votes || 0) + ' • Reports: ' + (item.reports || 0);
       div.appendChild(score);
 
       div.appendChild(makeActionButton(
-        'ðŸ‘',
+        '👍',
         'margin-right:8px; padding:6px 10px; background:var(--gold); color:var(--black); border:none; cursor:pointer;',
         function () { voteChallenge(item.id, 1); }
       ));
 
       div.appendChild(makeActionButton(
-        'ðŸ‘Ž',
+        '👎',
         'margin-right:8px; padding:6px 10px; background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,.3); cursor:pointer;',
         function () { voteChallenge(item.id, -1); }
       ));
@@ -1367,7 +1398,7 @@
     done.slice(0, 8).forEach(item => {
       const row = document.createElement('p');
       row.style.opacity = '.7';
-      row.textContent = 'âœ“ ' + item.title + ' (' + item.points + ' pts to ' + (item.team === 'A' ? teamBattle.nameA : teamBattle.nameB) + ')';
+      row.textContent = '✓ ' + item.title + ' (' + item.points + ' pts to ' + (item.team === 'A' ? teamBattle.nameA : teamBattle.nameB) + ')';
       board.appendChild(row);
     });
   }
@@ -1442,14 +1473,14 @@
 
     const headline = document.createElement('p');
     headline.style.fontWeight = '600';
-    headline.textContent = 'Total: Â£' + total.toFixed(2) + ' | Split each: Â£' + perHead.toFixed(2);
+    headline.textContent = 'Total: £' + total.toFixed(2) + ' | Split each: £' + perHead.toFixed(2);
     summary.appendChild(headline);
 
     crewMembers.forEach(function (name) {
       const val = Number(balances[name] || 0);
       const row = document.createElement('p');
       row.style.opacity = '.75';
-      row.textContent = name + ': ' + (val >= 0 ? 'gets back Â£' : 'owes Â£') + Math.abs(val).toFixed(2);
+      row.textContent = name + ': ' + (val >= 0 ? 'gets back £' : 'owes £') + Math.abs(val).toFixed(2);
       summary.appendChild(row);
     });
 
@@ -1472,7 +1503,7 @@
       const payerStrong = document.createElement('strong');
       payerStrong.textContent = item.payer;
       text.appendChild(payerStrong);
-      text.appendChild(document.createTextNode(' paid Â£' + Number(item.amount).toFixed(2) + ' for ' + item.note));
+      text.appendChild(document.createTextNode(' paid £' + Number(item.amount).toFixed(2) + ' for ' + item.note));
       row.appendChild(text);
       row.appendChild(makeActionButton(
         'Remove',
@@ -1577,7 +1608,11 @@
     const isLight = mode === 'light';
     const button = document.getElementById('theme-toggle');
     document.body.classList.toggle('light-theme', isLight);
-    if (button) button.textContent = isLight ? 'â˜€ï¸' : 'ðŸŒ™';
+    if (button) {
+      button.textContent = isLight ? '☀️' : '🌙';
+      button.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+      button.setAttribute('title', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+    }
     if (!persist) return;
     saveJSON('theme', isLight ? 'light' : 'dark');
   }
@@ -1647,7 +1682,7 @@
   function renderChallengeResult(challenge) {
     currentChallenge = challenge;
     document.getElementById('random-challenge').textContent = challenge.title;
-    document.getElementById('random-challenge-meta').textContent = challenge.type + ' â€¢ ' + challenge.difficulty + (challenge.notes ? ' â€¢ ' + challenge.notes : '');
+    document.getElementById('random-challenge-meta').textContent = challenge.type + ' • ' + challenge.difficulty + (challenge.notes ? ' • ' + challenge.notes : '');
     const msg = document.getElementById('challenge-complete-msg');
     if (msg) msg.textContent = '';
   }
