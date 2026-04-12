@@ -7,6 +7,36 @@ const STATE_KEY = 'challenge-state-v1';
 const MAX_CHALLENGES = 400;
 const MAX_LOG_KEYS = 5000;
 
+function normalizeCrewCode(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 6) return digits;
+  if (digits.length === 8) return digits.slice(0, 4) + digits.slice(-2);
+  if (digits.length < 6) return digits.padStart(6, '0');
+  return '';
+}
+
+function parseAllowedWriterCodes() {
+  const raw = String(process.env.CREW_WRITE_CODES || '').trim();
+  if (!raw) return new Set();
+  return new Set(
+    raw
+      .split(',')
+      .map((item) => normalizeCrewCode(item))
+      .filter(Boolean)
+  );
+}
+
+function getCrewCodeFromHeaders(event) {
+  const headers = event && event.headers ? event.headers : {};
+  return normalizeCrewCode(
+    headers['x-crew-code']
+    || headers['X-Crew-Code']
+    || headers['x-crew-bday']
+    || headers['X-Crew-Bday']
+  );
+}
+
 function jsonResponse(statusCode, body) {
   return {
     statusCode: statusCode,
@@ -106,6 +136,11 @@ exports.handler = async function (event) {
   }
 
   if (event.httpMethod === 'POST') {
+    const allowedWriterCodes = parseAllowedWriterCodes();
+    const requestCrewCode = getCrewCodeFromHeaders(event);
+    if (!requestCrewCode || !allowedWriterCodes.has(requestCrewCode)) {
+      return jsonResponse(403, { ok: false, error: 'Forbidden' });
+    }
     let incoming = {};
     try {
       incoming = event.body ? JSON.parse(event.body) : {};

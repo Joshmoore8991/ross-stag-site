@@ -1,17 +1,22 @@
 ﻿  const target = new Date('2026-05-03T06:10:00').getTime();
   function tick() {
     const cdEl = document.querySelector('.countdown');
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minsEl = document.getElementById('mins');
+    const secsEl = document.getElementById('secs');
+    if (!daysEl || !hoursEl || !minsEl || !secsEl) return;
     const diff = target - Date.now();
     if (diff < 0) {
-      ['days','hours','mins','secs'].forEach(id => document.getElementById(id).textContent = '00');
+      [daysEl, hoursEl, minsEl, secsEl].forEach(function (el) { el.textContent = '00'; });
       if (cdEl) { cdEl.classList.remove('trip-active'); cdEl.classList.add('trip-complete'); }
       return;
     }
     if (cdEl && diff < 7 * 864e5) { cdEl.classList.add('trip-active'); }
-    document.getElementById('days').textContent = String(Math.floor(diff/864e5)).padStart(2,'0');
-    document.getElementById('hours').textContent = String(Math.floor((diff%864e5)/36e5)).padStart(2,'0');
-    document.getElementById('mins').textContent = String(Math.floor((diff%36e5)/6e4)).padStart(2,'0');
-    document.getElementById('secs').textContent = String(Math.floor((diff%6e4)/1e3)).padStart(2,'0');
+    daysEl.textContent = String(Math.floor(diff/864e5)).padStart(2,'0');
+    hoursEl.textContent = String(Math.floor((diff%864e5)/36e5)).padStart(2,'0');
+    minsEl.textContent = String(Math.floor((diff%36e5)/6e4)).padStart(2,'0');
+    secsEl.textContent = String(Math.floor((diff%6e4)/1e3)).padStart(2,'0');
   }
   tick(); setInterval(tick, 1000);
   const obs = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold:.12 });
@@ -192,7 +197,8 @@
     const end = new Date('2026-05-03T06:10:00').getTime();
     const now = Date.now();
     const progress = Math.min(100, Math.max(0, (now - start) / (end - start) * 100));
-    document.getElementById('progress-fill').style.width = progress + '%';
+    const progressFill = document.getElementById('progress-fill');
+    if (progressFill) progressFill.style.width = progress + '%';
     const progressText = document.getElementById('progress-text');
     if (!progressText) return;
     if (now < start) {
@@ -430,15 +436,9 @@
   let challengeVoteLog = loadJSON('challengeVoteLog', {});
   let challengeReportLog = loadJSON('challengeReportLog', {});
   let challengeSubmissionLog = loadJSON('challengeSubmissionLog', {});
-  const supabaseUrl = 'https://ozfytroyziiihzzvzwky.supabase.co';
-  const supabaseAnonKey = 'sb_publishable_UQ4qHzfw9LV833yGydpPtQ_bsm9sXEh';
-  const supabaseChallengeStateTable = 'challenge_state';
-  const supabaseCrewLoginTable = 'crew_login_profiles';
-  const supabaseTripDetailsTable = 'trip_details';
+  const netlifyFunctionBase = '/.netlify/functions';
   const challengeCloudSyncEnabled = typeof window !== 'undefined'
-    && /^https?:$/i.test(window.location.protocol || '')
-    && !!supabaseUrl
-    && !!supabaseAnonKey;
+    && /^https?:$/i.test(window.location.protocol || '');
   let challengeSyncInFlight = false;
   let challengeSyncQueued = false;
   let challengeSyncTimer = null;
@@ -903,26 +903,22 @@
     if (history) history.textContent = punishmentHistory.length ? ('Recent: ' + punishmentHistory.join(' | ')) : '';
   }
 
-  function getSupabaseChallengeEndpoint(query) {
-    const cleanBase = String(supabaseUrl || '').replace(/\/$/, '');
-    return cleanBase + '/rest/v1/' + supabaseChallengeStateTable + (query || '');
+  function getFunctionEndpoint(name) {
+    return netlifyFunctionBase + '/' + name;
   }
 
-  function getSupabaseCrewLoginEndpoint(query) {
-    const cleanBase = String(supabaseUrl || '').replace(/\/$/, '');
-    return cleanBase + '/rest/v1/' + supabaseCrewLoginTable + (query || '');
-  }
-
-  function getSupabaseTripDetailsEndpoint(query) {
-    const cleanBase = String(supabaseUrl || '').replace(/\/$/, '');
-    return cleanBase + '/rest/v1/' + supabaseTripDetailsTable + (query || '');
-  }
-
-  function getSupabaseHeaders() {
-    return {
-      apikey: supabaseAnonKey,
-      Authorization: 'Bearer ' + supabaseAnonKey,
+  function getCrewAuthHeaders() {
+    const headers = {
       'Content-Type': 'application/json'
+    };
+    const crewCode = getCrewBday();
+    if (crewCode) headers['x-crew-code'] = crewCode;
+    return headers;
+  }
+
+  function getNoStoreHeaders() {
+    return {
+      'Cache-Control': 'no-store'
     };
   }
 
@@ -964,17 +960,18 @@
 
   async function loadTripDetailsFromCloud() {
     applyTripDetails({});
-    if (!supabaseUrl || !supabaseAnonKey) return false;
+    const crewCode = getCrewBday();
+    if (!crewCode) return false;
     try {
-      const res = await fetch(getSupabaseTripDetailsEndpoint('?id=eq.1&select=details'), {
+      const res = await fetch(getFunctionEndpoint('trip-details'), {
         method: 'GET',
-        headers: getSupabaseHeaders(),
+        headers: Object.assign({}, getNoStoreHeaders(), getCrewAuthHeaders()),
         cache: 'no-store'
       });
       if (!res.ok) return false;
-      const rows = await res.json();
-      if (!Array.isArray(rows) || !rows.length || !rows[0] || !rows[0].details) return false;
-      applyTripDetails(rows[0].details);
+      const payload = await res.json();
+      if (!payload || !payload.ok || !payload.details) return false;
+      applyTripDetails(payload.details);
       return true;
     } catch (e) {
       return false;
@@ -1003,20 +1000,18 @@
       return;
     }
     challengeSyncInFlight = true;
-    fetch(getSupabaseChallengeEndpoint(''), {
+    fetch(getFunctionEndpoint('challenge-state'), {
       method: 'POST',
-      headers: Object.assign({}, getSupabaseHeaders(), {
-        Prefer: 'resolution=merge-duplicates,return=representation'
-      }),
-      body: JSON.stringify([{ id: 1, state: payload }])
+      headers: getCrewAuthHeaders(),
+      body: JSON.stringify(payload)
     })
       .then(function (res) {
         if (!res.ok) throw new Error('Sync failed');
         return res.json();
       })
-      .then(function (rows) {
-        if (!Array.isArray(rows) || !rows.length || !rows[0] || !rows[0].state) return;
-        applyChallengeStatePayload(rows[0].state);
+      .then(function (body) {
+        if (!body || !body.ok || !body.state) return;
+        applyChallengeStatePayload(body.state);
         lastChallengeSyncHash = hashChallengePayload(getChallengeStatePayload());
       })
       .catch(function () {
@@ -1033,15 +1028,15 @@
   async function loadChallengeStateFromCloud() {
     if (!challengeCloudSyncEnabled) return false;
     try {
-      const res = await fetch(getSupabaseChallengeEndpoint('?id=eq.1&select=state'), {
+      const res = await fetch(getFunctionEndpoint('challenge-state'), {
         method: 'GET',
-        headers: getSupabaseHeaders(),
+        headers: getNoStoreHeaders(),
         cache: 'no-store'
       });
       if (!res.ok) return false;
-      const rows = await res.json();
-      if (!Array.isArray(rows) || !rows.length || !rows[0] || !rows[0].state) return false;
-      applyChallengeStatePayload(rows[0].state);
+      const body = await res.json();
+      if (!body || !body.ok || !body.state) return false;
+      applyChallengeStatePayload(body.state);
       lastChallengeSyncHash = hashChallengePayload(getChallengeStatePayload());
       saveJSON('pendingChallenges', pendingChallenges);
       saveJSON('approvedChallenges', approvedChallenges);
@@ -1073,38 +1068,7 @@
   }
 
   async function loadCrewLoginProfilesFromCloud() {
-    if (!challengeCloudSyncEnabled) return false;
-    try {
-      const res = await fetch(getSupabaseCrewLoginEndpoint('?active=eq.true&select=crew_code,aliases'), {
-        method: 'GET',
-        headers: getSupabaseHeaders(),
-        cache: 'no-store'
-      });
-      if (!res.ok) return false;
-      const rows = await res.json();
-      if (!Array.isArray(rows) || !rows.length) return false;
-
-      const fromDb = {};
-      rows.forEach(function (row) {
-        const crewCode = normalizeCrewCode(row && row.crew_code);
-        if (!crewCode) return;
-        allowedCrewBdays.add(crewCode);
-        if (Array.isArray(row.aliases)) {
-          row.aliases.forEach(function (alias) {
-            const key = normalizeCrewNameKey(alias);
-            if (key) fromDb[key] = crewCode;
-          });
-        }
-      });
-
-      if (Object.keys(fromDb).length) {
-        crewAliasToCode = Object.assign({}, defaultCrewAliasToCode, fromDb);
-        saveAllowedCrewCodes();
-      }
-      return true;
-    } catch (e) {
-      return false;
-    }
+    return false;
   }
 
   function getChallengeKey(challenge) {
@@ -1130,8 +1094,10 @@
   }
 
   function saveTeamNames() {
-    const teamA = document.getElementById('team-a-name').value.trim();
-    const teamB = document.getElementById('team-b-name').value.trim();
+    const teamAInput = document.getElementById('team-a-name');
+    const teamBInput = document.getElementById('team-b-name');
+    const teamA = teamAInput ? teamAInput.value.trim() : '';
+    const teamB = teamBInput ? teamBInput.value.trim() : '';
     if (teamA) teamBattle.nameA = teamA;
     if (teamB) teamBattle.nameB = teamB;
     saveChallengeData();
@@ -1173,6 +1139,7 @@
 
   function markChallengeComplete() {
     const msg = document.getElementById('challenge-complete-msg');
+    if (!msg) return;
     if (!currentChallenge) {
       msg.textContent = 'Generate a challenge before marking complete.';
       msg.style.color = '#C9382A';
@@ -1218,8 +1185,10 @@
     const chosen = punishments[Math.floor(Math.random() * punishments.length)];
     punishmentHistory.unshift(chosen);
     punishmentHistory = punishmentHistory.slice(0, 5);
-    document.getElementById('punishment-result').textContent = chosen;
-    document.getElementById('punishment-history').textContent = 'Recent: ' + punishmentHistory.join(' | ');
+    const result = document.getElementById('punishment-result');
+    const history = document.getElementById('punishment-history');
+    if (result) result.textContent = chosen;
+    if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
     saveChallengeData();
   }
 
@@ -1962,7 +1931,8 @@
       showToast('Admin access is for Joshua only.', 3000);
       return;
     }
-    document.getElementById('approval-panel').style.display = 'block';
+    const approvalPanel = document.getElementById('approval-panel');
+    if (approvalPanel) approvalPanel.style.display = 'block';
     displayJoshuaApprovalList();
     displayPendingChallenges();
     displayPendingScheduleSuggestions();
@@ -2319,6 +2289,7 @@
     }
     msg.style.color = 'var(--gold)';
     updateCrewAccess();
+    loadTripDetailsFromCloud();
     showWelcomeGreeting(getCrewDisplayName(bday));
     if (isAdmin) {
       showToast('Admin panel loaded — scroll to Best Man Approval', 4000);
@@ -2336,6 +2307,7 @@
 
   function crewLogout() {
     setCrewBday('');
+    applyTripDetails({});
     const msg = document.getElementById('crew-login-msg');
     if (msg) {
       msg.textContent = 'Crew section locked.';
@@ -2862,7 +2834,8 @@
   ];
   function getDrinkingChallenge() {
     const random = drinkingChallenges[Math.floor(Math.random() * drinkingChallenges.length)];
-    document.getElementById('drinking-challenge').textContent = random;
+    const output = document.getElementById('drinking-challenge');
+    if (output) output.textContent = random;
   }
 
   // Challenge Generator
@@ -2886,8 +2859,10 @@
   ];
 
   function getFilteredApprovedChallenges(includeShown) {
-    const selectedType = document.getElementById('challenge-filter-type').value;
-    const selectedDifficulty = document.getElementById('challenge-filter-difficulty').value;
+    const selectedTypeEl = document.getElementById('challenge-filter-type');
+    const selectedDifficultyEl = document.getElementById('challenge-filter-difficulty');
+    const selectedType = selectedTypeEl ? selectedTypeEl.value : 'all';
+    const selectedDifficulty = selectedDifficultyEl ? selectedDifficultyEl.value : 'all';
     let pool = approvedChallenges.filter(item => !item.hidden && (item.reports || 0) < 3);
     if (selectedType !== 'all') pool = pool.filter(item => item.type === selectedType);
     if (selectedDifficulty !== 'all') pool = pool.filter(item => item.difficulty === selectedDifficulty);
@@ -2897,8 +2872,10 @@
 
   function renderChallengeResult(challenge) {
     currentChallenge = challenge;
-    document.getElementById('random-challenge').textContent = challenge.title;
-    document.getElementById('random-challenge-meta').textContent = challenge.type + ' • ' + challenge.difficulty + (challenge.notes ? ' • ' + challenge.notes : '');
+    const randomChallengeEl = document.getElementById('random-challenge');
+    const randomMetaEl = document.getElementById('random-challenge-meta');
+    if (randomChallengeEl) randomChallengeEl.textContent = challenge.title;
+    if (randomMetaEl) randomMetaEl.textContent = challenge.type + ' • ' + challenge.difficulty + (challenge.notes ? ' • ' + challenge.notes : '');
     const msg = document.getElementById('challenge-complete-msg');
     if (msg) msg.textContent = '';
   }
