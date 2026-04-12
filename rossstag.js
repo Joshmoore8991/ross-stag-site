@@ -107,8 +107,39 @@
   });
 
   navLinks.forEach(link => {
-    link.addEventListener('click', function () {
+    link.addEventListener('click', function (event) {
+      const href = link.getAttribute('href') || '';
+      if (href.charAt(0) !== '#') return;
+      const targetId = href.slice(1);
+      const targetSection = targetId ? document.getElementById(targetId) : null;
+      event.preventDefault();
       closeOpenMenus(null);
+
+      if (!targetSection) return;
+
+      const computed = window.getComputedStyle(targetSection);
+      const isHidden = computed.display === 'none' || computed.visibility === 'hidden';
+      if (isHidden) {
+        const loginOverlay = document.getElementById('login-overlay');
+        if (loginOverlay && loginOverlay.style.display !== 'none') {
+          const loginMsg = document.getElementById('crew-login-msg');
+          if (loginMsg) {
+            loginMsg.textContent = 'Log in to access that section.';
+            loginMsg.style.color = '#C9382A';
+          }
+          const loginInput = document.getElementById('crew-login-bday');
+          if (loginInput) loginInput.focus();
+          if (typeof shakeLoginBox === 'function') shakeLoginBox();
+        }
+        return;
+      }
+
+      targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveNavLink(targetId);
+
+      if (window.location.hash !== '#' + targetId) {
+        window.history.replaceState(null, '', '#' + targetId);
+      }
     });
     link.addEventListener('keydown', function (event) {
       if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
