@@ -41,3 +41,33 @@ with check (id = 1);
 insert into public.challenge_state (id, state)
 values (1, '{}'::jsonb)
 on conflict (id) do nothing;
+
+-- Crew login aliases (name-based passwords -> crew codes).
+create table if not exists public.crew_login_profiles (
+  crew_code text primary key,
+  aliases text[] not null default '{}',
+  active boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.crew_login_profiles enable row level security;
+grant select on table public.crew_login_profiles to anon;
+
+drop policy if exists "crew_login_profiles_public_read" on public.crew_login_profiles;
+create policy "crew_login_profiles_public_read"
+on public.crew_login_profiles
+for select
+to anon
+using (active = true);
+
+insert into public.crew_login_profiles (crew_code, aliases, active) values
+  ('160698', array['josh', 'joshua', 'joshua moore', 'jm'], true),
+  ('170997', array['ross', 'ross wightman', 'rw'], true),
+  ('230997', array['emmanuel', 'emmanuel pascual', 'ep'], true),
+  ('270298', array['kelan', 'kelan boylan', 'kb'], true),
+  ('120398', array['jack', 'jack doherty', 'jd'], true),
+  ('240598', array['ciaran', 'ciaran stone', 'cs'], true)
+on conflict (crew_code) do update
+set aliases = excluded.aliases,
+    active = excluded.active,
+    updated_at = now();

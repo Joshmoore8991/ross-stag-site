@@ -240,6 +240,22 @@
       role: 'Momentum Manager'
     }
   };
+  const defaultCrewAliasToCode = {
+    joshua: '160698',
+    joshuamoore: '160698',
+    josh: '160698',
+    emmanuel: '230997',
+    emmanuelpascual: '230997',
+    ross: '170997',
+    rosswightman: '170997',
+    kelan: '270298',
+    kelanboylan: '270298',
+    jack: '120398',
+    jackdoherty: '120398',
+    ciaran: '240598',
+    ciaranstone: '240598'
+  };
+  let crewAliasToCode = Object.assign({}, defaultCrewAliasToCode);
   let crewPersonalizationOverrides = loadJSON('crewPersonalizationOverrides', {});
   if (!crewPersonalizationOverrides || typeof crewPersonalizationOverrides !== 'object' || Array.isArray(crewPersonalizationOverrides)) {
     crewPersonalizationOverrides = {};
@@ -335,22 +351,7 @@
 
     const nameKey = normalizeCrewNameKey(value);
     if (!nameKey) return '';
-    const namePasswords = {
-      joshua: '160698',
-      joshuamoore: '160698',
-      josh: '160698',
-      emmanuel: '230997',
-      emmanuelpascual: '230997',
-      ross: '170997',
-      rosswightman: '170997',
-      kelan: '270298',
-      kelanboylan: '270298',
-      jack: '120398',
-      jackdoherty: '120398',
-      ciaran: '240598',
-      ciaranstone: '240598'
-    };
-    return namePasswords[nameKey] || '';
+    return crewAliasToCode[nameKey] || '';
   }
 
   function getCrewBday() {
@@ -392,6 +393,7 @@
   const supabaseUrl = 'https://ozfytroyziiihzzvzwky.supabase.co';
   const supabaseAnonKey = 'sb_publishable_UQ4qHzfw9LV833yGydpPtQ_bsm9sXEh';
   const supabaseChallengeStateTable = 'challenge_state';
+  const supabaseCrewLoginTable = 'crew_login_profiles';
   const challengeCloudSyncEnabled = typeof window !== 'undefined'
     && /^https?:$/i.test(window.location.protocol || '')
     && !!supabaseUrl
@@ -690,6 +692,11 @@
     return cleanBase + '/rest/v1/' + supabaseChallengeStateTable + (query || '');
   }
 
+  function getSupabaseCrewLoginEndpoint(query) {
+    const cleanBase = String(supabaseUrl || '').replace(/\/$/, '');
+    return cleanBase + '/rest/v1/' + supabaseCrewLoginTable + (query || '');
+  }
+
   function getSupabaseHeaders() {
     return {
       apikey: supabaseAnonKey,
@@ -763,6 +770,41 @@
       saveJSON('approvedActivitySuggestions', approvedActivitySuggestions);
       saveJSON('activitySubmissionLog', activitySubmissionLog);
       saveJSON('activityVoteLog', activityVoteLog);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function loadCrewLoginProfilesFromCloud() {
+    if (!challengeCloudSyncEnabled) return false;
+    try {
+      const res = await fetch(getSupabaseCrewLoginEndpoint('?active=eq.true&select=crew_code,aliases'), {
+        method: 'GET',
+        headers: getSupabaseHeaders(),
+        cache: 'no-store'
+      });
+      if (!res.ok) return false;
+      const rows = await res.json();
+      if (!Array.isArray(rows) || !rows.length) return false;
+
+      const fromDb = {};
+      rows.forEach(function (row) {
+        const crewCode = normalizeCrewCode(row && row.crew_code);
+        if (!crewCode) return;
+        allowedCrewBdays.add(crewCode);
+        if (Array.isArray(row.aliases)) {
+          row.aliases.forEach(function (alias) {
+            const key = normalizeCrewNameKey(alias);
+            if (key) fromDb[key] = crewCode;
+          });
+        }
+      });
+
+      if (Object.keys(fromDb).length) {
+        crewAliasToCode = Object.assign({}, defaultCrewAliasToCode, fromDb);
+        saveAllowedCrewCodes();
+      }
       return true;
     } catch (e) {
       return false;
@@ -2630,6 +2672,7 @@
   populateExpensePayerOptions();
   renderExpenseBoard();
   renderPollBoard();
+  loadCrewLoginProfilesFromCloud();
   loadChallengeStateFromCloud().then(function (loaded) {
     if (!loaded) return;
     updateCrewAccess();
