@@ -1208,6 +1208,43 @@
     }
   }
 
+  var groomCountdownInterval = null;
+  function startGroomCountdown(unlockTime) {
+    if (groomCountdownInterval) clearInterval(groomCountdownInterval);
+    function update() {
+      var now = Date.now();
+      var diff = unlockTime - now;
+      if (diff <= 0) {
+        clearInterval(groomCountdownInterval);
+        groomCountdownInterval = null;
+        var dEl = document.getElementById('groom-days');
+        var hEl = document.getElementById('groom-hours');
+        var mEl = document.getElementById('groom-mins');
+        var sEl = document.getElementById('groom-secs');
+        if (dEl) dEl.textContent = '0';
+        if (hEl) hEl.textContent = '0';
+        if (mEl) mEl.textContent = '0';
+        if (sEl) sEl.textContent = '0';
+        updateCrewAccess();
+        return;
+      }
+      var d = Math.floor(diff / 86400000);
+      var h = Math.floor((diff % 86400000) / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      var dEl = document.getElementById('groom-days');
+      var hEl = document.getElementById('groom-hours');
+      var mEl = document.getElementById('groom-mins');
+      var sEl = document.getElementById('groom-secs');
+      if (dEl) dEl.textContent = d;
+      if (hEl) hEl.textContent = h;
+      if (mEl) mEl.textContent = m;
+      if (sEl) sEl.textContent = s;
+    }
+    update();
+    groomCountdownInterval = setInterval(update, 1000);
+  }
+
   function updateCrewAccess() {
     let crewBday = getCrewBday();
     const suggestionSection = document.getElementById('suggestion-section');
@@ -1223,10 +1260,15 @@
     const loggedIn = crewBday && crewBday !== '';
     const isGroom = crewBday === groomBday;
     const isAdmin = crewBday === bmBday;
+    const groomUnlockDate = new Date('2026-05-03T09:50:00').getTime();
+    const groomUnlocked = isGroom && Date.now() >= groomUnlockDate;
+    const groomTeaseSection = document.getElementById('groom-schedule-tease');
     if (suggestionSection) suggestionSection.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
     if (bestmanSection) bestmanSection.style.display = isAdmin ? 'block' : 'none';
-    if (scheduleSection) scheduleSection.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
-    if (secretOptional) secretOptional.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
+    if (scheduleSection) scheduleSection.style.display = (loggedIn && (!isGroom || groomUnlocked)) ? 'block' : 'none';
+    if (secretOptional) secretOptional.style.display = (loggedIn && (!isGroom || groomUnlocked)) ? 'block' : 'none';
+    if (groomTeaseSection) groomTeaseSection.style.display = (loggedIn && isGroom && !groomUnlocked) ? 'block' : 'none';
+    if (loggedIn && isGroom && !groomUnlocked) startGroomCountdown(groomUnlockDate);
     if (loginOverlay) loginOverlay.style.display = loggedIn ? 'none' : 'flex';
     if (logoutButton) logoutButton.style.display = loggedIn ? 'block' : 'none';
     document.body.classList.toggle('overlay-active', !loggedIn);
