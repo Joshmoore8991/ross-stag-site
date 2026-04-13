@@ -1,5 +1,5 @@
 // Minimal service worker — caches the app shell for offline read access.
-const CACHE = 'stag-shell-v1';
+const CACHE = 'stag-shell-v2';
 const SHELL = ['/', '/index.html', '/rossstag.css', '/rossstag.js', '/manifest.webmanifest', '/404.html'];
 
 self.addEventListener('install', function (event) {
