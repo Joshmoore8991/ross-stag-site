@@ -7,6 +7,9 @@
 <meta name="description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun!">
 <title>BARCELONA STAG - May 2026</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇪🇸</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -534,9 +537,284 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(212,168,67,.4);
   }
+
+  /* Skip Link (accessibility) */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    padding: 10px 18px;
+    background: var(--gold);
+    color: var(--black);
+    text-decoration: none;
+    border-radius: 0 0 8px 0;
+    z-index: 10002;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .skip-link:focus {
+    left: 0;
+    outline: 3px solid var(--cream);
+  }
+
+  /* Sticky Site Navigation */
+  .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    background: rgba(10,10,10,.88);
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
+    backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid rgba(212,168,67,.18);
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+  .nav-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    flex-shrink: 0;
+    padding-right: 6px;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: center;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a {
+    flex-shrink: 0;
+    color: var(--cream);
+    text-decoration: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    opacity: .7;
+    transition: all .2s ease;
+  }
+  .nav-links a:hover,
+  .nav-links a:focus {
+    color: var(--gold);
+    opacity: 1;
+    background: rgba(212,168,67,.08);
+    outline: none;
+  }
+  .nav-controls {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .nav-controls button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .nav-controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(212,168,67,.35);
+  }
+  .light-theme .site-nav {
+    background: rgba(245,245,245,.9);
+    border-bottom-color: rgba(0,0,0,.1);
+  }
+  .light-theme .nav-links a { color: var(--cream); }
+  .light-theme .nav-links a:hover,
+  .light-theme .nav-links a:focus { background: rgba(212,168,67,.12); }
+  @media (max-width: 600px) {
+    .site-nav { padding: 8px 12px; gap: 6px; }
+    .nav-brand { font-size: 15px; letter-spacing: 2px; }
+    .nav-links { justify-content: flex-start; }
+    .nav-links a { font-size: 12px; padding: 6px 10px; letter-spacing: 1.5px; }
+    .nav-controls button { width: 34px; height: 34px; font-size: 14px; }
+  }
+
+  /* Back-to-top floating button */
+  #back-to-top {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(212,168,67,.35);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity .3s ease, transform .3s ease, box-shadow .3s ease;
+    z-index: 400;
+  }
+  #back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  #back-to-top:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(212,168,67,.5);
+  }
+
+  /* Scroll offset for anchor targets so sticky nav doesn't cover headings */
+  section[id], div[id="rsvp"], #trip-schedule-section {
+    scroll-margin-top: 70px;
+  }
+
+  /* Challenge Timer */
+  .challenge-timer {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(212,168,67,.15);
+  }
+  .challenge-timer .timer-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: .55;
+    margin-bottom: 12px;
+  }
+  .challenge-timer .timer-presets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .challenge-timer .timer-preset {
+    padding: 6px 14px;
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(212,168,67,.35);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .2s ease;
+  }
+  .challenge-timer .timer-preset:hover {
+    background: rgba(212,168,67,.12);
+    border-color: var(--gold);
+  }
+  .challenge-timer .timer-preset.active {
+    background: var(--gold);
+    color: var(--black);
+    border-color: var(--gold);
+  }
+  .challenge-timer #timer-custom {
+    width: 110px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(212,168,67,.25);
+    background: rgba(255,255,255,.05);
+    color: var(--cream);
+    font-size: 13px;
+    margin: 0;
+  }
+  .light-theme .challenge-timer #timer-custom {
+    background: rgba(0,0,0,.04);
+    border-color: rgba(0,0,0,.18);
+  }
+  .challenge-timer .timer-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 12vw, 72px);
+    color: var(--gold);
+    letter-spacing: 4px;
+    line-height: 1;
+    margin: 6px 0 12px;
+    transition: color .3s ease, transform .2s ease;
+  }
+  .challenge-timer .timer-display.warning { color: var(--accent); }
+  .challenge-timer .timer-display.finished {
+    animation: timerFlash 0.6s ease-in-out 3;
+  }
+  @keyframes timerFlash {
+    0%, 100% { color: var(--gold); transform: scale(1); }
+    50% { color: var(--accent); transform: scale(1.08); }
+  }
+  .challenge-timer .timer-bar {
+    width: 100%;
+    max-width: 360px;
+    height: 8px;
+    margin: 0 auto 10px;
+    background: rgba(255,255,255,.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .light-theme .challenge-timer .timer-bar { background: rgba(0,0,0,.08); }
+  .challenge-timer #timer-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--sun));
+    border-radius: 4px;
+    transition: width .3s linear, background .3s ease;
+  }
+  .challenge-timer #timer-bar-fill.warning {
+    background: linear-gradient(90deg, var(--accent), #ff6b3d);
+  }
+  .challenge-timer .timer-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .challenge-timer .timer-controls button {
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid rgba(212,168,67,.35);
+    background: transparent;
+    color: var(--cream);
+    transition: all .2s ease;
+  }
+  .challenge-timer .timer-controls button:hover {
+    border-color: var(--gold);
+    background: rgba(212,168,67,.08);
+  }
+  .challenge-timer #timer-start-btn {
+    background: var(--gold);
+    color: var(--black);
+    border-color: var(--gold);
+  }
+  .challenge-timer #timer-start-btn:hover {
+    background: var(--sun);
+  }
+  .challenge-timer #timer-msg {
+    margin-top: 10px;
+    opacity: .75;
+    font-size: 13px;
+    min-height: 18px;
+  }
 </style>
 </head>
 <body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div id="login-overlay">
   <div class="login-box">
@@ -548,10 +826,25 @@
   </div>
 </div>
 
+<nav class="site-nav" aria-label="Primary">
+  <div class="nav-brand">BCN '26</div>
+  <div class="nav-links">
+    <a href="#lads">Crew</a>
+    <a href="#flights">Trip</a>
+    <a href="#rules">Rules</a>
+    <a href="#highlights">Plans</a>
+    <a href="#games">Games</a>
+    <a href="#rsvp">RSVP</a>
+  </div>
+  <div class="nav-controls">
+    <button id="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle light and dark theme" title="Toggle theme">🌙</button>
+    <button id="crew-logout-btn" type="button" onclick="crewLogout()" aria-label="Log out of crew access" title="Log out" style="display:none;">⏏</button>
+  </div>
+</nav>
+
+<main id="main-content">
 <div class="hero">
   <div class="hero-content">
-    <button id="theme-toggle" onclick="toggleTheme()" style="position:absolute; top:20px; right:20px; padding:10px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:50%; width:50px; height:50px; font-size:20px;">🌙</button>
-    <button id="crew-logout-btn" onclick="crewLogout()" style="position:fixed; top:20px; right:90px; padding:10px; background:var(--gold); color:var(--black); border:none; cursor:pointer; border-radius:50%; width:48px; height:48px; font-size:18px; display:none; z-index:10001;">⏏</button>
     <div class="hero-emoji">&#127466;&#127480;</div>
     <h1>BARCELONA</h1>
     <h2>Ross's Stag Do</h2>
@@ -579,7 +872,7 @@
   </div>
 </div>
 
-<section>
+<section id="lads">
   <h2 class="section-title fade-in">The Lads</h2>
   <div class="lads-grid">
     <div class="lad-card fade-in"><div class="lad-avatar">JM</div><div class="lad-name">Joshua Moore</div><div class="lad-role">Best Man</div></div>
@@ -591,7 +884,7 @@
   </div>
 </section>
 
-<section>
+<section id="flights">
   <h2 class="section-title fade-in">Flights</h2>
   <div class="flight-card fade-in">
     <div class="flight-direction">Outbound</div>
@@ -703,7 +996,7 @@
   Ross: the detailed schedule unlocks at 04:00 on 3 May 2026. Time left: <strong id="groom-schedule-countdown">--</strong>
 </p>
 
-<section>
+<section id="rules">
   <h2 class="section-title fade-in">The Rules</h2>
   <div class="rules-grid">
     <div class="rule-card fade-in"><div class="rule-num">01</div><h3>No Phones After Dark</h3><p>What happens in Barca stays in Barca.</p></div>
@@ -735,7 +1028,7 @@
   </div>
 </section>
 
-<section>
+<section id="highlights">
   <h2 class="section-title fade-in">Barcelona Highlights</h2>
   <div class="info-grid">
     <div class="info-card fade-in"><h3>Sagrada Familia</h3><p>The iconic unfinished basilica by Gaudí. A must-see architectural marvel.</p></div>
@@ -816,7 +1109,7 @@
   <h2 class="section-title fade-in">Restaurant Picks</h2>
   <div class="restaurant-grid">
     <div class="restaurant-card fade-in">
-      <img src="https://images.unsplash.com/photo-1515443961218-a51367888e4b?auto=format&fit=crop&w=900&q=80" alt="Tapas dishes at a Barcelona restaurant">
+      <img src="https://images.unsplash.com/photo-1515443961218-a51367888e4b?auto=format&fit=crop&w=900&q=80" alt="Tapas dishes at a Barcelona restaurant" loading="lazy" decoding="async">
       <div class="restaurant-body">
         <h3>El Nacional</h3>
         <div class="restaurant-meta">Eixample • Tapas • Group Friendly</div>
@@ -825,7 +1118,7 @@
       </div>
     </div>
     <div class="restaurant-card fade-in">
-      <img src="https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=900&q=80" alt="Seafood paella on a table">
+      <img src="https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=900&q=80" alt="Seafood paella on a table" loading="lazy" decoding="async">
       <div class="restaurant-body">
         <h3>Can Sole</h3>
         <div class="restaurant-meta">Barceloneta • Seafood • Classic</div>
@@ -834,7 +1127,7 @@
       </div>
     </div>
     <div class="restaurant-card fade-in">
-      <img src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=900&q=80" alt="Grilled steak and sides served on a table">
+      <img src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=900&q=80" alt="Grilled steak and sides served on a table" loading="lazy" decoding="async">
       <div class="restaurant-body">
         <h3>Besta</h3>
         <div class="restaurant-meta">Eixample • Grill • Date Night Vibe</div>
@@ -843,7 +1136,7 @@
       </div>
     </div>
     <div class="restaurant-card fade-in">
-      <img src="https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=900&q=80" alt="Pasta dish and wine on a rustic table">
+      <img src="https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=900&q=80" alt="Pasta dish and wine on a rustic table" loading="lazy" decoding="async">
       <div class="restaurant-body">
         <h3>Parking Pizza</h3>
         <div class="restaurant-meta">Multiple Spots • Pizza • Casual</div>
@@ -852,7 +1145,7 @@
       </div>
     </div>
     <div class="restaurant-card fade-in">
-      <img src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=900&q=80" alt="Brunch plates and coffee arranged on a table">
+      <img src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=900&q=80" alt="Brunch plates and coffee arranged on a table" loading="lazy" decoding="async">
       <div class="restaurant-body">
         <h3>Brunch & Cake</h3>
         <div class="restaurant-meta">Eixample • Brunch • Recovery Stop</div>
@@ -861,7 +1154,7 @@
       </div>
     </div>
     <div class="restaurant-card fade-in">
-      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80" alt="Assorted tapas on a bar counter">
+      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80" alt="Assorted tapas on a bar counter" loading="lazy" decoding="async">
       <div class="restaurant-body">
         <h3>Cerveceria Catalana</h3>
         <div class="restaurant-meta">Eixample • Tapas • Lively</div>
@@ -1009,7 +1302,7 @@
   </div>
 </section>
 
-<section>
+<section id="games">
   <h2 class="section-title fade-in">Stag Do Drinking Game</h2>
   <div class="info-card fade-in" style="text-align:center;">
     <p>Click for a random drinking challenge!</p>
@@ -1041,6 +1334,25 @@
     <p id="random-challenge" style="margin-top:10px; font-weight:bold;"></p>
     <p id="random-challenge-meta" style="margin-top:6px; opacity:.6;"></p>
     <p id="challenge-complete-msg" style="margin-top:6px; opacity:.7;"></p>
+    <div class="challenge-timer" role="timer" aria-live="polite">
+      <div class="timer-label">Challenge Timer</div>
+      <div class="timer-presets">
+        <button type="button" class="timer-preset" data-seconds="30" onclick="setChallengeTimer(30)">30s</button>
+        <button type="button" class="timer-preset" data-seconds="60" onclick="setChallengeTimer(60)">1m</button>
+        <button type="button" class="timer-preset" data-seconds="120" onclick="setChallengeTimer(120)">2m</button>
+        <button type="button" class="timer-preset" data-seconds="300" onclick="setChallengeTimer(300)">5m</button>
+        <input type="number" id="timer-custom" min="5" max="3600" placeholder="Custom (s)" aria-label="Custom timer length in seconds">
+        <button type="button" class="timer-preset" onclick="setChallengeTimerFromCustom()">Set</button>
+      </div>
+      <div id="timer-display" class="timer-display">00:00</div>
+      <div class="timer-bar" aria-hidden="true"><div id="timer-bar-fill"></div></div>
+      <div class="timer-controls">
+        <button type="button" id="timer-start-btn" onclick="startChallengeTimer()">Start</button>
+        <button type="button" id="timer-pause-btn" onclick="pauseChallengeTimer()">Pause</button>
+        <button type="button" id="timer-reset-btn" onclick="resetChallengeTimer()">Reset</button>
+      </div>
+      <p id="timer-msg"></p>
+    </div>
   </div>
 </section>
 
@@ -1141,7 +1453,7 @@
   </div>
 </section>
 
-<div class="rsvp-section fade-in">
+<div class="rsvp-section fade-in" id="rsvp">
   <h2 class="section-title" style="text-align:center;">Vamos Barcelona</h2>
   <p style="opacity:.5; max-width:420px; margin:0 auto; line-height:1.7; font-size:14px;">
     3 nights. 6 lads. Zero hold bags. Maximum carnage. See you at Belfast International, 4am sharp.
@@ -1150,6 +1462,9 @@
 </div>
 
 <footer>Barcelona Stag 2026 &#183; Ross Wightman</footer>
+</main>
+
+<button id="back-to-top" type="button" aria-label="Scroll back to top" title="Back to top">&#8593;</button>
 
 <script>
   const target = new Date('2026-05-03T06:10:00').getTime();
@@ -2057,12 +2372,17 @@
     const loggedIn = crewBday && crewBday !== '';
     const isGroom = crewBday === groomBday;
     const isAdmin = crewBday === bmBday;
+    const groomScheduleUnlocked = isGroom && canGroomViewSchedule();
+    const groomScheduleLocked = isGroom && !groomScheduleUnlocked;
+    const scheduleVisible = (loggedIn && !isGroom) || groomScheduleUnlocked;
     if (suggestionSection) suggestionSection.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
     if (bestmanSection) bestmanSection.style.display = isAdmin ? 'block' : 'none';
     if (secretOptional) secretOptional.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
-    if (tripScheduleSection) tripScheduleSection.style.display = (loggedIn && !isGroom) ? 'block' : 'none';
+    if (tripScheduleSection) tripScheduleSection.style.display = scheduleVisible ? 'block' : 'none';
+    const groomLockedMsg = document.getElementById('groom-schedule-locked-msg');
+    if (groomLockedMsg) groomLockedMsg.style.display = groomScheduleLocked ? 'block' : 'none';
     if (loginOverlay) loginOverlay.style.display = loggedIn ? 'none' : 'flex';
-    if (logoutButton) logoutButton.style.display = loggedIn ? 'block' : 'none';
+    if (logoutButton) logoutButton.style.display = loggedIn ? 'inline-flex' : 'none';
     document.body.classList.toggle('overlay-active', !loggedIn);
     if (isAdmin) {
       document.getElementById('approval-panel').style.display = 'block';
@@ -2355,7 +2675,10 @@
       row.style.margin = '8px 0';
       row.style.background = 'var(--dark)';
       const t = document.createElement('p');
-      t.innerHTML = '<strong>' + item.title + '</strong> (' + item.points + ' pts)';
+      const tStrong = document.createElement('strong');
+      tStrong.textContent = item.title;
+      t.appendChild(tStrong);
+      t.appendChild(document.createTextNode(' (' + item.points + ' pts)'));
       row.appendChild(t);
       const m = document.createElement('p');
       m.style.opacity = '.7';
@@ -2487,7 +2810,10 @@
       row.style.margin = '8px 0';
       row.style.background = 'var(--dark)';
       const text = document.createElement('p');
-      text.innerHTML = '<strong>' + item.payer + '</strong> paid £' + Number(item.amount).toFixed(2) + ' for ' + item.note;
+      const payerStrong = document.createElement('strong');
+      payerStrong.textContent = item.payer;
+      text.appendChild(payerStrong);
+      text.appendChild(document.createTextNode(' paid £' + Number(item.amount).toFixed(2) + ' for ' + item.note));
       row.appendChild(text);
       row.appendChild(makeActionButton(
         'Remove',
@@ -2662,6 +2988,16 @@
     document.getElementById('random-challenge-meta').textContent = challenge.type + ' • ' + challenge.difficulty + (challenge.notes ? ' • ' + challenge.notes : '');
     const msg = document.getElementById('challenge-complete-msg');
     if (msg) msg.textContent = '';
+    // Reset the timer for each new challenge, but don't auto-start.
+    if (typeof resetChallengeTimer === 'function') {
+      resetChallengeTimer();
+      const timerMsg = document.getElementById('timer-msg');
+      if (timerMsg) {
+        timerMsg.textContent = 'Ready for "' + challenge.title + '". Hit Start.';
+        timerMsg.style.color = '';
+        timerMsg.style.opacity = '.75';
+      }
+    }
   }
 
   function getChallenge() {
@@ -2683,6 +3019,191 @@
   function skipChallenge() {
     getChallenge();
   }
+
+  // Challenge Timer
+  const challengeTimer = {
+    duration: 60,
+    remaining: 60,
+    endsAt: 0,
+    intervalId: null,
+    running: false,
+    finished: false
+  };
+
+  function formatTimerSeconds(totalSeconds) {
+    const safe = Math.max(0, Math.ceil(totalSeconds));
+    const mins = Math.floor(safe / 60);
+    const secs = safe % 60;
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  }
+
+  function updateTimerPresetHighlight() {
+    const buttons = document.querySelectorAll('.challenge-timer .timer-preset[data-seconds]');
+    buttons.forEach(function (btn) {
+      btn.classList.toggle('active', Number(btn.getAttribute('data-seconds')) === challengeTimer.duration);
+    });
+  }
+
+  function renderChallengeTimer() {
+    const display = document.getElementById('timer-display');
+    const fill = document.getElementById('timer-bar-fill');
+    if (!display || !fill) return;
+    const total = challengeTimer.duration || 1;
+    const remaining = Math.max(0, challengeTimer.remaining);
+    display.textContent = formatTimerSeconds(remaining);
+    const pct = Math.max(0, Math.min(100, (remaining / total) * 100));
+    fill.style.width = pct + '%';
+    const isWarning = remaining <= 10 && remaining > 0;
+    display.classList.toggle('warning', isWarning);
+    fill.classList.toggle('warning', isWarning);
+    if (challengeTimer.finished) {
+      display.classList.add('finished');
+    } else {
+      display.classList.remove('finished');
+    }
+  }
+
+  function stopChallengeTimerInterval() {
+    if (challengeTimer.intervalId) {
+      clearInterval(challengeTimer.intervalId);
+      challengeTimer.intervalId = null;
+    }
+  }
+
+  function playTimerAlert() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const now = ctx.currentTime;
+      [0, 0.25, 0.5].forEach(function (offset) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now + offset);
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.2, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.23);
+      });
+      setTimeout(function () { ctx.close && ctx.close(); }, 900);
+    } catch (e) { /* Audio not available, ignore. */ }
+  }
+
+  function finishChallengeTimer() {
+    stopChallengeTimerInterval();
+    challengeTimer.running = false;
+    challengeTimer.finished = true;
+    challengeTimer.remaining = 0;
+    renderChallengeTimer();
+    const msg = document.getElementById('timer-msg');
+    if (msg) {
+      msg.textContent = "Time's up! Chug or forfeit to the punishment wheel.";
+      msg.style.color = 'var(--accent)';
+    }
+    playTimerAlert();
+    if (navigator.vibrate) {
+      try { navigator.vibrate([200, 100, 200]); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function tickChallengeTimer() {
+    if (!challengeTimer.running) return;
+    const remaining = (challengeTimer.endsAt - Date.now()) / 1000;
+    challengeTimer.remaining = remaining;
+    if (remaining <= 0) {
+      finishChallengeTimer();
+      return;
+    }
+    renderChallengeTimer();
+  }
+
+  function setChallengeTimer(seconds) {
+    const parsed = Math.max(1, Math.min(3600, Math.floor(Number(seconds) || 0)));
+    if (!parsed) return;
+    stopChallengeTimerInterval();
+    challengeTimer.duration = parsed;
+    challengeTimer.remaining = parsed;
+    challengeTimer.running = false;
+    challengeTimer.finished = false;
+    const msg = document.getElementById('timer-msg');
+    if (msg) {
+      msg.textContent = 'Timer set to ' + formatTimerSeconds(parsed) + '. Hit Start.';
+      msg.style.color = '';
+      msg.style.opacity = '.75';
+    }
+    updateTimerPresetHighlight();
+    renderChallengeTimer();
+  }
+
+  function setChallengeTimerFromCustom() {
+    const input = document.getElementById('timer-custom');
+    if (!input) return;
+    const value = Number(input.value);
+    const msg = document.getElementById('timer-msg');
+    if (!Number.isFinite(value) || value < 5 || value > 3600) {
+      if (msg) {
+        msg.textContent = 'Enter a custom length between 5 and 3600 seconds.';
+        msg.style.color = '#C9382A';
+      }
+      return;
+    }
+    setChallengeTimer(value);
+    input.value = '';
+  }
+
+  function startChallengeTimer() {
+    if (challengeTimer.running) return;
+    if (challengeTimer.remaining <= 0) {
+      challengeTimer.remaining = challengeTimer.duration;
+    }
+    challengeTimer.finished = false;
+    challengeTimer.running = true;
+    challengeTimer.endsAt = Date.now() + challengeTimer.remaining * 1000;
+    stopChallengeTimerInterval();
+    challengeTimer.intervalId = setInterval(tickChallengeTimer, 250);
+    const msg = document.getElementById('timer-msg');
+    if (msg) {
+      msg.textContent = currentChallenge
+        ? 'Timer running for: ' + currentChallenge.title
+        : 'Timer running.';
+      msg.style.color = 'var(--gold)';
+    }
+    renderChallengeTimer();
+  }
+
+  function pauseChallengeTimer() {
+    if (!challengeTimer.running) return;
+    stopChallengeTimerInterval();
+    challengeTimer.remaining = Math.max(0, (challengeTimer.endsAt - Date.now()) / 1000);
+    challengeTimer.running = false;
+    const msg = document.getElementById('timer-msg');
+    if (msg) {
+      msg.textContent = 'Paused at ' + formatTimerSeconds(challengeTimer.remaining) + '.';
+      msg.style.color = '';
+      msg.style.opacity = '.75';
+    }
+    renderChallengeTimer();
+  }
+
+  function resetChallengeTimer() {
+    stopChallengeTimerInterval();
+    challengeTimer.running = false;
+    challengeTimer.finished = false;
+    challengeTimer.remaining = challengeTimer.duration;
+    const msg = document.getElementById('timer-msg');
+    if (msg) {
+      msg.textContent = 'Reset to ' + formatTimerSeconds(challengeTimer.duration) + '.';
+      msg.style.color = '';
+      msg.style.opacity = '.75';
+    }
+    renderChallengeTimer();
+  }
+
+  setChallengeTimer(60);
 
   // Random Quote
   const quotes = [
@@ -2742,6 +3263,27 @@
     const history = document.getElementById('punishment-history');
     if (result) result.textContent = punishmentHistory[0];
     if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
+  }
+
+  // Re-check groom schedule access once the unlock moment passes without a reload.
+  setInterval(function () {
+    const crew = getCrewBday();
+    if (crew === groomBday) updateCrewAccess();
+  }, 30000);
+
+  // Back-to-top floating button
+  const backToTopBtn = document.getElementById('back-to-top');
+  if (backToTopBtn) {
+    const toggleBackToTop = function () {
+      if (window.scrollY > 500) backToTopBtn.classList.add('visible');
+      else backToTopBtn.classList.remove('visible');
+    };
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+    toggleBackToTop();
+    backToTopBtn.addEventListener('click', function () {
+      const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    });
   }
 
 </script>
