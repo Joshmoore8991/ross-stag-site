@@ -1,4 +1,9 @@
-﻿  const target = new Date('2026-05-03T06:10:00').getTime();
+﻿  const MS_PER_SECOND = 1000;
+  const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+  const MS_PER_HOUR = 60 * MS_PER_MINUTE;
+  const MS_PER_DAY = 24 * MS_PER_HOUR;
+  const DAYS_UNTIL_ACTIVE = 7;
+  const target = new Date('2026-05-03T06:10:00').getTime();
   function tick() {
     const cdEl = document.querySelector('.countdown');
     const daysEl = document.getElementById('days');
@@ -12,13 +17,25 @@
       if (cdEl) { cdEl.classList.remove('trip-active'); cdEl.classList.add('trip-complete'); }
       return;
     }
-    if (cdEl && diff < 7 * 864e5) { cdEl.classList.add('trip-active'); }
-    daysEl.textContent = String(Math.floor(diff/864e5)).padStart(2,'0');
-    hoursEl.textContent = String(Math.floor((diff%864e5)/36e5)).padStart(2,'0');
-    minsEl.textContent = String(Math.floor((diff%36e5)/6e4)).padStart(2,'0');
-    secsEl.textContent = String(Math.floor((diff%6e4)/1e3)).padStart(2,'0');
+    if (cdEl && diff < DAYS_UNTIL_ACTIVE * MS_PER_DAY) { cdEl.classList.add('trip-active'); }
+    daysEl.textContent = String(Math.floor(diff/MS_PER_DAY)).padStart(2,'0');
+    hoursEl.textContent = String(Math.floor((diff%MS_PER_DAY)/MS_PER_HOUR)).padStart(2,'0');
+    minsEl.textContent = String(Math.floor((diff%MS_PER_HOUR)/MS_PER_MINUTE)).padStart(2,'0');
+    secsEl.textContent = String(Math.floor((diff%MS_PER_MINUTE)/MS_PER_SECOND)).padStart(2,'0');
   }
-  tick(); setInterval(tick, 1000);
+  tick();
+  let countdownInterval = setInterval(tick, MS_PER_SECOND);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    } else if (!countdownInterval) {
+      tick();
+      countdownInterval = setInterval(tick, MS_PER_SECOND);
+    }
+  });
+  window.addEventListener('pagehide', function () {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+  });
   const obs = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold:.12 });
   document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
@@ -155,7 +172,7 @@
           const loginMsg = document.getElementById('crew-login-msg');
           if (loginMsg) {
             loginMsg.textContent = 'Log in to access that section.';
-            loginMsg.style.color = '#C9382A';
+            loginMsg.style.color = 'var(--error)';
           }
           const loginInput = document.getElementById('crew-login-bday');
           if (loginInput) loginInput.focus();
@@ -1103,6 +1120,44 @@
     }
   }
 
+  let offlineIndicatorVisible = false;
+  function ensureOfflineIndicator() {
+    let el = document.getElementById('offline-indicator');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'offline-indicator';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.textContent = 'Offline — changes will sync when back online';
+    el.style.cssText = [
+      'position:fixed', 'bottom:12px', 'left:50%',
+      'transform:translateX(-50%) translateY(20px)',
+      'background:rgba(201,56,42,.95)', 'color:#fff',
+      'padding:8px 16px', 'border-radius:20px',
+      'font-size:13px', 'font-weight:600', 'letter-spacing:.03em',
+      'box-shadow:0 6px 20px rgba(0,0,0,.4)',
+      'z-index:9999', 'opacity:0',
+      'transition:opacity .3s ease, transform .3s ease',
+      'pointer-events:none'
+    ].join(';');
+    document.body.appendChild(el);
+    return el;
+  }
+  function setOfflineIndicator(isOffline) {
+    if (isOffline === offlineIndicatorVisible) return;
+    offlineIndicatorVisible = isOffline;
+    const el = ensureOfflineIndicator();
+    if (isOffline) {
+      el.style.opacity = '1';
+      el.style.transform = 'translateX(-50%) translateY(0)';
+    } else {
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(-50%) translateY(20px)';
+    }
+  }
+  window.addEventListener('online', function () { setOfflineIndicator(false); });
+  window.addEventListener('offline', function () { setOfflineIndicator(true); });
+
   function queueChallengeStateSync(force) {
     if (!challengeCloudSyncEnabled) return;
     if (!force) {
@@ -1144,9 +1199,11 @@
         if (!row || !row.state || typeof row.state !== 'object') return;
         applyChallengeStatePayload(row.state);
         lastChallengeSyncHash = hashChallengePayload(getChallengeStatePayload());
+        setOfflineIndicator(false);
       })
       .catch(function () {
         // Silent fallback to local-only behavior when cloud sync is unavailable.
+        setOfflineIndicator(true);
       })
       .finally(function () {
         challengeSyncInFlight = false;
@@ -1320,19 +1377,19 @@
     if (!msg) return;
     if (!currentChallenge) {
       msg.textContent = 'Generate a challenge before marking complete.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (currentChallengeDeadline && Date.now() > currentChallengeDeadline) {
       msg.textContent = 'Time limit expired. Generate a new challenge.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       updateChallengeTimerDisplay();
       return;
     }
     const key = getChallengeKey(currentChallenge);
     if (completedChallengeIds.includes(key)) {
       msg.textContent = 'Already marked completed.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     completedChallengeIds.push(key);
@@ -1429,12 +1486,12 @@
     const crew = getCurrentCrewKey();
     if (!crew) {
       msg.textContent = 'Log in with your crew access code to submit challenges.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (crew === groomBday) {
       msg.textContent = 'Ross cannot submit suggestions.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     const title = sanitizeText(titleInput.value, 120);
@@ -1443,7 +1500,7 @@
     const difficulty = difficultyInput.value;
     if (title.length < 3) {
       msg.textContent = 'Add a challenge title (at least 3 characters).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     const normalized = normalizeTitle(title);
@@ -1451,7 +1508,7 @@
     const duplicateApproved = approvedChallenges.some(item => normalizeTitle(item.title) === normalized);
     if (duplicatePending || duplicateApproved) {
       msg.textContent = 'That challenge already exists.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     const todayKey = getTodayKey();
@@ -1459,7 +1516,7 @@
     const submissionsToday = challengeSubmissionLog[submissionKey] || 0;
     if (submissionsToday >= 4) {
       msg.textContent = 'Daily limit reached (4 challenges per crew member).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     challengeSubmissionLog[submissionKey] = submissionsToday + 1;
@@ -1494,12 +1551,12 @@
 
     if (!crew) {
       msg.textContent = 'Log in with your crew access code to submit schedule items.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (crew === groomBday) {
       msg.textContent = 'Ross cannot submit suggestions.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1511,12 +1568,12 @@
 
     if (title.length < 3) {
       msg.textContent = 'Add a title (at least 3 characters).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (day.length < 2 || time.length < 2 || details.length < 3) {
       msg.textContent = 'Add day, time, and details before submitting.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1525,7 +1582,7 @@
     const duplicateApproved = approvedScheduleSuggestions.some(item => normalizeTitle(item.title + '|' + item.day + '|' + item.time) === normalized);
     if (duplicatePending || duplicateApproved) {
       msg.textContent = 'That schedule item already exists.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1534,7 +1591,7 @@
     const submissionsToday = scheduleSubmissionLog[submissionKey] || 0;
     if (submissionsToday >= 4) {
       msg.textContent = 'Daily limit reached (4 schedule items per crew member).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1572,12 +1629,12 @@
 
     if (!crew) {
       msg.textContent = 'Log in with your crew access code to submit site changes.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (crew === groomBday) {
       msg.textContent = 'Ross cannot submit suggestions.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1588,7 +1645,7 @@
 
     if (title.length < 3 || details.length < 6) {
       msg.textContent = 'Add a clear title and details before submitting.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1597,7 +1654,7 @@
     const duplicateApproved = approvedSiteChangeSuggestions.some(item => normalizeTitle(item.sectionName + '|' + item.title + '|' + item.details) === normalized);
     if (duplicatePending || duplicateApproved) {
       msg.textContent = 'That site change suggestion already exists.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1606,7 +1663,7 @@
     const submissionsToday = siteChangeSubmissionLog[submissionKey] || 0;
     if (submissionsToday >= 6) {
       msg.textContent = 'Daily limit reached (6 site changes per crew member).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1771,12 +1828,12 @@
 
     if (!crew) {
       msg.textContent = 'Log in with your crew access code first.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (crew === groomBday) {
       msg.textContent = 'Ross cannot submit suggestions.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1787,7 +1844,7 @@
 
     if (title.length < 3 || details.length < 6) {
       msg.textContent = 'Add a title (3+ chars) and details (6+ chars).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1795,7 +1852,7 @@
     if (pendingActivitySuggestions.some(function (i) { return normalizeTitle(i.title) === normalized; }) ||
         approvedActivitySuggestions.some(function (i) { return normalizeTitle(i.title) === normalized; })) {
       msg.textContent = 'That activity suggestion already exists.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -1804,7 +1861,7 @@
     var submissionsToday = activitySubmissionLog[submissionKey] || 0;
     if (submissionsToday >= 6) {
       msg.textContent = 'Daily limit reached (6 activity submissions).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -2225,17 +2282,17 @@
 
     if (!normalizedCode) {
       msg.textContent = 'Enter a valid crew code first.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (!normalizedName || normalizedName.length < 2) {
       msg.textContent = 'Enter a display name with at least 2 characters.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (normalizedCode !== groomBday && !allowedCrewBdays.has(normalizedCode)) {
       msg.textContent = 'Code must exist in the crew access list first.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -2266,17 +2323,17 @@
     const normalized = normalizeCrewCode(input.value);
     if (!normalized) {
       msg.textContent = 'Enter 6 digits or DDMMYYYY.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (normalized === bmBday || normalized === groomBday) {
       msg.textContent = 'That code is reserved.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (allowedCrewBdays.has(normalized)) {
       msg.textContent = 'Code already exists.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
 
@@ -2510,20 +2567,45 @@
     }
   }
 
+  const LOGIN_LOCK_KEY = 'ross_login_lock_v1';
   let loginFailCount = 0;
   let loginLockedUntil = 0;
+  try {
+    const stored = localStorage.getItem(LOGIN_LOCK_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed.until === 'number' && parsed.until > Date.now()) {
+        loginLockedUntil = parsed.until;
+        loginFailCount = parsed.fails || 0;
+      } else {
+        localStorage.removeItem(LOGIN_LOCK_KEY);
+      }
+    }
+  } catch (_) { /* ignore */ }
+
+  function persistLoginLock() {
+    try {
+      if (loginLockedUntil > Date.now()) {
+        localStorage.setItem(LOGIN_LOCK_KEY, JSON.stringify({ until: loginLockedUntil, fails: loginFailCount }));
+      } else {
+        localStorage.removeItem(LOGIN_LOCK_KEY);
+      }
+    } catch (_) { /* ignore quota/private-mode errors */ }
+  }
 
   function registerLoginFailure() {
     loginFailCount += 1;
     if (loginFailCount < 3) return 0;
     const cooldownMs = Math.min(30000, Math.pow(2, loginFailCount - 3) * 1000);
     loginLockedUntil = Date.now() + cooldownMs;
+    persistLoginLock();
     return cooldownMs;
   }
 
   function clearLoginFailures() {
     loginFailCount = 0;
     loginLockedUntil = 0;
+    persistLoginLock();
   }
 
   function crewLogin() {
@@ -2533,14 +2615,14 @@
     if (Date.now() < loginLockedUntil) {
       const waitSec = Math.ceil((loginLockedUntil - Date.now()) / 1000);
       msg.textContent = 'Too many attempts. Try again in ' + waitSec + ' seconds.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       shakeLoginBox();
       return;
     }
     if (!bday) {
       registerLoginFailure();
       msg.textContent = 'Enter a valid crew password (name or DOB code).';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       shakeLoginBox();
       return;
     }
@@ -2548,7 +2630,7 @@
       const cooldown = registerLoginFailure();
       msg.textContent = 'Access code not recognized. Ask Joshua to add it.';
       if (cooldown > 0) msg.textContent += ' Cooldown: ' + Math.ceil(cooldown / 1000) + 's.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       shakeLoginBox();
       return;
     }
@@ -2557,7 +2639,7 @@
     if (!isAllowedCrewBday(getCrewBday())) {
       setCrewBday('');
       msg.textContent = 'Access code not recognized. Ask Joshua to add it.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       shakeLoginBox();
       return;
     }
@@ -2588,6 +2670,42 @@
     });
   }
 
+  // Focus trap for the login modal — it has no dismiss affordance, so we keep
+  // focus inside until the user successfully logs in.
+  (function wireLoginFocusTrap() {
+    const overlay = document.getElementById('login-overlay');
+    if (!overlay) return;
+    function focusable() {
+      return Array.from(overlay.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )).filter(function (el) { return !el.disabled && el.offsetParent !== null; });
+    }
+    overlay.addEventListener('keydown', function (event) {
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+    // Auto-focus the input when the overlay is visible.
+    const ensureFocus = function () {
+      if (overlay.style.display === 'none') return;
+      if (crewLoginInput && document.activeElement !== crewLoginInput) {
+        try { crewLoginInput.focus({ preventScroll: true }); } catch (_) { crewLoginInput.focus(); }
+      }
+    };
+    setTimeout(ensureFocus, 50);
+    const mo = new MutationObserver(ensureFocus);
+    mo.observe(overlay, { attributes: true, attributeFilter: ['style'] });
+  })();
+
   function crewLogout() {
     const activeCode = getCrewBday();
     if (activeCode) {
@@ -2607,7 +2725,7 @@
     const msg = document.getElementById('crew-login-msg');
     if (msg) {
       msg.textContent = 'Crew section locked.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
     }
     updateCrewAccess();
   }
@@ -2857,12 +2975,12 @@
     const team = teamField.value;
     if (title.length < 3) {
       msg.textContent = 'Mission title must be at least 3 characters.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     if (!Number.isFinite(points) || points < 1 || points > 10) {
       msg.textContent = 'Points must be between 1 and 10.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     missionBoard.unshift({
@@ -2982,7 +3100,7 @@
     const numericAmount = Number(amount.value);
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       msg.textContent = 'Enter an amount greater than 0.';
-      msg.style.color = '#C9382A';
+      msg.style.color = 'var(--error)';
       return;
     }
     expenseEntries.unshift({
@@ -3326,11 +3444,44 @@
     fill.style.width = clamped + '%';
   }
 
-  function playChallengeTimerBeep() {
+  let sharedAudioCtx = null;
+  function getAudioContext() {
+    if (sharedAudioCtx) return sharedAudioCtx;
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
+      if (!Ctx) return null;
+      sharedAudioCtx = new Ctx();
+      return sharedAudioCtx;
+    } catch (e) { return null; }
+  }
+
+  function primeAudioContext() {
+    // Resume AudioContext on first user gesture — required for iOS Safari.
+    const ctx = getAudioContext();
+    if (ctx && ctx.state === 'suspended' && ctx.resume) {
+      try { ctx.resume(); } catch (_) { /* ignore */ }
+    }
+  }
+
+  (function wireAudioPriming() {
+    const handler = function () {
+      primeAudioContext();
+      document.removeEventListener('pointerdown', handler, true);
+      document.removeEventListener('keydown', handler, true);
+      document.removeEventListener('touchstart', handler, true);
+    };
+    document.addEventListener('pointerdown', handler, true);
+    document.addEventListener('keydown', handler, true);
+    document.addEventListener('touchstart', handler, true);
+  })();
+
+  function playChallengeTimerBeep() {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended' && ctx.resume) {
+        try { ctx.resume(); } catch (_) { /* ignore */ }
+      }
       const start = ctx.currentTime;
       [0, 0.25, 0.5].forEach(function (offset) {
         const osc = ctx.createOscillator();
@@ -3345,7 +3496,6 @@
         osc.start(start + offset);
         osc.stop(start + offset + 0.23);
       });
-      setTimeout(function () { if (ctx.close) ctx.close(); }, 900);
     } catch (e) { /* Audio not available, ignore. */ }
     if (navigator.vibrate) {
       try { navigator.vibrate([200, 100, 200]); } catch (e) { /* Ignore vibration errors. */ }

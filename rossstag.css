@@ -4,6 +4,7 @@
     --cream: #F5F0E8;
     --dark: #1A1A1A;
     --accent: #C9382A;
+    --error: #C9382A;
     --sun: #F4A423;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }

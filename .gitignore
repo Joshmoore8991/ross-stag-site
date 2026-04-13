@@ -1,10 +1,15 @@
 ﻿*
 !.gitignore
-!rossstag.html
 !rossstag.css
 !rossstag.js
 !index.html
 !package.json
 !supabase_setup.sql
+!404.html
+!robots.txt
+!manifest.webmanifest
+!.github/
+!.github/**
+!.nojekyll
 
 
