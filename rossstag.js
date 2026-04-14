@@ -4493,7 +4493,7 @@
     const cards = document.querySelectorAll('.lad-card[data-member]');
     if (!cards.length) return;
     const now = Date.now();
-    const codeByMember = { joshua: '160698', emmanuel: '230997', ross: '170997', kealen: '270298', jack: '120398', ciaran: '240598' };
+    const codeByMember = { joshua: '160698', emmanuel: '230997', ross: '170997', kelan: '270298', jack: '120398', ciaran: '240598' };
     let onlineCount = 0;
     cards.forEach(function (card) {
       const member = card.getAttribute('data-member');
@@ -4584,7 +4584,7 @@
   function renderLeaderboard() {
     const container = document.getElementById('crew-leaderboard');
     if (!container) return;
-    const codeByMember = { joshua: '160698', emmanuel: '230997', kealen: '270298', jack: '120398', ciaran: '240598' };
+    const codeByMember = { joshua: '160698', emmanuel: '230997', kelan: '270298', jack: '120398', ciaran: '240598' };
     const board = [];
     Object.keys(codeByMember).forEach(function (m) {
       const code = codeByMember[m];
