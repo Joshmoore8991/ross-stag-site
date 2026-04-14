@@ -1765,6 +1765,7 @@
       completions: []
     });
     saveChallengeData();
+    buzz([14, 30, 14]);
     msg.textContent = 'Challenge submitted and now live for the crew.';
     msg.style.color = 'var(--gold)';
     titleInput.value = '';
@@ -3129,9 +3130,23 @@
     const heading = document.createElement('h3');
     heading.textContent = 'Live Crew Challenges';
     container.appendChild(heading);
+    // Today-focused mini stats.
+    const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+    const dayStartMs = dayStart.getTime();
+    let submittedToday = 0, doneTotal = 0;
+    allVisible.forEach(function (c) {
+      if ((c.createdAt || 0) >= dayStartMs) submittedToday += 1;
+      if (Array.isArray(c.completions)) doneTotal += c.completions.length;
+    });
+    const stats = document.createElement('div');
+    stats.className = 'feed-stats';
+    stats.innerHTML = '<span class="feed-stat"><strong>' + allVisible.length + '</strong> live</span>'
+      + '<span class="feed-stat"><strong>' + submittedToday + '</strong> today</span>'
+      + '<span class="feed-stat"><strong>' + doneTotal + '</strong> completions</span>';
+    container.appendChild(stats);
     const summary = document.createElement('p');
     summary.className = 'feed-summary';
-    summary.textContent = 'Showing ' + filtered.length + ' of ' + allVisible.length + ' live challenge' + (allVisible.length === 1 ? '' : 's') + '. Submit or complete any to boost your score.';
+    summary.textContent = 'Showing ' + filtered.length + ' of ' + allVisible.length + ' live challenge' + (allVisible.length === 1 ? '' : 's') + '. Tap Refresh to pull the latest from Supabase.';
     container.appendChild(summary);
     if (!filtered.length) {
       const empty = document.createElement('p');
@@ -3305,9 +3320,11 @@
     const already = challenge.completions.indexOf(crew) !== -1;
     if (already) {
       challenge.completions = challenge.completions.filter(function (c) { return c !== crew; });
+      buzz(10);
       showToast && showToast('Completion removed.', 'info');
     } else {
       challenge.completions.push(crew);
+      buzz([18, 40, 18]);
       showToast && showToast('Nice one — challenge marked done.', 'success');
     }
     saveChallengeData();
@@ -3326,6 +3343,7 @@
       ? window.location.origin + window.location.pathname + '#suggestion-section'
       : '';
     const payload = url ? (text + ' ' + url) : text;
+    buzz(12);
     if (navigator && navigator.share) {
       navigator.share({ title: 'Barcelona Stag Challenge', text: text, url: url || undefined })
         .then(function () { showToast && showToast('Shared!', 'success'); })
@@ -4258,6 +4276,90 @@
     }, duration || 3000);
   }
 
+  // ── Haptic buzz (mobile-only, no-op on desktop/unsupported) ───────────
+  function buzz(pattern) {
+    try {
+      if (navigator && typeof navigator.vibrate === 'function') {
+        navigator.vibrate(pattern);
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  // ── Offline / online indicator banner ─────────────────────────────────
+  function ensureConnectivityBanner() {
+    var bar = document.getElementById('connectivity-banner');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'connectivity-banner';
+      bar.className = 'connectivity-banner';
+      bar.setAttribute('role', 'status');
+      bar.setAttribute('aria-live', 'polite');
+      document.body.appendChild(bar);
+    }
+    return bar;
+  }
+  function updateConnectivityState() {
+    var online = (typeof navigator !== 'undefined') ? navigator.onLine !== false : true;
+    var bar = ensureConnectivityBanner();
+    if (online) {
+      if (bar.classList.contains('is-offline')) {
+        bar.textContent = 'Back online — syncing crew state…';
+        bar.classList.remove('is-offline');
+        bar.classList.add('is-reconnected');
+        setTimeout(function () { bar.classList.remove('visible'); bar.classList.remove('is-reconnected'); }, 2200);
+        try { if (typeof queueChallengeStateSync === 'function') queueChallengeStateSync(true); } catch (_) {}
+      } else {
+        bar.classList.remove('visible');
+      }
+    } else {
+      bar.textContent = 'Offline — submissions will sync when you reconnect.';
+      bar.classList.add('visible');
+      bar.classList.add('is-offline');
+    }
+  }
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('online', updateConnectivityState);
+    window.addEventListener('offline', updateConnectivityState);
+    setTimeout(updateConnectivityState, 400);
+  }
+
+  // ── Auto-grow textareas ───────────────────────────────────────────────
+  function autoGrowTextarea(el) {
+    if (!el || el.tagName !== 'TEXTAREA') return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 360) + 'px';
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('input', function (e) {
+      if (e.target && e.target.tagName === 'TEXTAREA' && e.target.classList.contains('form-input')) {
+        autoGrowTextarea(e.target);
+      }
+    });
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.tagName === 'TEXTAREA' && e.target.classList.contains('form-input')) {
+        autoGrowTextarea(e.target);
+      }
+    });
+  }
+
+  // ── Scroll to challenge submit form (mobile FAB target) ──────────────
+  function scrollToChallengeForm() {
+    buzz(15);
+    var sec = document.getElementById('suggestion-section');
+    var input = document.getElementById('challenge-title');
+    if (sec && sec.style.display === 'none') {
+      // Not visible (logged out). Show toast.
+      if (typeof showToast === 'function') showToast('Log in with your crew code first to submit a challenge.');
+      return;
+    }
+    if (input) {
+      try { input.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) { input.scrollIntoView(); }
+      setTimeout(function () { try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); } }, 400);
+    } else if (sec) {
+      try { sec.scrollIntoView({ behavior: 'smooth' }); } catch (_) { sec.scrollIntoView(); }
+    }
+  }
+
   // ── Welcome greeting bar ──
   function showWelcomeGreeting(name) {
     var existing = document.querySelector('.welcome-greeting');
@@ -4389,7 +4491,8 @@
       onChallengeTypeChange: typeof onChallengeTypeChange === 'function' ? onChallengeTypeChange : null,
       onChallengeDifficultyChange: typeof onChallengeDifficultyChange === 'function' ? onChallengeDifficultyChange : null,
       onChallengeSortChange: typeof onChallengeSortChange === 'function' ? onChallengeSortChange : null,
-      forceLiveFeedRefresh: typeof forceLiveFeedRefresh === 'function' ? forceLiveFeedRefresh : null
+      forceLiveFeedRefresh: typeof forceLiveFeedRefresh === 'function' ? forceLiveFeedRefresh : null,
+      scrollToChallengeForm: typeof scrollToChallengeForm === 'function' ? scrollToChallengeForm : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');

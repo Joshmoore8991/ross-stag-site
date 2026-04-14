@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260414-5">
+<link rel="stylesheet" href="rossstag.css?v=20260414-6">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -712,12 +712,12 @@
 </section>
 
 <section id="bestman-approval-section" style="display:none;">
-  <h2 class="section-title fade-in">&#x1F6E1; Best Man Admin</h2>
+  <h2 class="section-title fade-in">&#x1F6E1; Crew Access Manager</h2>
   <div class="info-card fade-in admin-panel-card">
-    <div class="admin-badge">&#x1F451; Joshua &mdash; Admin Mode Active</div>
+    <div class="admin-badge">&#x1F451; Joshua &mdash; Best Man</div>
     <div id="approval-panel" style="display:none; margin-top:16px;">
       <h3>Crew Access List</h3>
-      <p style="opacity:.7; margin-bottom:12px;">Approvals are off. Use this panel to manage crew access codes and names.</p>
+      <p style="opacity:.7; margin-bottom:12px;">Challenges go live without approval. Use this panel to add or remove crew access codes and names.</p>
       <div class="admin-add-row">
         <input type="text" id="approval-new-code" placeholder="Add code (6 digits or DDMMYYYY)" class="admin-input">
         <button data-action="addCrewCodeByJoshua" class="btn btn-gold btn-sm">Add Code</button>
@@ -930,6 +930,7 @@
 </main>
 
 <button id="scroll-top-btn" type="button" aria-label="Scroll to top" title="Back to top" data-action="scrollToTop">&uarr;</button>
+<button id="submit-fab" type="button" aria-label="Submit a new challenge" title="Submit a new challenge" data-action="scrollToChallengeForm">&#x2795; <span class="submit-fab-label">New challenge</span></button>
 <div id="toast-container"></div>
 <canvas id="confetti-canvas"></canvas>
 
@@ -943,7 +944,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260414-5"></script>
+<script src="rossstag.js?v=20260414-6"></script>
 </body>
 </html>
 

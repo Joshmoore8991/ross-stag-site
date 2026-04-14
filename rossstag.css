@@ -2091,3 +2091,80 @@
     .challenge-card.just-submitted { animation: none; background-color: rgba(212, 168, 67, 0.12); }
     #live-feed-refresh.is-loading::after { animation: none; }
   }
+
+  /* ── Feed mini stats ──────────────────────────────────────────────── */
+  .feed-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 10px;
+  }
+  .feed-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(212, 168, 67, 0.25);
+    color: #E5E7EB;
+  }
+  .feed-stat strong { color: #D4A843; font-size: 13px; }
+
+  /* ── Connectivity / offline banner ────────────────────────────────── */
+  .connectivity-banner {
+    position: fixed;
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%) translateY(-120%);
+    z-index: 9999;
+    max-width: calc(100% - 24px);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    background: rgba(201, 56, 42, 0.95);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    transition: transform .32s ease, opacity .32s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .connectivity-banner.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .connectivity-banner.is-reconnected { background: rgba(34, 160, 107, 0.95); }
+
+  /* ── Floating Submit Challenge FAB (mobile-first) ─────────────────── */
+  #submit-fab {
+    position: fixed;
+    right: 16px;
+    bottom: 20px;
+    z-index: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #D4A843, #B8902F);
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: .02em;
+    border: none;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+  }
+  #submit-fab:active { transform: translateY(1px); }
+  #submit-fab:focus-visible { outline: 3px solid rgba(212, 168, 67, 0.55); outline-offset: 2px; }
+  @media (min-width: 900px) {
+    #submit-fab { right: 28px; bottom: 28px; }
+  }
+  @media (max-width: 560px) {
+    #submit-fab { padding: 12px 16px; font-size: 14px; }
+    #submit-fab .submit-fab-label { display: none; }
+    #submit-fab { width: 52px; height: 52px; justify-content: center; padding: 0; }
+  }
+
+  /* Textareas that auto-grow feel smoother with a tiny transition. */
+  textarea.form-input { transition: height .12s ease; }
