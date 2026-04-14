@@ -5008,22 +5008,52 @@
   }
   function refreshWeather(force) {
     const body = document.getElementById('weather-body');
+    const updated = document.getElementById('weather-updated');
     if (!body) return;
     let cached = null;
     try { cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || 'null'); } catch (_) { cached = null; }
     const fresh = cached && cached.ts && (Date.now() - cached.ts) < WEATHER_CACHE_MS;
     if (cached && cached.data) renderWeatherData(cached.data);
     if (fresh && !force) return;
+
+    // Trip runs 3-6 May 2026. Open-Meteo's forecast window is ~16 days,
+    // so if the trip is outside the window show the next 7 days instead
+    // and label the card as a "preview".
+    const TRIP_START = '2026-05-03';
+    const TRIP_END = '2026-05-06';
+    const today = new Date();
+    const todayIso = today.toISOString().slice(0, 10);
+    const tripStartMs = new Date(TRIP_START + 'T00:00:00Z').getTime();
+    const tripEndMs = new Date(TRIP_END + 'T23:59:59Z').getTime();
+    const sixteenDaysMs = 16 * 24 * 60 * 60 * 1000;
+    const tripInRange = (tripStartMs - today.getTime()) <= sixteenDaysMs && today.getTime() <= tripEndMs;
+
+    let startDate, endDate, isTripWindow;
+    if (tripInRange) {
+      startDate = today.getTime() > tripStartMs ? todayIso : TRIP_START;
+      endDate = TRIP_END;
+      isTripWindow = true;
+    } else {
+      // Preview: show today + 6 days ahead until we're close enough to forecast the trip itself.
+      const endMs = today.getTime() + 6 * 24 * 60 * 60 * 1000;
+      startDate = todayIso;
+      endDate = new Date(endMs).toISOString().slice(0, 10);
+      isTripWindow = false;
+    }
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=41.3874&longitude=2.1686'
       + '&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
       + '&timezone=Europe%2FMadrid'
-      + '&start_date=2026-05-03&end_date=2026-05-06';
+      + '&start_date=' + startDate + '&end_date=' + endDate;
     body.setAttribute('data-loading', '1');
     fetch(url, { cache: 'no-store' })
       .then(function (res) { return res.ok ? res.json() : null; })
       .then(function (json) {
         if (!json) { if (!cached) body.textContent = 'Weather unavailable.'; return; }
         renderWeatherData(json);
+        if (updated) {
+          const mode = isTripWindow ? 'Trip window • ' : 'Barcelona preview • ';
+          updated.textContent = mode + 'Updated ' + new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
         try { localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: json })); } catch (_) { /* ignore */ }
       })
       .catch(function () { if (!cached) body.textContent = 'Weather unavailable.'; })
