@@ -58,7 +58,7 @@ insert into public.crew_login_profiles (crew_code, aliases, active) values
   ('160698', array['josh', 'joshua', 'joshua moore', 'jm'], true),
   ('170997', array['ross', 'ross wightman', 'rw'], true),
   ('230997', array['emmanuel', 'emmanuel pascual', 'ep'], true),
-  ('270298', array['kelan', 'kelan boylan', 'kb'], true),
+  ('270298', array['kealen', 'kealen boylan', 'kb'], true),
   ('120398', array['jack', 'jack doherty', 'jd'], true),
   ('240598', array['ciaran', 'ciaran stone', 'cs'], true)
 on conflict (crew_code) do update
