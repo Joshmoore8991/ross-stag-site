@@ -303,7 +303,7 @@
     '170997': 'Ross',
     '160698': 'Joshua',
     '230997': 'Emmanuel',
-    '270298': 'Kealen',
+    '270298': 'Kelan',
     '120398': 'Jack',
     '240598': 'Ciaran'
   };
@@ -313,7 +313,7 @@
     '170997': 'ross',
     '160698': 'joshua',
     '230997': 'emmanuel',
-    '270298': 'kealen',
+    '270298': 'kelan',
     '120398': 'jack',
     '240598': 'ciaran'
   };
@@ -334,7 +334,7 @@
       role: 'Vibes Captain'
     },
     '270298': {
-      title: 'Kealen Has Joined The Crew',
+      title: 'Kelan Has Joined The Crew',
       subtitle: 'Challenge engine activated. Keep the lads moving.',
       role: 'Challenge Specialist'
     },
@@ -357,8 +357,8 @@
     emmanuelpascual: '230997',
     ross: '170997',
     rosswightman: '170997',
-    kealen: '270298',
-    kealenboylan: '270298',
+    kelan: '270298',
+    kelanboylan: '270298',
     jack: '120398',
     jackdoherty: '120398',
     ciaran: '240598',
@@ -589,7 +589,7 @@
     scoreB: 0,
     currentAssignment: null
   });
-  const crewMembers = ['Joshua', 'Emmanuel', 'Ross', 'Kealen', 'Jack', 'Ciaran'];
+  const crewMembers = ['Joshua', 'Emmanuel', 'Ross', 'Kelan', 'Jack', 'Ciaran'];
   let missionBoard = loadJSON('missionBoard', []);
   let expenseEntries = loadJSON('expenseEntries', []);
   let pollBoard = loadJSON('pollBoard', {
