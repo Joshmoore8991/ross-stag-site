@@ -523,6 +523,8 @@
   let challengeVoteLog = loadJSON('challengeVoteLog', {});
   let challengeReportLog = loadJSON('challengeReportLog', {});
   let challengeSubmissionLog = loadJSON('challengeSubmissionLog', {});
+  let challengeFeedFilter = { search: '', type: 'all', difficulty: 'all', sort: 'top' };
+  let lastChallengeFeedCount = 0;
   const supabaseUrlMeta = document.querySelector('meta[name="supabase-url"]');
   const supabaseAnonKeyMeta = document.querySelector('meta[name="supabase-anon-key"]');
   const supabaseUrlRaw = (typeof window !== 'undefined' && window.__SUPABASE_URL)
@@ -670,6 +672,14 @@
     if (!item || typeof item !== 'object') return null;
     const title = sanitizeText(item.title, 120);
     if (title.length < 3) return null;
+    let completions = Array.isArray(item.completions) ? item.completions : [];
+    completions = completions
+      .map(function (c) { return sanitizeText(c, 24); })
+      .filter(function (c) { return c && c.length >= 2; })
+      .slice(0, 32);
+    // De-dupe while keeping order.
+    var seenComp = {};
+    completions = completions.filter(function (c) { if (seenComp[c]) return false; seenComp[c] = true; return true; });
     return {
       id: sanitizeText(item.id, 64) || (Date.now().toString() + Math.random().toString(36).slice(2, 7)),
       title: title,
@@ -680,7 +690,8 @@
       createdAt: clampNumber(item.createdAt, 0, 9999999999999, Date.now()),
       votes: clampNumber(item.votes, -9999, 9999, 0),
       reports: clampNumber(item.reports, 0, 9999, 0),
-      hidden: !!item.hidden
+      hidden: !!item.hidden,
+      completions: completions
     };
   }
 
@@ -1218,6 +1229,7 @@
     try {
       if (typeof renderCrewPresence === 'function') renderCrewPresence();
       if (typeof renderLeaderboard === 'function') renderLeaderboard();
+    if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
       if (typeof renderCrewLocationMap === 'function') renderCrewLocationMap();
     } catch (_) { /* ignore */ }
   }
@@ -1237,6 +1249,7 @@
     if (history) history.textContent = punishmentHistory.length ? ('Recent: ' + punishmentHistory.join(' | ')) : '';
     renderChallengeInsights();
     initPackingList();
+    if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
   }
 
   function getSupabaseHeaders() {
@@ -1806,14 +1819,7 @@
 
     const todayKey = getTodayKey();
     const submissionKey = crew + ':' + todayKey;
-    const submissionsToday = scheduleSubmissionLog[submissionKey] || 0;
-    if (submissionsToday >= 4) {
-      msg.textContent = 'Daily limit reached (4 schedule items per crew member).';
-      msg.style.color = 'var(--error)';
-      return;
-    }
-
-    scheduleSubmissionLog[submissionKey] = submissionsToday + 1;
+    scheduleSubmissionLog[submissionKey] = (scheduleSubmissionLog[submissionKey] || 0) + 1;
     approvedScheduleSuggestions.push({
       id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
       title,
@@ -1878,14 +1884,7 @@
 
     const todayKey = getTodayKey();
     const submissionKey = crew + ':' + todayKey;
-    const submissionsToday = siteChangeSubmissionLog[submissionKey] || 0;
-    if (submissionsToday >= 6) {
-      msg.textContent = 'Daily limit reached (6 site changes per crew member).';
-      msg.style.color = 'var(--error)';
-      return;
-    }
-
-    siteChangeSubmissionLog[submissionKey] = submissionsToday + 1;
+    siteChangeSubmissionLog[submissionKey] = (siteChangeSubmissionLog[submissionKey] || 0) + 1;
     approvedSiteChangeSuggestions.push({
       id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
       sectionName,
@@ -2076,14 +2075,7 @@
 
     const todayKey = getTodayKey();
     var submissionKey = crew + ':' + todayKey;
-    var submissionsToday = activitySubmissionLog[submissionKey] || 0;
-    if (submissionsToday >= 6) {
-      msg.textContent = 'Daily limit reached (6 activity submissions).';
-      msg.style.color = 'var(--error)';
-      return;
-    }
-
-    activitySubmissionLog[submissionKey] = submissionsToday + 1;
+    activitySubmissionLog[submissionKey] = (activitySubmissionLog[submissionKey] || 0) + 1;
     approvedActivitySuggestions.push({
       id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
       title: title,
@@ -3099,26 +3091,67 @@
   function displayApprovedChallenges() {
     const container = document.getElementById('approved-challenges');
     if (!container) return;
-    const visibleChallenges = approvedChallenges
-      .filter(item => !item.hidden && (item.reports || 0) < 3)
-      .sort((a, b) => (b.votes || 0) - (a.votes || 0) || b.createdAt - a.createdAt);
-    container.innerHTML = '<h3>Live Crew Challenges</h3>';
-    if (!visibleChallenges.length) {
-      container.innerHTML += '<p style="opacity:.6;">No live challenges yet.</p>';
+    const currentCrew = getCurrentCrewKey();
+    const allVisible = approvedChallenges
+      .filter(item => !item.hidden && (item.reports || 0) < 3);
+    const search = (challengeFeedFilter.search || '').toLowerCase().trim();
+    const wantType = challengeFeedFilter.type || 'all';
+    const wantDiff = challengeFeedFilter.difficulty || 'all';
+    const filtered = allVisible.filter(function (item) {
+      if (wantType !== 'all' && (item.type || '').toLowerCase() !== wantType) return false;
+      if (wantDiff !== 'all' && (item.difficulty || '').toLowerCase() !== wantDiff) return false;
+      if (search) {
+        const hay = ((item.title || '') + ' ' + (item.notes || '') + ' ' + getCrewDisplayName(item.suggestedBy)).toLowerCase();
+        if (hay.indexOf(search) === -1) return false;
+      }
+      return true;
+    });
+    const sort = challengeFeedFilter.sort || 'top';
+    filtered.sort(function (a, b) {
+      if (sort === 'new') return (b.createdAt || 0) - (a.createdAt || 0);
+      if (sort === 'done') return (b.completions || []).length - (a.completions || []).length
+        || (b.votes || 0) - (a.votes || 0);
+      // default 'top'
+      return (b.votes || 0) - (a.votes || 0) || (b.createdAt || 0) - (a.createdAt || 0);
+    });
+    container.innerHTML = '';
+    const heading = document.createElement('h3');
+    heading.textContent = 'Live Crew Challenges';
+    container.appendChild(heading);
+    const summary = document.createElement('p');
+    summary.className = 'feed-summary';
+    summary.textContent = 'Showing ' + filtered.length + ' of ' + allVisible.length + ' live challenge' + (allVisible.length === 1 ? '' : 's') + '. Submit or complete any to boost your score.';
+    container.appendChild(summary);
+    if (!filtered.length) {
+      const empty = document.createElement('p');
+      empty.style.opacity = '.6';
+      empty.textContent = allVisible.length
+        ? 'No challenges match that filter. Try a different search or clear filters.'
+        : 'No live challenges yet. Submit one above to get started.';
+      container.appendChild(empty);
+      lastChallengeFeedCount = approvedChallenges.length;
       return;
     }
-    visibleChallenges.forEach(item => {
+    filtered.forEach(function (item) {
       const div = makeCard();
+      div.classList.add('challenge-card');
+      div.setAttribute('data-challenge-id', item.id);
 
-      const title = document.createElement('p');
+      const titleRow = document.createElement('div');
+      titleRow.className = 'challenge-title-row';
       const strong = document.createElement('strong');
       strong.textContent = item.title;
-      title.appendChild(strong);
-      div.appendChild(title);
+      titleRow.appendChild(strong);
+      const diffBadge = document.createElement('span');
+      diffBadge.className = 'difficulty-badge difficulty-' + (item.difficulty || 'Easy').toLowerCase();
+      diffBadge.textContent = item.difficulty || 'Easy';
+      titleRow.appendChild(diffBadge);
+      div.appendChild(titleRow);
 
       const meta = document.createElement('p');
       meta.className = 'dynamic-card-meta';
-      meta.textContent = item.type + ' • ' + item.difficulty + ' • by ' + getCrewDisplayName(item.suggestedBy);
+      const createdAgo = humanTimeAgo(item.createdAt);
+      meta.textContent = item.type + ' • by ' + getCrewDisplayName(item.suggestedBy) + (createdAgo ? ' • ' + createdAgo : '');
       div.appendChild(meta);
 
       const notes = document.createElement('p');
@@ -3126,22 +3159,41 @@
       notes.textContent = item.notes || 'No extra notes.';
       div.appendChild(notes);
 
+      const completions = Array.isArray(item.completions) ? item.completions : [];
       const score = document.createElement('p');
       score.className = 'dynamic-card-score';
-      score.textContent = 'Score: ' + (item.votes || 0) + ' • Reports: ' + (item.reports || 0);
+      const doneNames = completions.slice(0, 4).map(getCrewDisplayName).join(', ');
+      const doneTail = completions.length > 4 ? ' +' + (completions.length - 4) + ' more' : '';
+      score.textContent = 'Score: ' + (item.votes || 0)
+        + ' • Completed: ' + completions.length
+        + (completions.length ? ' (' + doneNames + doneTail + ')' : '')
+        + ' • Reports: ' + (item.reports || 0);
       div.appendChild(score);
 
       const actions = document.createElement('div');
       actions.className = 'dynamic-card-actions';
-      actions.appendChild(makeActionButton(
-        '👍',
-        'btn btn-gold btn-sm',
+      const userVote = currentCrew ? (challengeVoteLog[currentCrew + ':' + item.id] || 0) : 0;
+      const upBtn = makeActionButton(
+        userVote === 1 ? '👍 Voted' : '👍',
+        'btn btn-gold btn-sm' + (userVote === 1 ? ' is-active' : ''),
         function () { voteChallenge(item.id, 1); }
-      ));
+      );
+      actions.appendChild(upBtn);
       actions.appendChild(makeActionButton(
         '👎',
-        'btn btn-outline-light btn-sm',
+        'btn btn-outline-light btn-sm' + (userVote === -1 ? ' is-active' : ''),
         function () { voteChallenge(item.id, -1); }
+      ));
+      const alreadyDone = currentCrew && completions.indexOf(currentCrew) !== -1;
+      actions.appendChild(makeActionButton(
+        alreadyDone ? '✅ Done' : '✅ Mark Done',
+        'btn btn-outline-gold btn-sm' + (alreadyDone ? ' is-active' : ''),
+        function () { completeLiveChallenge(item.id); }
+      ));
+      actions.appendChild(makeActionButton(
+        '📤 Share',
+        'btn btn-outline-light btn-sm',
+        function () { shareLiveChallenge(item.id); }
       ));
       actions.appendChild(makeActionButton(
         'Report',
@@ -3152,6 +3204,110 @@
 
       container.appendChild(div);
     });
+    lastChallengeFeedCount = approvedChallenges.length;
+  }
+
+  function humanTimeAgo(ts) {
+    if (!ts) return '';
+    const diff = Date.now() - ts;
+    if (diff < 0 || diff > 1000 * 60 * 60 * 24 * 365) return '';
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    return days + 'd ago';
+  }
+
+  function setChallengeFilter(key, value) {
+    if (!key) return;
+    challengeFeedFilter[key] = (value == null ? '' : String(value));
+    displayApprovedChallenges();
+  }
+
+  function onChallengeSearchInput(eventOrValue) {
+    var input = document.getElementById('live-feed-search');
+    var v = input ? input.value : (typeof eventOrValue === 'string' ? eventOrValue : '');
+    challengeFeedFilter.search = sanitizeText(v, 80);
+    displayApprovedChallenges();
+  }
+
+  function onChallengeTypeChange() {
+    var el = document.getElementById('live-feed-type');
+    if (!el) return;
+    setChallengeFilter('type', (el.value || 'all').toLowerCase());
+  }
+  function onChallengeDifficultyChange() {
+    var el = document.getElementById('live-feed-difficulty');
+    if (!el) return;
+    setChallengeFilter('difficulty', (el.value || 'all').toLowerCase());
+  }
+  function onChallengeSortChange() {
+    var el = document.getElementById('live-feed-sort');
+    if (!el) return;
+    setChallengeFilter('sort', el.value);
+  }
+  function clearChallengeFilters() {
+    challengeFeedFilter = { search: '', type: 'all', difficulty: 'all', sort: 'top' };
+    var s = document.getElementById('live-feed-search');
+    if (s) s.value = '';
+    var t = document.getElementById('live-feed-type');
+    if (t) t.value = 'all';
+    var d = document.getElementById('live-feed-difficulty');
+    if (d) d.value = 'all';
+    var so = document.getElementById('live-feed-sort');
+    if (so) so.value = 'top';
+    displayApprovedChallenges();
+  }
+
+  function completeLiveChallenge(id) {
+    const crew = getCurrentCrewKey();
+    if (!crew) { showToast && showToast('Log in with your crew code to mark challenges done.', 'warn'); return; }
+    const challenge = approvedChallenges.find(item => item.id === id);
+    if (!challenge) return;
+    if (!Array.isArray(challenge.completions)) challenge.completions = [];
+    const already = challenge.completions.indexOf(crew) !== -1;
+    if (already) {
+      challenge.completions = challenge.completions.filter(function (c) { return c !== crew; });
+      showToast && showToast('Completion removed.', 'info');
+    } else {
+      challenge.completions.push(crew);
+      showToast && showToast('Nice one — challenge marked done.', 'success');
+    }
+    saveChallengeData();
+    displayApprovedChallenges();
+    if (typeof renderLeaderboard === 'function') renderLeaderboard();
+    if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
+  }
+
+  function shareLiveChallenge(id) {
+    const challenge = approvedChallenges.find(item => item.id === id);
+    if (!challenge) return;
+    const who = getCrewDisplayName(challenge.suggestedBy) || 'Crew';
+    const text = '🦌 Stag Challenge: "' + challenge.title + '" — ' + challenge.type + ' / ' + challenge.difficulty
+      + (challenge.notes ? '. ' + challenge.notes : '') + ' (by ' + who + ')';
+    const url = (typeof window !== 'undefined' && window.location)
+      ? window.location.origin + window.location.pathname + '#suggestion-section'
+      : '';
+    const payload = url ? (text + ' ' + url) : text;
+    if (navigator && navigator.share) {
+      navigator.share({ title: 'Barcelona Stag Challenge', text: text, url: url || undefined })
+        .then(function () { showToast && showToast('Shared!', 'success'); })
+        .catch(function () { fallbackCopyChallenge(payload); });
+      return;
+    }
+    fallbackCopyChallenge(payload);
+  }
+
+  function fallbackCopyChallenge(text) {
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(function () { showToast && showToast('Challenge copied to clipboard.', 'success'); })
+        .catch(function () { showToast && showToast('Unable to share — copy manually: ' + text, 'warn'); });
+    } else {
+      showToast && showToast('Copy manually: ' + text, 'info');
+    }
   }
 
   function voteChallenge(id, delta) {
@@ -4190,7 +4346,14 @@
       refreshWeather: typeof refreshWeather === 'function' ? refreshWeather : null,
       shareMyLocation: typeof shareMyLocation === 'function' ? shareMyLocation : null,
       clearMyLocation: typeof clearMyLocation === 'function' ? clearMyLocation : null,
-      toggleNightlifeMap: typeof toggleNightlifeMap === 'function' ? toggleNightlifeMap : null
+      toggleNightlifeMap: typeof toggleNightlifeMap === 'function' ? toggleNightlifeMap : null,
+      shareLiveChallenge: typeof shareLiveChallenge === 'function' ? shareLiveChallenge : null,
+      completeLiveChallenge: typeof completeLiveChallenge === 'function' ? completeLiveChallenge : null,
+      clearChallengeFilters: typeof clearChallengeFilters === 'function' ? clearChallengeFilters : null,
+      onChallengeSearchInput: typeof onChallengeSearchInput === 'function' ? onChallengeSearchInput : null,
+      onChallengeTypeChange: typeof onChallengeTypeChange === 'function' ? onChallengeTypeChange : null,
+      onChallengeDifficultyChange: typeof onChallengeDifficultyChange === 'function' ? onChallengeDifficultyChange : null,
+      onChallengeSortChange: typeof onChallengeSortChange === 'function' ? onChallengeSortChange : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');
@@ -4205,6 +4368,7 @@
     }
     document.addEventListener('click', function (e) { dispatch('data-action', e); });
     document.addEventListener('change', function (e) { dispatch('data-change-action', e); });
+    document.addEventListener('input', function (e) { dispatch('data-input-action', e); });
 
     // ── Keyboard shortcuts for the Challenge Generator ──
     document.addEventListener('keydown', function (e) {
@@ -4581,6 +4745,109 @@
   }
 
   // ── Crew leaderboard ──────────────────────────────────────────────────
+  function renderCrewActivityFeed() {
+    const container = document.getElementById('crew-activity-feed');
+    if (!container) return;
+    const events = [];
+    approvedChallenges.forEach(function (item) {
+      if (!item || item.hidden || (item.reports || 0) >= 3) return;
+      events.push({
+        kind: 'challenge',
+        label: 'submitted challenge',
+        title: item.title,
+        by: item.suggestedBy,
+        ts: item.createdAt || 0,
+        id: item.id
+      });
+      (item.completions || []).forEach(function (code, idx) {
+        events.push({
+          kind: 'done',
+          label: 'marked done',
+          title: item.title,
+          by: code,
+          // No per-completion timestamp stored; stagger by index so order is stable.
+          ts: (item.createdAt || 0) + ((idx + 1) * 1000),
+          id: item.id
+        });
+      });
+    });
+    approvedActivitySuggestions.forEach(function (item) {
+      if (!item) return;
+      events.push({
+        kind: 'activity',
+        label: 'suggested an activity',
+        title: item.title,
+        by: item.suggestedBy,
+        ts: item.createdAt || 0,
+        id: item.id
+      });
+    });
+    approvedScheduleSuggestions.forEach(function (item) {
+      if (!item) return;
+      events.push({
+        kind: 'schedule',
+        label: 'pitched a plan',
+        title: item.title + (item.day ? ' (' + item.day + ')' : ''),
+        by: item.suggestedBy,
+        ts: item.createdAt || 0,
+        id: item.id
+      });
+    });
+    approvedSiteChangeSuggestions.forEach(function (item) {
+      if (!item) return;
+      events.push({
+        kind: 'site',
+        label: 'requested a site tweak',
+        title: (item.sectionName ? item.sectionName + ': ' : '') + item.title,
+        by: item.suggestedBy,
+        ts: item.createdAt || 0,
+        id: item.id
+      });
+    });
+    events.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    const top = events.slice(0, 20);
+    clearElement(container);
+    if (!top.length) {
+      const empty = document.createElement('p');
+      empty.style.opacity = '.6';
+      empty.textContent = 'No crew activity yet — be the first to submit something.';
+      container.appendChild(empty);
+      return;
+    }
+    const icons = { challenge: '🎯', done: '✅', activity: '🎉', schedule: '🗓️', site: '🛠️' };
+    const list = document.createElement('ul');
+    list.className = 'activity-feed-list';
+    top.forEach(function (ev) {
+      const li = document.createElement('li');
+      li.className = 'activity-feed-item activity-' + ev.kind;
+      const icon = document.createElement('span');
+      icon.className = 'activity-feed-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = icons[ev.kind] || '•';
+      li.appendChild(icon);
+      const body = document.createElement('div');
+      body.className = 'activity-feed-body';
+      const head = document.createElement('div');
+      head.className = 'activity-feed-head';
+      const who = document.createElement('strong');
+      who.textContent = getCrewDisplayName(ev.by) || 'Crew';
+      head.appendChild(who);
+      head.appendChild(document.createTextNode(' ' + ev.label));
+      body.appendChild(head);
+      const title = document.createElement('div');
+      title.className = 'activity-feed-title';
+      title.textContent = '"' + ev.title + '"';
+      body.appendChild(title);
+      const ago = document.createElement('div');
+      ago.className = 'activity-feed-time';
+      ago.textContent = humanTimeAgo(ev.ts) || '';
+      body.appendChild(ago);
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+    container.appendChild(list);
+  }
+
   function renderLeaderboard() {
     const container = document.getElementById('crew-leaderboard');
     if (!container) return;
@@ -4589,8 +4856,12 @@
     Object.keys(codeByMember).forEach(function (m) {
       const code = codeByMember[m];
       const name = getCrewDisplayName(code);
-      let challenges = 0, activities = 0, schedule = 0, votesCast = 0, spend = 0;
-      approvedChallenges.forEach(function (item) { if (item && item.suggestedBy === code) challenges += 1; });
+      let challenges = 0, activities = 0, schedule = 0, votesCast = 0, completed = 0, spend = 0;
+      approvedChallenges.forEach(function (item) {
+        if (!item) return;
+        if (item.suggestedBy === code) challenges += 1;
+        if (Array.isArray(item.completions) && item.completions.indexOf(code) !== -1) completed += 1;
+      });
       approvedActivitySuggestions.forEach(function (item) { if (item && item.suggestedBy === code) activities += 1; });
       approvedScheduleSuggestions.forEach(function (item) { if (item && item.suggestedBy === code) schedule += 1; });
       Object.keys(challengeVoteLog || {}).forEach(function (k) {
@@ -4600,8 +4871,8 @@
         if (k.indexOf(code + ':') === 0) votesCast += 1;
       });
       expenseEntries.forEach(function (e) { if (e && e.payer === name) spend += Number(e.amount || 0); });
-      const points = (challenges * 3) + (activities * 3) + (schedule * 2) + (votesCast * 1);
-      board.push({ name: name, code: code, points: points, challenges: challenges, activities: activities, schedule: schedule, votesCast: votesCast, spend: spend });
+      const points = (challenges * 3) + (activities * 3) + (schedule * 2) + (votesCast * 1) + (completed * 4);
+      board.push({ name: name, code: code, points: points, challenges: challenges, activities: activities, schedule: schedule, votesCast: votesCast, completed: completed, spend: spend });
     });
     board.sort(function (a, b) { return b.points - a.points; });
     clearElement(container);
@@ -4631,7 +4902,7 @@
       row.appendChild(bar);
       const meta = document.createElement('div');
       meta.className = 'leader-meta';
-      meta.textContent = entry.challenges + ' challenges · ' + entry.activities + ' activities · ' + entry.schedule + ' plans · ' + entry.votesCast + ' votes · £' + entry.spend.toFixed(0) + ' covered';
+      meta.textContent = entry.challenges + ' challenges · ' + entry.completed + ' done · ' + entry.activities + ' activities · ' + entry.schedule + ' plans · ' + entry.votesCast + ' votes · £' + entry.spend.toFixed(0) + ' covered';
       row.appendChild(meta);
       container.appendChild(row);
     });
@@ -4900,6 +5171,7 @@
   function bootExtras() {
     renderCrewPresence();
     renderLeaderboard();
+    renderCrewActivityFeed();
     updateFlightTicker();
     refreshWeather(false);
     primeNotificationBaselines();

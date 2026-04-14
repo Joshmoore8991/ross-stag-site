@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260414-2">
+<link rel="stylesheet" href="rossstag.css?v=20260414-3">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -71,6 +71,7 @@
         <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
         <a class="top-sub-link" href="#mission-section">Missions</a>
         <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
+        <a class="top-sub-link" href="#activity-feed-section">Activity</a>
         <a class="top-sub-link" href="#poll-section">Poll</a>
       </div>
     </div>
@@ -111,6 +112,7 @@
       <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
       <a class="top-sub-link" href="#mission-section">Missions</a>
       <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
+      <a class="top-sub-link" href="#activity-feed-section">Activity</a>
       <a class="top-sub-link" href="#poll-section">Poll</a>
     </div>
     <div class="nav-drawer-group">
@@ -626,7 +628,7 @@
   <h2 class="section-title fade-in">Suggest a Challenge</h2>
   <div class="info-card fade-in" style="margin-top:20px; text-align:center;">
     <h3>Submit Your Challenge</h3>
-    <p style="opacity:.7; margin-bottom:12px;">Crew suggestions go live straight away for everyone in crew mode.</p>
+    <p style="opacity:.7; margin-bottom:12px;">No approval needed — challenges go live for the whole crew the moment you hit submit. No daily limit either; submit as many as you want.</p>
     <input type="text" id="challenge-title" placeholder="Challenge title" class="form-input form-input-wide">
     <select id="challenge-type" class="form-input form-input-mid">
       <option value="Drinking">Drinking</option>
@@ -680,6 +682,32 @@
     <p id="pending-challenges-public-summary" style="opacity:.8; margin-bottom:10px;"></p>
     <p id="pending-challenges-public-updated" style="opacity:.55; font-size:12px; margin-bottom:10px;"></p>
     <div id="pending-challenges-public"></div>
+  </div>
+  <div class="info-card fade-in live-feed-controls" style="margin-top:20px;">
+    <h3 style="margin-top:0;">Live Challenge Feed</h3>
+    <p style="opacity:.7; margin-bottom:10px;">Every challenge the crew submits shows up here instantly. Filter, sort, vote, mark done, or share with the group.</p>
+    <div class="live-feed-filter-row">
+      <input type="search" id="live-feed-search" class="form-input" placeholder="Search title, notes, crew..." data-input-action="onChallengeSearchInput" aria-label="Search live challenges">
+      <select id="live-feed-type" class="form-input" data-change-action="onChallengeTypeChange" aria-label="Filter by type">
+        <option value="all">All Types</option>
+        <option value="drinking">Drinking</option>
+        <option value="dares">Dares</option>
+        <option value="team">Team</option>
+        <option value="chill">Chill</option>
+      </select>
+      <select id="live-feed-difficulty" class="form-input" data-change-action="onChallengeDifficultyChange" aria-label="Filter by difficulty">
+        <option value="all">All Difficulty</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="chaos">Chaos</option>
+      </select>
+      <select id="live-feed-sort" class="form-input" data-change-action="onChallengeSortChange" aria-label="Sort live challenges">
+        <option value="top">Top voted</option>
+        <option value="new">Newest first</option>
+        <option value="done">Most completed</option>
+      </select>
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="clearChallengeFilters">Clear</button>
+    </div>
   </div>
   <div id="approved-challenges" style="margin-top:20px;"></div>
   <div id="approved-site-change-suggestions" style="margin-top:20px;"></div>
@@ -826,8 +854,16 @@
 <section id="leaderboard-section">
   <h2 class="section-title fade-in">Crew Leaderboard</h2>
   <div class="info-card fade-in">
-    <p style="opacity:.7; margin-bottom:12px;">Points for challenges suggested (3), activities (3), plan items (2) and votes cast (1). Ross doesn't compete.</p>
+    <p style="opacity:.7; margin-bottom:12px;">Points: challenges suggested (3), challenges completed (4), activities (3), plan items (2), votes cast (1). Ross doesn't compete.</p>
     <div id="crew-leaderboard" class="leaderboard"></div>
+  </div>
+</section>
+
+<section id="activity-feed-section">
+  <h2 class="section-title fade-in">Crew Activity Feed</h2>
+  <div class="info-card fade-in">
+    <p style="opacity:.7; margin-bottom:12px;">Live stream of the last 20 things the crew submitted, completed, or suggested — across challenges, activities, plans, and site tweaks.</p>
+    <div id="crew-activity-feed" class="activity-feed"></div>
   </div>
 </section>
 
@@ -909,7 +945,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260414-2"></script>
+<script src="rossstag.js?v=20260414-3"></script>
 <script async defer src="https://widget.getyourguide.com/dist/pa.umd.min.js" data-gyg-partner-id="0"></script>
 </body>
 </html>
