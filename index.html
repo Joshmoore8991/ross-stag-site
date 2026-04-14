@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260414-4">
+<link rel="stylesheet" href="rossstag.css?v=20260414-5">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -703,7 +703,9 @@
         <option value="done">Most completed</option>
       </select>
       <button type="button" class="btn btn-outline-light btn-sm" data-action="clearChallengeFilters">Clear</button>
+      <button type="button" id="live-feed-refresh" class="btn btn-outline-gold btn-sm" data-action="forceLiveFeedRefresh" aria-label="Refresh live feed">&#x21BB; Refresh</button>
     </div>
+    <p style="opacity:.55; font-size:12px; margin:8px 0 0;">Tap refresh to pull the latest from Supabase without waiting for the 4-second auto-poll.</p>
   </div>
   <div id="approved-challenges" style="margin-top:20px;"></div>
   <div id="approved-site-change-suggestions" style="margin-top:20px;"></div>
@@ -941,7 +943,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260414-4"></script>
+<script src="rossstag.js?v=20260414-5"></script>
 </body>
 </html>
 

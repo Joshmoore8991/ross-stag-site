@@ -1750,8 +1750,9 @@
     const submissionKey = crew + ':' + todayKey;
     const submissionsToday = challengeSubmissionLog[submissionKey] || 0;
     challengeSubmissionLog[submissionKey] = submissionsToday + 1;
+    const newId = Date.now().toString() + Math.random().toString(36).slice(2, 7);
     approvedChallenges.push({
-      id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
+      id: newId,
       title,
       type,
       difficulty,
@@ -1760,7 +1761,8 @@
       createdAt: Date.now(),
       votes: 0,
       reports: 0,
-      hidden: false
+      hidden: false,
+      completions: []
     });
     saveChallengeData();
     msg.textContent = 'Challenge submitted and now live for the crew.';
@@ -1769,6 +1771,15 @@
     notesInput.value = '';
     refreshPendingChallengeViews();
     displayApprovedChallenges();
+    // Scroll to the new card and flash-highlight it.
+    setTimeout(function () {
+      const card = document.querySelector('[data-challenge-id="' + newId + '"]');
+      if (card) {
+        try { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) { card.scrollIntoView(); }
+        card.classList.add('just-submitted');
+        setTimeout(function () { card.classList.remove('just-submitted'); }, 2500);
+      }
+    }, 50);
   }
 
   function suggestScheduleItem() {
@@ -3248,6 +3259,30 @@
     if (!el) return;
     setChallengeFilter('sort', el.value);
   }
+  function forceLiveFeedRefresh() {
+    const btn = document.getElementById('live-feed-refresh');
+    if (btn) { btn.disabled = true; btn.classList.add('is-loading'); }
+    const done = function () {
+      if (btn) { btn.disabled = false; btn.classList.remove('is-loading'); }
+    };
+    if (typeof loadChallengeStateFromCloud === 'function' && challengeCloudSyncEnabled) {
+      loadChallengeStateFromCloud()
+        .then(function (ok) {
+          displayApprovedChallenges();
+          if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
+          if (typeof renderLeaderboard === 'function') renderLeaderboard();
+          if (typeof showToast === 'function') showToast(ok ? 'Live feed refreshed.' : 'Refreshed from local data.');
+        })
+        .catch(function () { if (typeof showToast === 'function') showToast('Refresh failed — check connection.'); })
+        .finally(done);
+    } else {
+      displayApprovedChallenges();
+      if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
+      if (typeof showToast === 'function') showToast('Refreshed from local data.');
+      done();
+    }
+  }
+
   function clearChallengeFilters() {
     challengeFeedFilter = { search: '', type: 'all', difficulty: 'all', sort: 'top' };
     var s = document.getElementById('live-feed-search');
@@ -4353,7 +4388,8 @@
       onChallengeSearchInput: typeof onChallengeSearchInput === 'function' ? onChallengeSearchInput : null,
       onChallengeTypeChange: typeof onChallengeTypeChange === 'function' ? onChallengeTypeChange : null,
       onChallengeDifficultyChange: typeof onChallengeDifficultyChange === 'function' ? onChallengeDifficultyChange : null,
-      onChallengeSortChange: typeof onChallengeSortChange === 'function' ? onChallengeSortChange : null
+      onChallengeSortChange: typeof onChallengeSortChange === 'function' ? onChallengeSortChange : null,
+      forceLiveFeedRefresh: typeof forceLiveFeedRefresh === 'function' ? forceLiveFeedRefresh : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');

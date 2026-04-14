@@ -2047,3 +2047,47 @@
   .activity-feed-head { font-size: 14px; }
   .activity-feed-title { font-size: 13px; opacity: .85; margin-top: 2px; }
   .activity-feed-time { font-size: 11px; opacity: .55; margin-top: 2px; }
+
+  /* Pulse highlight on the card you just submitted. */
+  @keyframes just-submitted-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.55); background-color: rgba(212, 168, 67, 0.12); }
+    100% { box-shadow: 0 0 0 14px rgba(212, 168, 67, 0); background-color: transparent; }
+  }
+  .challenge-card.just-submitted { animation: just-submitted-pulse 2.4s ease-out 1; }
+
+  /* Refresh button loading state. */
+  #live-feed-refresh.is-loading { opacity: .6; pointer-events: none; }
+  #live-feed-refresh.is-loading::after {
+    content: '';
+    display: inline-block;
+    width: 10px; height: 10px;
+    margin-left: 6px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    vertical-align: -2px;
+    animation: refresh-spin .8s linear infinite;
+  }
+  @keyframes refresh-spin { to { transform: rotate(360deg); } }
+
+  /* Mobile tweaks: bigger tap targets and clean stacking for the live feed filter row. */
+  @media (max-width: 640px) {
+    .live-feed-filter-row { gap: 6px; }
+    .live-feed-filter-row > input,
+    .live-feed-filter-row > select,
+    .live-feed-filter-row > button {
+      flex: 1 1 calc(50% - 6px);
+      min-height: 40px;
+    }
+    .live-feed-filter-row #live-feed-search {
+      flex: 1 1 100%;
+    }
+    .challenge-card .dynamic-card-actions { gap: 6px; }
+    .challenge-card .dynamic-card-actions .btn-sm { flex: 1 1 calc(50% - 6px); min-height: 38px; }
+    .activity-feed-item { padding: 8px 10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .challenge-card.just-submitted { animation: none; background-color: rgba(212, 168, 67, 0.12); }
+    #live-feed-refresh.is-loading::after { animation: none; }
+  }
