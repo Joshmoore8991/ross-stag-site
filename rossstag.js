@@ -557,6 +557,10 @@
   let shownChallengeIds = [];
   let completedChallengeIds = loadJSON('completedChallengeIds', []);
   let punishmentHistory = loadJSON('punishmentHistory', []);
+  let crewPresence = loadJSON('crewPresence', {});
+  if (!crewPresence || typeof crewPresence !== 'object' || Array.isArray(crewPresence)) crewPresence = {};
+  let crewLocations = loadJSON('crewLocations', {});
+  if (!crewLocations || typeof crewLocations !== 'object' || Array.isArray(crewLocations)) crewLocations = {};
   let challengeMetrics = loadJSON('challengeMetrics', {
     generated: 0,
     completed: 0,
@@ -921,6 +925,40 @@
     return out.slice(0, MAX_SYNC_ITEMS);
   }
 
+  function sanitizeCrewPresence(value) {
+    const out = {};
+    if (!value || typeof value !== 'object') return out;
+    const cutoff = Date.now() - (30 * 60 * 1000); // drop entries older than 30 min
+    Object.keys(value).slice(0, 32).forEach(function (code) {
+      const entry = value[code];
+      if (!entry || typeof entry !== 'object') return;
+      const ts = Number(entry.lastSeen);
+      if (!Number.isFinite(ts) || ts < cutoff) return;
+      out[String(code).slice(0, 32)] = {
+        lastSeen: ts,
+        name: sanitizeText(entry.name, 40) || ''
+      };
+    });
+    return out;
+  }
+  function sanitizeCrewLocations(value) {
+    const out = {};
+    if (!value || typeof value !== 'object') return out;
+    const cutoff = Date.now() - (30 * 60 * 1000); // 30-min expiry
+    Object.keys(value).slice(0, 32).forEach(function (code) {
+      const entry = value[code];
+      if (!entry || typeof entry !== 'object') return;
+      const ts = Number(entry.ts);
+      const lat = Number(entry.lat);
+      const lng = Number(entry.lng);
+      if (!Number.isFinite(ts) || ts < cutoff) return;
+      if (!Number.isFinite(lat) || lat < -90 || lat > 90) return;
+      if (!Number.isFinite(lng) || lng < -180 || lng > 180) return;
+      out[String(code).slice(0, 32)] = { lat: lat, lng: lng, ts: ts };
+    });
+    return out;
+  }
+
   function sanitizeCloudState(payload) {
     const state = payload && typeof payload === 'object' ? payload : {};
     return {
@@ -948,7 +986,9 @@
       crewPersonalizationOverrides: sanitizeCrewOverrides(state.crewPersonalizationOverrides),
       challengeMetrics: sanitizeChallengeMetrics(state.challengeMetrics),
       challengeHistory: sanitizeChallengeHistory(state.challengeHistory),
-      packingChecked: sanitizePackingState(state.packingChecked)
+      packingChecked: sanitizePackingState(state.packingChecked),
+      crewPresence: sanitizeCrewPresence(state.crewPresence),
+      crewLocations: sanitizeCrewLocations(state.crewLocations)
     };
   }
 
@@ -1052,6 +1092,8 @@
     saveJSON('challengeMetrics', sanitizeChallengeMetrics(challengeMetrics));
     saveJSON('challengeHistory', sanitizeChallengeHistory(challengeHistory));
     saveJSON('packingChecked', packingChecked);
+    saveJSON('crewPresence', crewPresence);
+    saveJSON('crewLocations', crewLocations);
     saveCrewPersonalizationOverrides();
     queueChallengeStateSync(false);
   }
@@ -1086,7 +1128,9 @@
       crewPersonalizationOverrides: crewPersonalizationOverrides,
       challengeMetrics: challengeMetrics,
       challengeHistory: challengeHistory,
-      packingChecked: packingChecked
+      packingChecked: packingChecked,
+      crewPresence: crewPresence,
+      crewLocations: crewLocations
     });
   }
 
@@ -1134,7 +1178,48 @@
     challengeMetrics = safe.challengeMetrics;
     challengeHistory = safe.challengeHistory;
     packingChecked = safe.packingChecked;
+    // Merge our own presence/location entry back in so it isn't dropped by
+    // someone else's write that happened before we last updated ours.
+    const localCrew = getCurrentCrewKey();
+    const mergedPresence = Object.assign({}, safe.crewPresence);
+    const mergedLocations = Object.assign({}, safe.crewLocations);
+    if (localCrew && crewPresence[localCrew]) {
+      const existing = mergedPresence[localCrew];
+      const ours = crewPresence[localCrew];
+      if (!existing || (Number(ours.lastSeen) || 0) > (Number(existing.lastSeen) || 0)) {
+        mergedPresence[localCrew] = ours;
+      }
+    }
+    if (localCrew && crewLocations[localCrew]) {
+      const existingL = mergedLocations[localCrew];
+      const oursL = crewLocations[localCrew];
+      if (!existingL || (Number(oursL.ts) || 0) > (Number(existingL.ts) || 0)) {
+        mergedLocations[localCrew] = oursL;
+      }
+    }
+    // Detect new items for toast notifications (only after first load).
+    try {
+      if (typeof notifyOfNewSubmissions === 'function') {
+        notifyOfNewSubmissions({
+          prevChallenges: approvedChallenges,
+          nextChallenges: safe.approvedChallenges,
+          prevActivities: approvedActivitySuggestions,
+          nextActivities: safe.approvedActivitySuggestions,
+          prevSchedule: approvedScheduleSuggestions,
+          nextSchedule: safe.approvedScheduleSuggestions,
+          prevSiteChanges: approvedSiteChangeSuggestions,
+          nextSiteChanges: safe.approvedSiteChangeSuggestions
+        });
+      }
+    } catch (_) { /* ignore */ }
+    crewPresence = mergedPresence;
+    crewLocations = mergedLocations;
     normalizeSubmissionQueues();
+    try {
+      if (typeof renderCrewPresence === 'function') renderCrewPresence();
+      if (typeof renderLeaderboard === 'function') renderLeaderboard();
+      if (typeof renderCrewLocationMap === 'function') renderCrewLocationMap();
+    } catch (_) { /* ignore */ }
   }
 
   function refreshChallengeUiFromState() {
@@ -1537,13 +1622,39 @@
       'Down a full glass of water, then lead a loud team chant.'
     ];
     const chosen = punishments[Math.floor(Math.random() * punishments.length)];
-    punishmentHistory.unshift(chosen);
-    punishmentHistory = punishmentHistory.slice(0, 5);
     const result = document.getElementById('punishment-result');
     const history = document.getElementById('punishment-history');
-    if (result) result.textContent = chosen;
-    if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
-    saveChallengeData();
+    const wheel = document.getElementById('punishment-wheel');
+    const button = document.querySelector('[data-action="spinPunishmentWheel"]');
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function reveal() {
+      punishmentHistory.unshift(chosen);
+      punishmentHistory = punishmentHistory.slice(0, 5);
+      if (result) {
+        result.textContent = chosen;
+        result.classList.remove('punishment-reveal');
+        // Force reflow so the animation restarts on every spin.
+        void result.offsetWidth;
+        result.classList.add('punishment-reveal');
+      }
+      if (history) history.textContent = 'Recent: ' + punishmentHistory.join(' | ');
+      if (button) button.disabled = false;
+      saveChallengeData();
+      if (wheel) wheel.classList.remove('spinning');
+    }
+    if (wheel && !reducedMotion) {
+      if (button) button.disabled = true;
+      // Randomised end-rotation for visual variety while keeping duration fixed.
+      const extraTurns = 5 + Math.floor(Math.random() * 4);
+      const endDeg = extraTurns * 360 + Math.floor(Math.random() * 360);
+      wheel.style.setProperty('--spin-end', endDeg + 'deg');
+      wheel.classList.remove('spinning');
+      void wheel.offsetWidth;
+      wheel.classList.add('spinning');
+      setTimeout(reveal, 2100);
+    } else {
+      reveal();
+    }
   }
 
   function generateWrapUp() {
@@ -3269,6 +3380,52 @@
       summary.appendChild(row);
     });
 
+    // Suggest minimum-flow settlements: match biggest debtor with biggest creditor.
+    const owes = [];
+    const owed = [];
+    crewMembers.forEach(function (name) {
+      const val = Math.round(Number(balances[name] || 0) * 100) / 100;
+      if (val < -0.005) owes.push({ name: name, amount: -val });
+      else if (val > 0.005) owed.push({ name: name, amount: val });
+    });
+    owes.sort(function (a, b) { return b.amount - a.amount; });
+    owed.sort(function (a, b) { return b.amount - a.amount; });
+    const transfers = [];
+    let i = 0, j = 0;
+    let guard = 0;
+    while (i < owes.length && j < owed.length && guard < 100) {
+      guard += 1;
+      const debtor = owes[i];
+      const creditor = owed[j];
+      const pay = Math.min(debtor.amount, creditor.amount);
+      if (pay > 0.005) {
+        transfers.push({ from: debtor.name, to: creditor.name, amount: pay });
+      }
+      debtor.amount -= pay;
+      creditor.amount -= pay;
+      if (debtor.amount < 0.005) i += 1;
+      if (creditor.amount < 0.005) j += 1;
+    }
+    if (expenseEntries.length && transfers.length) {
+      const settleHeader = document.createElement('p');
+      settleHeader.style.fontWeight = '600';
+      settleHeader.style.marginTop = '10px';
+      settleHeader.textContent = 'Settle up (' + transfers.length + ' transfer' + (transfers.length === 1 ? '' : 's') + ')';
+      summary.appendChild(settleHeader);
+      transfers.forEach(function (t) {
+        const row = document.createElement('p');
+        row.className = 'dynamic-card-text';
+        row.textContent = t.from + ' → ' + t.to + ': £' + t.amount.toFixed(2);
+        summary.appendChild(row);
+      });
+    } else if (expenseEntries.length) {
+      const settled = document.createElement('p');
+      settled.style.opacity = '.7';
+      settled.style.marginTop = '10px';
+      settled.textContent = 'All settled up.';
+      summary.appendChild(settled);
+    }
+
     if (!expenseEntries.length) {
       const empty = document.createElement('p');
       empty.style.opacity = '.6';
@@ -3395,20 +3552,33 @@
   }
 
   function initTheme() {
-    let storedTheme = 'dark';
+    // Honor OS preference on first visit; persisted choice always wins.
+    const mq = (typeof window !== 'undefined' && window.matchMedia)
+      ? window.matchMedia('(prefers-color-scheme: light)')
+      : null;
+    let hasStored = false;
+    let storedTheme = mq && mq.matches ? 'light' : 'dark';
     if (supportsLocalStorage()) {
       try {
         const rawTheme = localStorage.getItem('theme');
         if (rawTheme === 'light' || rawTheme === 'dark') {
           storedTheme = rawTheme;
-        } else {
-          storedTheme = loadJSON('theme', 'dark');
+          hasStored = true;
         }
-      } catch (e) {
-        storedTheme = 'dark';
-      }
+      } catch (e) { /* ignore */ }
     }
     setTheme(storedTheme === 'light' ? 'light' : 'dark', false);
+    // Live-react to OS theme changes until the user picks explicitly.
+    if (mq && !hasStored && typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', function (e) {
+        let stillAuto = true;
+        try {
+          const raw = localStorage.getItem('theme');
+          if (raw === 'light' || raw === 'dark') stillAuto = false;
+        } catch (_) { /* ignore */ }
+        if (stillAuto) setTheme(e.matches ? 'light' : 'dark', false);
+      });
+    }
   }
 
   initTheme();
@@ -4012,7 +4182,15 @@
       celebrateRSVP: typeof celebrateRSVP === 'function' ? celebrateRSVP : null,
       scrollToTop: scrollToTop,
       shareStagProgress: typeof shareStagProgress === 'function' ? shareStagProgress : null,
-      downloadStagIcs: typeof downloadStagIcs === 'function' ? downloadStagIcs : null
+      downloadStagIcs: typeof downloadStagIcs === 'function' ? downloadStagIcs : null,
+      copyTripCode: typeof copyTripCode === 'function' ? copyTripCode : null,
+      copyHotelAddress: typeof copyHotelAddress === 'function' ? copyHotelAddress : null,
+      openHotelMaps: typeof openHotelMaps === 'function' ? openHotelMaps : null,
+      shareStagSite: typeof shareStagSite === 'function' ? shareStagSite : null,
+      refreshWeather: typeof refreshWeather === 'function' ? refreshWeather : null,
+      shareMyLocation: typeof shareMyLocation === 'function' ? shareMyLocation : null,
+      clearMyLocation: typeof clearMyLocation === 'function' ? clearMyLocation : null,
+      toggleNightlifeMap: typeof toggleNightlifeMap === 'function' ? toggleNightlifeMap : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');
@@ -4207,3 +4385,537 @@
       navigator.serviceWorker.register('sw.js').catch(function () { /* ignore */ });
     });
   }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // New features: quick actions, presence, toasts-on-new, leaderboard,
+  // nightlife map + group location ping, weather, flight countdown.
+  // ─────────────────────────────────────────────────────────────────────
+
+  // Trip + hotel reference data (used by quick actions, map, countdowns).
+  const HOTEL_INFO = {
+    name: 'Htop BCN City',
+    address: 'Carrer de Balmes 144, 08008 Barcelona, Spain',
+    lat: 41.3958,
+    lng: 2.1555
+  };
+  const OUTBOUND_DEPART_MS = Date.parse('2026-05-03T06:10:00+01:00');
+  const RETURN_DEPART_MS = Date.parse('2026-05-06T14:00:00+02:00');
+
+  function copyToClipboard(text) {
+    if (!text) return Promise.reject();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject();
+      } catch (_) { reject(); }
+    });
+  }
+
+  // ── Hero quick-action buttons ─────────────────────────────────────────
+  function copyTripCode() {
+    const el = document.getElementById('trip-code');
+    const text = el ? (el.textContent || '').trim() : '';
+    if (!text || text === 'Loading...' || text === 'Unavailable') {
+      showToast('Trip code not ready yet.', 2500);
+      return;
+    }
+    copyToClipboard(text)
+      .then(function () { showToast('Trip code copied', 2000); })
+      .catch(function () { showToast('Copy failed', 2000); });
+  }
+  function copyHotelAddress() {
+    copyToClipboard(HOTEL_INFO.name + ', ' + HOTEL_INFO.address)
+      .then(function () { showToast('Hotel address copied', 2200); })
+      .catch(function () { showToast('Copy failed', 2000); });
+  }
+  function openHotelMaps() {
+    const q = encodeURIComponent(HOTEL_INFO.name + ' ' + HOTEL_INFO.address);
+    window.open('https://www.google.com/maps/search/?api=1&query=' + q, '_blank', 'noopener');
+  }
+  function shareStagSite() {
+    const text = 'Ross\'s Barcelona Stag HQ — schedule, challenges, lads.';
+    if (navigator.share) {
+      navigator.share({ title: 'Barcelona Stag 2026', text: text, url: location.href })
+        .catch(function () { /* user cancelled */ });
+    } else {
+      copyToClipboard(location.href)
+        .then(function () { showToast('Link copied', 2000); })
+        .catch(function () { showToast('Copy failed', 2000); });
+    }
+  }
+
+  // ── Crew presence (who's online) ──────────────────────────────────────
+  const PRESENCE_FRESH_MS = 2 * 60 * 1000;   // green dot within 2 minutes
+  const PRESENCE_IDLE_MS  = 10 * 60 * 1000;  // amber dot within 10 minutes
+  const PRESENCE_BEACON_MS = 30 * 1000;      // update own beacon every 30s
+  let presenceBeaconTimer = null;
+
+  function writeOwnPresence() {
+    const crew = getCurrentCrewKey();
+    if (!crew) return;
+    const nowTs = Date.now();
+    const prev = crewPresence[crew];
+    if (prev && Math.abs(nowTs - (Number(prev.lastSeen) || 0)) < 15000) return;
+    crewPresence[crew] = { lastSeen: nowTs, name: getCrewDisplayName(crew) };
+    renderCrewPresence();
+    lastLocalEditAt = nowTs;
+    saveJSON('crewPresence', crewPresence);
+    queueChallengeStateSync(false);
+  }
+
+  function startPresenceBeacon() {
+    if (!challengeCloudSyncEnabled) return;
+    writeOwnPresence();
+    if (presenceBeaconTimer) return;
+    presenceBeaconTimer = setInterval(function () {
+      if (document.hidden) return;
+      writeOwnPresence();
+    }, PRESENCE_BEACON_MS);
+    // Refresh dots as timestamps age even without new data.
+    setInterval(renderCrewPresence, 60000);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) writeOwnPresence();
+    });
+  }
+
+  function renderCrewPresence() {
+    const cards = document.querySelectorAll('.lad-card[data-member]');
+    if (!cards.length) return;
+    const now = Date.now();
+    const codeByMember = { joshua: '160698', emmanuel: '230997', ross: '170997', kealen: '270298', jack: '120398', ciaran: '240598' };
+    let onlineCount = 0;
+    cards.forEach(function (card) {
+      const member = card.getAttribute('data-member');
+      const code = codeByMember[member];
+      const entry = code ? crewPresence[code] : null;
+      const age = entry ? (now - (Number(entry.lastSeen) || 0)) : Infinity;
+      let dot = card.querySelector('.presence-dot');
+      if (!dot) {
+        dot = document.createElement('span');
+        dot.className = 'presence-dot';
+        dot.setAttribute('aria-hidden', 'true');
+        card.appendChild(dot);
+      }
+      let label = card.querySelector('.presence-label');
+      if (!label) {
+        label = document.createElement('span');
+        label.className = 'presence-label';
+        card.appendChild(label);
+      }
+      dot.classList.remove('presence-online', 'presence-idle', 'presence-offline');
+      if (age < PRESENCE_FRESH_MS) {
+        dot.classList.add('presence-online');
+        label.textContent = 'Online now';
+        onlineCount += 1;
+      } else if (age < PRESENCE_IDLE_MS) {
+        dot.classList.add('presence-idle');
+        label.textContent = 'Idle';
+        onlineCount += 1;
+      } else {
+        dot.classList.add('presence-offline');
+        label.textContent = entry ? 'Last seen ' + formatRelativeTime(Number(entry.lastSeen) || 0) : 'Offline';
+      }
+    });
+    const summary = document.getElementById('crew-online-summary');
+    if (summary) {
+      summary.textContent = onlineCount === 0
+        ? 'No lads online right now.'
+        : (onlineCount + ' lad' + (onlineCount === 1 ? '' : 's') + ' active');
+    }
+  }
+
+  // ── Toast notifications for new submissions from other lads ───────────
+  // Snapshot taken after first successful load so we don't spam toasts for
+  // the initial batch of existing items.
+  let notificationsReady = false;
+  let knownChallengeIds = new Set();
+  let knownActivityIds = new Set();
+  let knownScheduleIds = new Set();
+  let knownSiteChangeIds = new Set();
+  function idSet(list) {
+    const out = new Set();
+    if (!Array.isArray(list)) return out;
+    list.forEach(function (item) { if (item && item.id) out.add(item.id); });
+    return out;
+  }
+  function primeNotificationBaselines() {
+    knownChallengeIds = idSet(approvedChallenges);
+    knownActivityIds = idSet(approvedActivitySuggestions);
+    knownScheduleIds = idSet(approvedScheduleSuggestions);
+    knownSiteChangeIds = idSet(approvedSiteChangeSuggestions);
+    notificationsReady = true;
+  }
+  function notifyOfNewSubmissions(snap) {
+    if (!notificationsReady) return;
+    const currentCrew = getCurrentCrewKey();
+    function announce(prevIds, nextList, label) {
+      if (!Array.isArray(nextList)) return;
+      nextList.forEach(function (item) {
+        if (!item || !item.id || prevIds.has(item.id)) return;
+        // Don't toast our own submissions.
+        if (currentCrew && item.suggestedBy === currentCrew) return;
+        const by = getCrewDisplayName(item.suggestedBy);
+        const title = sanitizeText(item.title, 60) || 'something new';
+        showToast(by + ' added a ' + label + ': ' + title, 4200);
+      });
+    }
+    announce(knownChallengeIds, snap.nextChallenges, 'challenge');
+    announce(knownActivityIds, snap.nextActivities, 'activity');
+    announce(knownScheduleIds, snap.nextSchedule, 'schedule item');
+    announce(knownSiteChangeIds, snap.nextSiteChanges, 'site change');
+    knownChallengeIds = idSet(snap.nextChallenges);
+    knownActivityIds = idSet(snap.nextActivities);
+    knownScheduleIds = idSet(snap.nextSchedule);
+    knownSiteChangeIds = idSet(snap.nextSiteChanges);
+  }
+
+  // ── Crew leaderboard ──────────────────────────────────────────────────
+  function renderLeaderboard() {
+    const container = document.getElementById('crew-leaderboard');
+    if (!container) return;
+    const codeByMember = { joshua: '160698', emmanuel: '230997', kealen: '270298', jack: '120398', ciaran: '240598' };
+    const board = [];
+    Object.keys(codeByMember).forEach(function (m) {
+      const code = codeByMember[m];
+      const name = getCrewDisplayName(code);
+      let challenges = 0, activities = 0, schedule = 0, votesCast = 0, spend = 0;
+      approvedChallenges.forEach(function (item) { if (item && item.suggestedBy === code) challenges += 1; });
+      approvedActivitySuggestions.forEach(function (item) { if (item && item.suggestedBy === code) activities += 1; });
+      approvedScheduleSuggestions.forEach(function (item) { if (item && item.suggestedBy === code) schedule += 1; });
+      Object.keys(challengeVoteLog || {}).forEach(function (k) {
+        if (k.indexOf(code + ':') === 0) votesCast += 1;
+      });
+      Object.keys(activityVoteLog || {}).forEach(function (k) {
+        if (k.indexOf(code + ':') === 0) votesCast += 1;
+      });
+      expenseEntries.forEach(function (e) { if (e && e.payer === name) spend += Number(e.amount || 0); });
+      const points = (challenges * 3) + (activities * 3) + (schedule * 2) + (votesCast * 1);
+      board.push({ name: name, code: code, points: points, challenges: challenges, activities: activities, schedule: schedule, votesCast: votesCast, spend: spend });
+    });
+    board.sort(function (a, b) { return b.points - a.points; });
+    clearElement(container);
+    const maxPts = Math.max(1, board[0] ? board[0].points : 0);
+    board.forEach(function (entry, idx) {
+      const row = document.createElement('div');
+      row.className = 'leader-row';
+      const head = document.createElement('div');
+      head.className = 'leader-row-head';
+      const rank = document.createElement('span');
+      rank.className = 'leader-rank';
+      rank.textContent = '#' + (idx + 1);
+      const nm = document.createElement('span');
+      nm.className = 'leader-name';
+      nm.textContent = entry.name;
+      const pts = document.createElement('span');
+      pts.className = 'leader-points';
+      pts.textContent = entry.points + ' pts';
+      head.appendChild(rank); head.appendChild(nm); head.appendChild(pts);
+      row.appendChild(head);
+      const bar = document.createElement('div');
+      bar.className = 'leader-bar';
+      const fill = document.createElement('div');
+      fill.className = 'leader-bar-fill';
+      fill.style.width = (Math.round((entry.points / maxPts) * 100)) + '%';
+      bar.appendChild(fill);
+      row.appendChild(bar);
+      const meta = document.createElement('div');
+      meta.className = 'leader-meta';
+      meta.textContent = entry.challenges + ' challenges · ' + entry.activities + ' activities · ' + entry.schedule + ' plans · ' + entry.votesCast + ' votes · £' + entry.spend.toFixed(0) + ' covered';
+      row.appendChild(meta);
+      container.appendChild(row);
+    });
+  }
+
+  // ── Flight countdown card ─────────────────────────────────────────────
+  function formatHMS(ms) {
+    if (ms <= 0) return '0d 0h 0m';
+    const d = Math.floor(ms / MS_PER_DAY);
+    const h = Math.floor((ms % MS_PER_DAY) / MS_PER_HOUR);
+    const m = Math.floor((ms % MS_PER_HOUR) / MS_PER_MINUTE);
+    return d + 'd ' + h + 'h ' + m + 'm';
+  }
+  function updateFlightTicker() {
+    const out = document.getElementById('flight-ticker-out');
+    const back = document.getElementById('flight-ticker-ret');
+    const note = document.getElementById('flight-ticker-note');
+    if (!out && !back) return;
+    const now = Date.now();
+    const outbound = OUTBOUND_DEPART_MS - now;
+    const retbound = RETURN_DEPART_MS - now;
+    if (out) {
+      if (outbound > 0) {
+        out.textContent = 'EZY3001 (BFS → BCN): T-' + formatHMS(outbound);
+      } else if (outbound > -3 * MS_PER_HOUR) {
+        out.textContent = 'EZY3001 in the air — vamos!';
+      } else {
+        out.textContent = 'EZY3001 complete. You made it.';
+      }
+    }
+    if (back) {
+      if (retbound > 0 && outbound < 0) {
+        back.textContent = 'EZY3002 (BCN → BFS): T-' + formatHMS(retbound);
+      } else if (retbound > 0) {
+        back.textContent = 'Return EZY3002 departs 14:00 on 6 May.';
+      } else {
+        back.textContent = 'Return EZY3002 complete. Home safe.';
+      }
+    }
+    if (note) {
+      if (outbound > 0) {
+        const hrs = outbound / MS_PER_HOUR;
+        note.textContent = hrs < 24
+          ? 'Final hours. Boarding pass, passport, hand-bag only.'
+          : (hrs < 72 ? 'Packing window. Hand luggage only.' : 'Trip is locked in.');
+      } else if (retbound > 0) {
+        note.textContent = 'You\'re in Barcelona. Stay hydrated.';
+      } else {
+        note.textContent = 'Mission accomplished.';
+      }
+    }
+  }
+  setInterval(updateFlightTicker, 30000);
+
+  // ── Open-Meteo weather widget ─────────────────────────────────────────
+  const WEATHER_CACHE_KEY = 'weatherCacheV1';
+  const WEATHER_CACHE_MS = 30 * 60 * 1000;
+  function weatherIcon(code) {
+    if (code === 0) return '\u2600\uFE0F';
+    if (code >= 1 && code <= 2) return '\u26C5';
+    if (code === 3) return '\u2601\uFE0F';
+    if (code >= 45 && code <= 48) return '\uD83C\uDF2B\uFE0F';
+    if (code >= 51 && code <= 67) return '\uD83C\uDF27\uFE0F';
+    if (code >= 71 && code <= 77) return '\u2744\uFE0F';
+    if (code >= 80 && code <= 82) return '\uD83C\uDF26\uFE0F';
+    if (code >= 95) return '\u26C8\uFE0F';
+    return '\uD83C\uDF24\uFE0F';
+  }
+  function renderWeatherData(data) {
+    const body = document.getElementById('weather-body');
+    const updated = document.getElementById('weather-updated');
+    if (!body) return;
+    clearElement(body);
+    if (!data || !data.daily || !Array.isArray(data.daily.time)) {
+      body.textContent = 'Weather unavailable. Try again later.';
+      return;
+    }
+    const times = data.daily.time;
+    const codes = data.daily.weathercode || [];
+    const hi = data.daily.temperature_2m_max || [];
+    const lo = data.daily.temperature_2m_min || [];
+    const precip = data.daily.precipitation_probability_max || [];
+    times.forEach(function (iso, idx) {
+      const d = new Date(iso + 'T12:00:00');
+      const card = document.createElement('div');
+      card.className = 'weather-day';
+      const lbl = document.createElement('div');
+      lbl.className = 'weather-day-label';
+      lbl.textContent = d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+      const ic = document.createElement('div');
+      ic.className = 'weather-icon';
+      ic.textContent = weatherIcon(codes[idx] || 0);
+      const temp = document.createElement('div');
+      temp.className = 'weather-temp';
+      temp.textContent = Math.round(hi[idx]) + '° / ' + Math.round(lo[idx]) + '°';
+      const rain = document.createElement('div');
+      rain.className = 'weather-rain';
+      rain.textContent = (precip[idx] != null ? precip[idx] : '—') + '% rain';
+      card.appendChild(lbl); card.appendChild(ic); card.appendChild(temp); card.appendChild(rain);
+      body.appendChild(card);
+    });
+    if (updated) updated.textContent = 'Updated ' + new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+  function refreshWeather(force) {
+    const body = document.getElementById('weather-body');
+    if (!body) return;
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || 'null'); } catch (_) { cached = null; }
+    const fresh = cached && cached.ts && (Date.now() - cached.ts) < WEATHER_CACHE_MS;
+    if (cached && cached.data) renderWeatherData(cached.data);
+    if (fresh && !force) return;
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=41.3874&longitude=2.1686'
+      + '&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      + '&timezone=Europe%2FMadrid'
+      + '&start_date=2026-05-03&end_date=2026-05-06';
+    body.setAttribute('data-loading', '1');
+    fetch(url, { cache: 'no-store' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (json) {
+        if (!json) { if (!cached) body.textContent = 'Weather unavailable.'; return; }
+        renderWeatherData(json);
+        try { localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: json })); } catch (_) { /* ignore */ }
+      })
+      .catch(function () { if (!cached) body.textContent = 'Weather unavailable.'; })
+      .finally(function () { body.removeAttribute('data-loading'); });
+  }
+
+  // ── Nightlife map (Leaflet) + group location ping ─────────────────────
+  const BARCELONA_VENUES = [
+    { name: 'Sips', kind: 'Cocktail', lat: 41.3912, lng: 2.1567, note: 'Top-tier cocktail bar — strong first stop.' },
+    { name: 'Paradiso', kind: 'Speakeasy', lat: 41.3845, lng: 2.1843, note: 'Hidden-door speakeasy behind the pastrami shop.' },
+    { name: 'Two Schmucks', kind: 'Dive', lat: 41.3803, lng: 2.1686, note: 'Relaxed dive-bar energy for groups.' },
+    { name: 'Dr. Stravinsky', kind: 'Cocktail', lat: 41.3846, lng: 2.1830, note: 'Creative cocktails with a late-night vibe.' },
+    { name: "Bobby's Free", kind: 'Speakeasy', lat: 41.3906, lng: 2.1678, note: 'Speakeasy-style venue with fun group atmosphere.' },
+    { name: 'Hemingway Gin & Cocktail Bar', kind: 'Cocktail', lat: 41.3843, lng: 2.1740, note: 'Central and lively for bar-hopping.' },
+    { name: 'Caribbean Club', kind: 'Rum', lat: 41.3823, lng: 2.1744, note: 'Rum-focused hideaway near the old town.' },
+    { name: 'Bar Marsella', kind: 'Historic', lat: 41.3788, lng: 2.1693, note: 'Historic absinthe stop for a unique Barca night.' },
+    { name: 'The Michael Collins', kind: 'Irish', lat: 41.4035, lng: 2.1745, note: 'Proper pints on Plaça Sagrada Familia.' },
+    { name: "Flaherty's Irish Pub", kind: 'Irish', lat: 41.3792, lng: 2.1760, note: 'Right off La Rambla, live music most nights.' },
+    { name: 'The George Payne', kind: 'Irish', lat: 41.3879, lng: 2.1685, note: 'Massive Irish pub in Eixample.' },
+    { name: "Dunne's Irish Bar", kind: 'Irish', lat: 41.3822, lng: 2.1770, note: 'Gothic Quarter spot with good craic.' },
+    { name: 'Shenanigans Irish Pub', kind: 'Irish', lat: 41.3863, lng: 2.1699, note: 'Near Plaça Catalunya — good for late sessions.' },
+    { name: 'Htop BCN City (Hotel)', kind: 'Hotel', lat: HOTEL_INFO.lat, lng: HOTEL_INFO.lng, note: 'The base. Walking distance to Eixample venues.' }
+  ];
+  let leafletLoading = null;
+  let leafletMap = null;
+  let crewMarkerLayer = null;
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve(window.L);
+    if (leafletLoading) return leafletLoading;
+    leafletLoading = new Promise(function (resolve, reject) {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin = '';
+      script.onload = function () { resolve(window.L); };
+      script.onerror = function () { reject(new Error('Leaflet failed to load')); };
+      document.head.appendChild(script);
+    });
+    return leafletLoading;
+  }
+  function ensureNightlifeMap() {
+    const host = document.getElementById('nightlife-map');
+    if (!host) return Promise.reject();
+    if (leafletMap) return Promise.resolve(leafletMap);
+    return loadLeaflet().then(function (L) {
+      if (leafletMap) return leafletMap;
+      leafletMap = L.map(host, { scrollWheelZoom: false }).setView([HOTEL_INFO.lat, HOTEL_INFO.lng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(leafletMap);
+      const bounds = [];
+      BARCELONA_VENUES.forEach(function (v) {
+        const isHotel = v.kind === 'Hotel';
+        const color = isHotel ? '#D4A843' : (v.kind === 'Irish' ? '#22A06B' : (v.kind === 'Speakeasy' ? '#8B5CF6' : '#C9382A'));
+        const marker = L.circleMarker([v.lat, v.lng], {
+          radius: isHotel ? 10 : 7,
+          color: color, weight: 2, fillColor: color, fillOpacity: isHotel ? 0.85 : 0.6
+        }).addTo(leafletMap);
+        marker.bindPopup('<strong>' + v.name + '</strong><br><span style="opacity:.7">' + v.kind + '</span><br>' + v.note
+          + '<br><a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v.name + ' Barcelona') + '" target="_blank" rel="noopener">Open in Maps</a>');
+        bounds.push([v.lat, v.lng]);
+      });
+      if (bounds.length) leafletMap.fitBounds(bounds, { padding: [30, 30] });
+      crewMarkerLayer = L.layerGroup().addTo(leafletMap);
+      renderCrewLocationMap();
+      return leafletMap;
+    });
+  }
+  function toggleNightlifeMap() {
+    const section = document.getElementById('nightlife-map-section');
+    if (!section) return;
+    const wasHidden = section.classList.contains('map-collapsed');
+    section.classList.toggle('map-collapsed');
+    if (wasHidden) {
+      ensureNightlifeMap().then(function () {
+        setTimeout(function () { if (leafletMap) leafletMap.invalidateSize(); }, 120);
+      }).catch(function () {
+        const host = document.getElementById('nightlife-map');
+        if (host) host.textContent = 'Map failed to load. Check connection.';
+      });
+    }
+  }
+  function renderCrewLocationMap() {
+    if (!leafletMap || !window.L || !crewMarkerLayer) return;
+    crewMarkerLayer.clearLayers();
+    const now = Date.now();
+    Object.keys(crewLocations).forEach(function (code) {
+      const entry = crewLocations[code];
+      if (!entry) return;
+      const age = now - (Number(entry.ts) || 0);
+      if (age > 30 * 60 * 1000) return;
+      const name = getCrewDisplayName(code);
+      const marker = window.L.circleMarker([entry.lat, entry.lng], {
+        radius: 9, color: '#60a5fa', weight: 3, fillColor: '#60a5fa', fillOpacity: 0.75
+      });
+      marker.bindPopup('<strong>' + name + '</strong><br>Pinged ' + formatRelativeTime(Number(entry.ts)));
+      marker.addTo(crewMarkerLayer);
+    });
+  }
+  function shareMyLocation() {
+    const crew = getCurrentCrewKey();
+    if (!crew) { showToast('Log in before sharing location.', 2500); return; }
+    if (!navigator.geolocation) { showToast('Location not supported on this device.', 2500); return; }
+    showToast('Requesting location…', 1800);
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      crewLocations[crew] = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        ts: Date.now()
+      };
+      lastLocalEditAt = Date.now();
+      saveJSON('crewLocations', crewLocations);
+      queueChallengeStateSync(false);
+      ensureNightlifeMap().then(function () {
+        renderCrewLocationMap();
+        if (leafletMap) leafletMap.setView([pos.coords.latitude, pos.coords.longitude], 15);
+        showToast('Location shared for 30 min.', 2500);
+      }).catch(function () {
+        showToast('Location shared (map unavailable).', 2500);
+      });
+    }, function (err) {
+      showToast(err && err.code === 1 ? 'Location permission denied.' : 'Could not get location.', 2800);
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+  }
+  function clearMyLocation() {
+    const crew = getCurrentCrewKey();
+    if (!crew) return;
+    if (!crewLocations[crew]) { showToast('No active location to clear.', 1800); return; }
+    delete crewLocations[crew];
+    lastLocalEditAt = Date.now();
+    saveJSON('crewLocations', crewLocations);
+    queueChallengeStateSync(false);
+    renderCrewLocationMap();
+    showToast('Location cleared.', 1800);
+  }
+
+  // ── Boot sequence for the new features ────────────────────────────────
+  function bootExtras() {
+    renderCrewPresence();
+    renderLeaderboard();
+    updateFlightTicker();
+    refreshWeather(false);
+    primeNotificationBaselines();
+    if (getCurrentCrewKey()) startPresenceBeacon();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootExtras);
+  } else {
+    bootExtras();
+  }
+  // Poll for login state so presence beacon starts right after login and
+  // presence/leaderboard stay fresh as other clients submit data.
+  setInterval(function () {
+    try {
+      if (getCurrentCrewKey()) startPresenceBeacon();
+      renderCrewPresence();
+    } catch (_) { /* ignore */ }
+  }, 10000);
+

@@ -1,6 +1,13 @@
 // Minimal service worker — caches the app shell for offline read access.
-const CACHE = 'stag-shell-v2';
-const SHELL = ['/', '/index.html', '/rossstag.css', '/rossstag.js', '/manifest.webmanifest', '/404.html'];
+const CACHE = 'stag-shell-v3';
+const SHELL = [
+  '/',
+  '/index.html',
+  '/rossstag.css?v=20260414-1',
+  '/rossstag.js?v=20260414-1',
+  '/manifest.webmanifest',
+  '/404.html'
+];
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
@@ -21,14 +28,43 @@ self.addEventListener('fetch', function (event) {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  // Only handle same-origin + known font/stylesheet CDN reads.
-  if (url.origin !== location.origin) return;
   // Bypass Supabase or API calls if ever hosted same-origin.
   if (url.pathname.indexOf('/rest/v1') !== -1) return;
+
+  const isSameOrigin = url.origin === location.origin;
+  const isStaticAsset = /\.(css|js|png|jpg|jpeg|webp|svg|woff2?|ttf|ico)$/i.test(url.pathname);
+  const isImageCDN = /images\.unsplash\.com|fonts\.(?:googleapis|gstatic)\.com/.test(url.host);
+
+  // Cache-first for static assets (own domain or known image/font CDNs).
+  if ((isSameOrigin && isStaticAsset) || isImageCDN) {
+    event.respondWith(
+      caches.match(req).then(function (hit) {
+        if (hit) {
+          // Revalidate in the background.
+          fetch(req).then(function (res) {
+            if (res && (res.status === 200 || res.type === 'opaque')) {
+              caches.open(CACHE).then(function (cache) { cache.put(req, res.clone()); }).catch(function () {});
+            }
+          }).catch(function () {});
+          return hit;
+        }
+        return fetch(req).then(function (res) {
+          if (res && (res.status === 200 || res.type === 'opaque')) {
+            const copy = res.clone();
+            caches.open(CACHE).then(function (cache) { cache.put(req, copy); }).catch(function () {});
+          }
+          return res;
+        }).catch(function () { return caches.match('/index.html'); });
+      })
+    );
+    return;
+  }
+
+  // Network-first for everything else same-origin, with cache fallback.
+  if (!isSameOrigin) return;
   event.respondWith(
     fetch(req)
       .then(function (res) {
-        // Cache successful responses opportunistically.
         if (res && res.status === 200 && res.type === 'basic') {
           const copy = res.clone();
           caches.open(CACHE).then(function (cache) { cache.put(req, copy); }).catch(function () {});

@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260413-2">
+<link rel="stylesheet" href="rossstag.css?v=20260414-1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -58,6 +58,7 @@
       <button class="nav-group-toggle" type="button" aria-expanded="false" aria-haspopup="true">City <span class="nav-caret">▾</span></button>
       <div class="nav-group-menu">
         <a class="top-sub-link" href="#nightlife-section">Nightlife</a>
+        <a class="top-sub-link" href="#nightlife-map-section">Bar Map</a>
         <a class="top-sub-link" href="#restaurants-section">Food</a>
         <a class="top-sub-link" href="#activities-section">Activities</a>
         <a class="top-sub-link" href="#football-section">Football</a>
@@ -69,6 +70,7 @@
         <a class="top-sub-link" href="#challenge-generator-section">Challenges</a>
         <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
         <a class="top-sub-link" href="#mission-section">Missions</a>
+        <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
         <a class="top-sub-link" href="#poll-section">Poll</a>
       </div>
     </div>
@@ -98,6 +100,7 @@
     <div class="nav-drawer-group">
       <span class="nav-drawer-label">City</span>
       <a class="top-sub-link" href="#nightlife-section">Nightlife</a>
+      <a class="top-sub-link" href="#nightlife-map-section">Bar Map</a>
       <a class="top-sub-link" href="#restaurants-section">Food</a>
       <a class="top-sub-link" href="#activities-section">Activities</a>
       <a class="top-sub-link" href="#football-section">Football</a>
@@ -107,6 +110,7 @@
       <a class="top-sub-link" href="#challenge-generator-section">Challenges</a>
       <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
       <a class="top-sub-link" href="#mission-section">Missions</a>
+      <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
       <a class="top-sub-link" href="#poll-section">Poll</a>
     </div>
     <div class="nav-drawer-group">
@@ -130,6 +134,12 @@
     <div class="divider-line"></div>
     <div class="hero-date">3 - 5 MAY 2026</div>
     <div class="hero-location">3 nights &#183; 6 lads &#183; 1 mission</div>
+    <div class="quick-actions" aria-label="Quick actions">
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="copyTripCode" title="Copy trip code">&#x1F511; Trip Code</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="copyHotelAddress" title="Copy hotel address">&#x1F3E8; Copy Hotel</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="openHotelMaps" title="Open hotel in Google Maps">&#x1F5FA;&#xFE0F; Hotel Map</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareStagSite" title="Share this site">&#x1F4E4; Share</button>
+    </div>
   </div>
   <div class="scroll-hint">Scroll Down</div>
 </div>
@@ -153,9 +163,20 @@
   </div>
 </div>
 
+<div class="weather-card fade-in" aria-label="Barcelona forecast">
+  <div class="weather-head">
+    <h3>Barcelona Forecast &middot; 3-6 May</h3>
+    <button type="button" class="btn btn-outline-gold btn-sm" data-action="refreshWeather" aria-label="Refresh forecast">&#x21BB;</button>
+  </div>
+  <div id="weather-body" class="weather-body">Loading forecast…</div>
+  <div id="weather-updated" class="weather-updated"></div>
+  <p class="weather-note">Open-Meteo, cached every 30 min.</p>
+</div>
+
 <section id="trip-schedule-section">
   <h2 class="section-title fade-in" id="lads-title">The Lads</h2>
   <p class="lads-subtitle fade-in" id="lads-subtitle">Crew roll call is locked until login.</p>
+  <p class="lads-online fade-in" id="crew-online-summary" aria-live="polite"></p>
   <div class="lads-customizer fade-in" id="lads-customizer" style="display:none;">
     <h3>My Crew Profile</h3>
     <div class="lads-customizer-row">
@@ -181,6 +202,11 @@
 
 <section id="flights-section">
   <h2 class="section-title fade-in">Flights</h2>
+  <div class="flight-ticker fade-in" aria-label="Flight countdown">
+    <div id="flight-ticker-out" class="flight-ticker-line flight-ticker-out">--</div>
+    <div id="flight-ticker-ret" class="flight-ticker-line flight-ticker-ret">--</div>
+    <div id="flight-ticker-note" class="flight-ticker-note"></div>
+  </div>
   <div class="flight-card fade-in">
     <div class="flight-direction">Outbound</div>
     <div class="flight-route">
@@ -778,9 +804,50 @@
   <h2 class="section-title fade-in">Punishment Wheel</h2>
   <div class="info-card fade-in" style="text-align:center;">
     <p>Failed or refused challenge? Spin for punishment.</p>
+    <div class="punishment-wheel-wrap" aria-hidden="true">
+      <div id="punishment-wheel" class="punishment-wheel">
+        <span class="punishment-wheel-slice" style="--slice-color:#D4A843"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#C9382A"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#F4A423"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#8B5CF6"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#22A06B"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#0EA5E9"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#E11D48"></span>
+        <span class="punishment-wheel-slice" style="--slice-color:#84CC16"></span>
+      </div>
+      <span class="punishment-wheel-pointer" aria-hidden="true"></span>
+    </div>
     <button data-action="spinPunishmentWheel" class="btn btn-gold">Spin Wheel</button>
     <p id="punishment-result" style="margin-top:12px; font-weight:bold;"></p>
     <p id="punishment-history" style="margin-top:8px; opacity:.65;"></p>
+  </div>
+</section>
+
+<section id="leaderboard-section">
+  <h2 class="section-title fade-in">Crew Leaderboard</h2>
+  <div class="info-card fade-in">
+    <p style="opacity:.7; margin-bottom:12px;">Points for challenges suggested (3), activities (3), plan items (2) and votes cast (1). Ross doesn't compete.</p>
+    <div id="crew-leaderboard" class="leaderboard"></div>
+  </div>
+</section>
+
+<section id="nightlife-map-section" class="map-collapsed">
+  <h2 class="section-title fade-in">Bar-Hopping Map</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p style="opacity:.7; margin-bottom:12px;">Our hotel plus every bar from the nightlife guide, pinned. Share your location to tell the lads where you are (30-min expiry).</p>
+    <div class="map-actions">
+      <button type="button" class="btn btn-gold btn-sm" data-action="toggleNightlifeMap">&#x1F5FA;&#xFE0F; Show / hide map</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareMyLocation">&#x1F4CD; Share my location</button>
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="clearMyLocation">Clear</button>
+    </div>
+    <div id="nightlife-map" class="nightlife-map" role="region" aria-label="Barcelona venue map"></div>
+    <p class="map-legend">
+      <span class="legend-dot legend-hotel"></span>Hotel
+      <span class="legend-dot legend-cocktail"></span>Cocktail
+      <span class="legend-dot legend-irish"></span>Irish
+      <span class="legend-dot legend-speakeasy"></span>Speakeasy
+      <span class="legend-dot legend-crew"></span>Crew
+    </p>
   </div>
 </section>
 
@@ -842,7 +909,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260413-2"></script>
+<script src="rossstag.js?v=20260414-1"></script>
 <script async defer src="https://widget.getyourguide.com/dist/pa.umd.min.js" data-gyg-partner-id="0"></script>
 </body>
 </html>

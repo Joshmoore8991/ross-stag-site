@@ -1822,3 +1822,147 @@
       transform: none;
     }
   }
+
+  /* ── Hero quick-actions row ─────────────────────────────────────── */
+  .quick-actions {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    margin-top: 22px;
+  }
+  .quick-actions .btn { font-size: 12px; padding: 8px 12px; }
+
+  /* ── Weather forecast card ──────────────────────────────────────── */
+  .weather-card {
+    max-width: 720px; margin: 24px auto 0; padding: 18px 20px;
+    border: 1px solid rgba(212,168,67,.25); border-radius: 16px;
+    background: linear-gradient(180deg, rgba(15,15,15,.9), rgba(20,20,20,.6));
+  }
+  .weather-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .weather-head h3 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--gold); font-size: 20px; }
+  .weather-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+  .weather-day {
+    border: 1px solid rgba(212,168,67,.18); border-radius: 12px; padding: 10px 8px; text-align: center;
+    background: rgba(0,0,0,.35);
+  }
+  .weather-day-label { font-size: 12px; opacity: .75; letter-spacing: .05em; text-transform: uppercase; }
+  .weather-icon { font-size: 26px; margin: 6px 0; }
+  .weather-temp { font-weight: 700; color: var(--gold); }
+  .weather-rain { font-size: 12px; opacity: .65; margin-top: 4px; }
+  .weather-updated { font-size: 11px; opacity: .55; text-align: right; margin-top: 6px; }
+  .weather-note { font-size: 11px; opacity: .45; margin-top: 2px; }
+  .light-theme .weather-card { background: #fff; color: var(--black); }
+  .light-theme .weather-day { background: rgba(212,168,67,.08); }
+
+  /* ── Flight countdown ticker ────────────────────────────────────── */
+  .flight-ticker {
+    margin: 0 auto 18px; padding: 14px 18px; max-width: 720px;
+    border: 1px dashed rgba(212,168,67,.4); border-radius: 14px;
+    background: rgba(212,168,67,.05);
+    text-align: center;
+  }
+  .flight-ticker-line { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px; font-size: 18px; color: var(--gold); }
+  .flight-ticker-ret { color: var(--cream); opacity: .75; font-size: 15px; margin-top: 4px; }
+  .flight-ticker-note { font-size: 12px; opacity: .65; margin-top: 6px; }
+
+  /* ── Presence dots on lad cards ─────────────────────────────────── */
+  .lad-card { position: relative; }
+  .presence-dot {
+    position: absolute; top: 10px; right: 10px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #555; box-shadow: 0 0 0 2px rgba(0,0,0,.4);
+  }
+  .presence-dot.presence-online { background: #22c55e; box-shadow: 0 0 0 2px rgba(0,0,0,.3), 0 0 12px rgba(34,197,94,.7); animation: presence-pulse 2.4s infinite ease-in-out; }
+  .presence-dot.presence-idle { background: #f59e0b; box-shadow: 0 0 0 2px rgba(0,0,0,.3); }
+  .presence-dot.presence-offline { background: #555; }
+  .presence-label { display: block; font-size: 11px; opacity: .6; margin-top: 6px; letter-spacing: .04em; text-transform: uppercase; }
+  .lads-online { text-align: center; color: var(--gold); opacity: .85; font-size: 13px; margin-bottom: 8px; }
+  @keyframes presence-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.25); opacity: .85; }
+  }
+
+  /* ── Crew leaderboard ──────────────────────────────────────────── */
+  .leaderboard { display: flex; flex-direction: column; gap: 12px; }
+  .leader-row {
+    padding: 12px 14px; border: 1px solid rgba(212,168,67,.18); border-radius: 12px;
+    background: rgba(0,0,0,.3);
+  }
+  .leader-row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .leader-rank { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--gold); font-size: 18px; min-width: 36px; }
+  .leader-name { flex: 1; font-weight: 600; }
+  .leader-points { font-weight: 700; color: var(--gold); }
+  .leader-bar { height: 8px; background: rgba(255,255,255,.08); border-radius: 6px; margin: 8px 0 6px; overflow: hidden; }
+  .leader-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--sun)); border-radius: 6px; transition: width .4s ease; }
+  .leader-meta { font-size: 12px; opacity: .65; }
+  .light-theme .leader-row { background: rgba(255,255,255,.8); color: var(--black); }
+  .light-theme .leader-bar { background: rgba(0,0,0,.08); }
+
+  /* ── Punishment wheel animation ─────────────────────────────────── */
+  .punishment-wheel-wrap {
+    position: relative; width: 200px; height: 200px;
+    margin: 8px auto 16px;
+  }
+  .punishment-wheel {
+    width: 100%; height: 100%; border-radius: 50%;
+    position: relative; overflow: hidden;
+    border: 4px solid var(--gold);
+    box-shadow: 0 10px 28px rgba(0,0,0,.55);
+    transform: rotate(0deg);
+    --spin-end: 1440deg;
+  }
+  .punishment-wheel.spinning {
+    animation: punishment-spin 2.1s cubic-bezier(0.17, 0.67, 0.22, 1) forwards;
+  }
+  @keyframes punishment-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(var(--spin-end)); }
+  }
+  .punishment-wheel-slice {
+    position: absolute; inset: 0;
+    background: var(--slice-color, var(--gold));
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
+    transform-origin: 50% 50%;
+  }
+  .punishment-wheel-slice:nth-child(1) { transform: rotate(0deg); }
+  .punishment-wheel-slice:nth-child(2) { transform: rotate(45deg); }
+  .punishment-wheel-slice:nth-child(3) { transform: rotate(90deg); }
+  .punishment-wheel-slice:nth-child(4) { transform: rotate(135deg); }
+  .punishment-wheel-slice:nth-child(5) { transform: rotate(180deg); }
+  .punishment-wheel-slice:nth-child(6) { transform: rotate(225deg); }
+  .punishment-wheel-slice:nth-child(7) { transform: rotate(270deg); }
+  .punishment-wheel-slice:nth-child(8) { transform: rotate(315deg); }
+  .punishment-wheel-pointer {
+    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 18px solid var(--cream);
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.6));
+  }
+  .punishment-reveal {
+    animation: punishment-reveal .5s ease-out;
+  }
+  @keyframes punishment-reveal {
+    from { opacity: 0; transform: scale(.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .punishment-wheel.spinning { animation: none; }
+    .punishment-reveal { animation: none; }
+  }
+
+  /* ── Nightlife map ─────────────────────────────────────────────── */
+  .nightlife-map {
+    height: 420px; width: 100%; border-radius: 14px;
+    margin-top: 12px; background: rgba(0,0,0,.4);
+    border: 1px solid rgba(212,168,67,.2);
+  }
+  #nightlife-map-section.map-collapsed .nightlife-map { display: none; }
+  .map-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 6px; }
+  .map-legend { margin-top: 12px; font-size: 12px; opacity: .75; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .legend-hotel { background: #D4A843; }
+  .legend-cocktail { background: #C9382A; }
+  .legend-irish { background: #22A06B; }
+  .legend-speakeasy { background: #8B5CF6; }
+  .legend-crew { background: #60a5fa; }
+  .leaflet-container { font-family: 'Outfit', sans-serif !important; }
