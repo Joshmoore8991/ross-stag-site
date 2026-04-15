@@ -1,13 +1,15 @@
 // Minimal service worker — caches the app shell for offline read access.
-const CACHE = 'stag-shell-v13';
+const CACHE = 'stag-shell-v14';
 const SHELL = [
   './',
   './index.html',
   './rossstag.css?v=20260415-1',
   './rossstag.js?v=20260415-1',
-  './manifest.webmanifest',
   './404.html'
 ];
+// The manifest is intentionally NOT pre-cached — iOS reads it fresh every
+// time the user installs to Home Screen, and a stale cached copy would pin
+// the old start_url even after we fix it server-side.
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
@@ -32,6 +34,10 @@ self.addEventListener('fetch', function (event) {
   if (url.pathname.indexOf('/rest/v1') !== -1) return;
 
   const isSameOrigin = url.origin === location.origin;
+  // Always fetch the manifest from the network — it steers the PWA's
+  // start_url on install, so serving a stale cached copy strands users
+  // at the old URL.
+  if (isSameOrigin && url.pathname.endsWith('/manifest.webmanifest')) return;
   const isStaticAsset = /\.(css|js|png|jpg|jpeg|webp|svg|woff2?|ttf|ico)$/i.test(url.pathname);
   const isImageCDN = /images\.unsplash\.com|fonts\.(?:googleapis|gstatic)\.com/.test(url.host);
 
