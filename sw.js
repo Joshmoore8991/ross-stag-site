@@ -1,10 +1,10 @@
 // Minimal service worker — caches the app shell for offline read access.
-const CACHE = 'stag-shell-v10';
+const CACHE = 'stag-shell-v11';
 const SHELL = [
   '/',
   '/index.html',
-  '/rossstag.css?v=20260414-8',
-  '/rossstag.js?v=20260414-8',
+  '/rossstag.css?v=20260414-9',
+  '/rossstag.js?v=20260414-9',
   '/manifest.webmanifest',
   '/404.html'
 ];

@@ -2315,3 +2315,97 @@
     color: #f1d884;
     pointer-events: none;
   }
+
+  /* FX converter card. */
+  .fx-card { text-align: center; }
+  .fx-rate {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f1d884;
+    margin: 4px 0;
+    letter-spacing: .02em;
+  }
+  .fx-stamp {
+    font-size: 12px;
+    opacity: .6;
+    margin-bottom: 12px;
+  }
+  .fx-convert-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .fx-convert-input { max-width: 140px; }
+  .fx-convert-direction { max-width: 170px; }
+  .fx-convert-output {
+    margin-top: 6px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  @media (max-width: 640px) {
+    .fx-convert-input,
+    .fx-convert-direction {
+      flex: 1 1 100%;
+      max-width: none;
+    }
+  }
+
+  /* Per-person packing checklist. */
+  .packing-progress-heading {
+    font-weight: 700;
+    color: #f1d884;
+    margin-bottom: 4px;
+  }
+  .packing-roster {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(212, 168, 67, 0.28);
+  }
+  .packing-roster-heading {
+    font-weight: 700;
+    margin-bottom: 8px;
+    opacity: .85;
+  }
+  .packing-roster-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 13.5px;
+  }
+  .packing-roster-name { font-weight: 600; }
+  .packing-roster-bar {
+    display: block;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .packing-roster-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #B8902F, #F1D884);
+    transition: width .3s ease;
+  }
+  .packing-roster-count { text-align: right; opacity: .75; }
+
+  /* Keyboard focus visibility — accessibility polish. */
+  :focus-visible {
+    outline: 2px solid rgba(241, 216, 132, 0.85);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid rgba(241, 216, 132, 0.95);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(241, 216, 132, 0.18);
+  }

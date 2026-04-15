@@ -11,18 +11,26 @@
 <meta name="theme-color" content="#F5F0E8" media="(prefers-color-scheme: light)">
 <meta name="robots" content="noindex, nofollow">
 <meta property="og:type" content="website">
-<meta property="og:title" content="BARCELONA STAG - May 2026">
-<meta property="og:description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun!">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="BARCELONA STAG - May 2026">
+<meta property="og:site_name" content="Barcelona Stag HQ">
+<meta property="og:title" content="BARCELONA STAG — May 2026">
+<meta property="og:description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun.">
+<meta property="og:url" content="https://joshmoore8991.github.io/ross-stag-site/">
+<meta property="og:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Barcelona skyline at sunset">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BARCELONA STAG — May 2026">
 <meta name="twitter:description" content="Ross Wightman's Stag Do in Barcelona, May 2026.">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
 <link rel="manifest" href="manifest.webmanifest">
 <title>BARCELONA STAG - May 2026</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F1EA;&#x1F1F8;</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260414-8">
+<link rel="stylesheet" href="rossstag.css?v=20260414-9">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -824,13 +832,34 @@
   </div>
 </section>
 
+<section id="fx-section">
+  <h2 class="section-title fade-in">EUR / GBP Converter</h2>
+  <div class="info-card fade-in fx-card">
+    <p id="fx-rate" class="fx-rate">Loading rate…</p>
+    <p id="fx-stamp" class="fx-stamp">Not yet fetched</p>
+    <div class="fx-convert-row">
+      <input type="number" id="fx-convert-input" class="form-input fx-convert-input" inputmode="decimal" min="0" step="0.01" placeholder="Amount" data-input-action="onFxConvertInput" aria-label="Amount to convert">
+      <select id="fx-convert-direction" class="form-input fx-convert-direction" data-change-action="onFxConvertDirection" aria-label="Conversion direction">
+        <option value="GBPtoEUR">GBP → EUR</option>
+        <option value="EURtoGBP" selected>EUR → GBP</option>
+      </select>
+      <button data-action="refreshFxRateManual" class="btn btn-outline-light btn-sm" type="button">Refresh</button>
+    </div>
+    <p id="fx-convert-output" class="fx-convert-output">—</p>
+  </div>
+</section>
+
 <section id="expenses-section">
   <h2 class="section-title fade-in">Shared Expense Splitter</h2>
   <div class="info-card fade-in" style="text-align:center;">
     <p style="opacity:.7; margin-bottom:10px;">Track spend and instantly see who owes what.</p>
-    <select id="expense-payer" class="form-input"></select>
-    <input type="number" id="expense-amount" min="0.01" step="0.01" placeholder="Amount" class="form-input" style="width:140px;">
-    <input type="text" id="expense-note" placeholder="What was it for?" class="form-input" style="width:45%;">
+    <select id="expense-payer" class="form-input" aria-label="Who paid"></select>
+    <input type="number" id="expense-amount" min="0.01" step="0.01" placeholder="Amount" class="form-input" style="width:120px;" aria-label="Amount">
+    <select id="expense-currency" class="form-input" style="width:96px;" aria-label="Currency">
+      <option value="EUR">EUR (€)</option>
+      <option value="GBP">GBP (£)</option>
+    </select>
+    <input type="text" id="expense-note" placeholder="What was it for?" class="form-input" style="width:45%;" aria-label="Expense note">
     <button data-action="addExpense" class="btn btn-gold btn-sm">Add Expense</button>
     <button data-action="clearExpenses" class="btn btn-outline-light btn-sm ml-6">Clear</button>
     <p id="expense-msg" style="margin-top:10px;"></p>
@@ -957,7 +986,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260414-8"></script>
+<script src="rossstag.js?v=20260414-9"></script>
 </body>
 </html>
 

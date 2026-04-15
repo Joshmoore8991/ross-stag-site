@@ -772,14 +772,97 @@
     const payer = crewMembers.includes(payerRaw) ? payerRaw : crewMembers[0];
     const amount = clampNumber(item.amount, 0.01, 100000, 0);
     if (!amount) return null;
+    const currencyRaw = sanitizeText(item.currency, 4).toUpperCase();
+    const currency = (currencyRaw === 'EUR' || currencyRaw === 'GBP') ? currencyRaw : 'GBP';
+    const amountGbp = clampNumber(item.amountGbp, 0, 100000, 0);
     return {
       id: sanitizeText(item.id, 64) || (Date.now().toString() + Math.random().toString(36).slice(2, 7)),
       payer: payer,
       amount: Math.round(amount * 100) / 100,
+      currency: currency,
+      amountGbp: Math.round((amountGbp || convertToGbp(amount, currency)) * 100) / 100,
       note: sanitizeText(item.note, 140) || 'General',
       createdAt: clampNumber(item.createdAt, 0, 9999999999999, Date.now())
     };
   }
+
+  // FX state — Bank of England EUR→GBP mid rate, refreshed via public API.
+  let fxRates = loadJSON('fxRates', { base: 'GBP', rates: { EUR: 1.17 }, fetchedAt: 0 });
+  function getEurToGbpRate() {
+    // We store GBP-base; EUR→GBP = 1 / rates.EUR.
+    const eurPerGbp = Number(fxRates && fxRates.rates && fxRates.rates.EUR);
+    if (!Number.isFinite(eurPerGbp) || eurPerGbp <= 0) return 1 / 1.17;
+    return 1 / eurPerGbp;
+  }
+  function convertToGbp(amount, currency) {
+    const n = Number(amount);
+    if (!Number.isFinite(n) || n <= 0) return 0;
+    if (currency === 'EUR') return n * getEurToGbpRate();
+    return n;
+  }
+  function formatMoney(amount, currency) {
+    const n = Number(amount) || 0;
+    const sym = currency === 'EUR' ? '€' : '£';
+    return sym + n.toFixed(2);
+  }
+
+  function refreshFxRate(force) {
+    const now = Date.now();
+    const age = now - (Number(fxRates && fxRates.fetchedAt) || 0);
+    if (!force && age < 6 * 60 * 60 * 1000) {
+      renderFxCard();
+      return Promise.resolve(fxRates);
+    }
+    return fetch('https://open.er-api.com/v6/latest/GBP', { cache: 'no-store' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (body) {
+        if (!body || !body.rates || !Number.isFinite(Number(body.rates.EUR))) return;
+        fxRates = { base: 'GBP', rates: { EUR: Number(body.rates.EUR) }, fetchedAt: Date.now() };
+        saveJSON('fxRates', fxRates);
+        renderFxCard();
+        renderExpenseBoard();
+        if (typeof renderLeaderboard === 'function') renderLeaderboard();
+      })
+      .catch(function () { renderFxCard(); });
+  }
+
+  function renderFxCard() {
+    const rateEl = document.getElementById('fx-rate');
+    const stampEl = document.getElementById('fx-stamp');
+    if (!rateEl && !stampEl) return;
+    const eurPerGbp = Number(fxRates && fxRates.rates && fxRates.rates.EUR);
+    const valid = Number.isFinite(eurPerGbp) && eurPerGbp > 0;
+    if (rateEl) rateEl.textContent = valid
+      ? '£1 = €' + eurPerGbp.toFixed(4) + '   ·   €1 = £' + (1 / eurPerGbp).toFixed(4)
+      : 'Rate unavailable — using fallback €1.17';
+    if (stampEl) {
+      const ts = Number(fxRates && fxRates.fetchedAt);
+      stampEl.textContent = ts ? 'Updated ' + new Date(ts).toLocaleString() : 'Not yet fetched';
+    }
+    recomputeFxConverter();
+  }
+
+  function recomputeFxConverter() {
+    const input = document.getElementById('fx-convert-input');
+    const direction = document.getElementById('fx-convert-direction');
+    const output = document.getElementById('fx-convert-output');
+    if (!input || !direction || !output) return;
+    const val = Number(input.value);
+    if (!Number.isFinite(val) || val <= 0) {
+      output.textContent = '—';
+      return;
+    }
+    if (direction.value === 'GBPtoEUR') {
+      const eurPerGbp = Number(fxRates && fxRates.rates && fxRates.rates.EUR) || (1 / getEurToGbpRate());
+      output.textContent = '£' + val.toFixed(2) + ' ≈ €' + (val * eurPerGbp).toFixed(2);
+    } else {
+      output.textContent = '€' + val.toFixed(2) + ' ≈ £' + (val * getEurToGbpRate()).toFixed(2);
+    }
+  }
+
+  function onFxConvertInput() { recomputeFxConverter(); }
+  function onFxConvertDirection() { recomputeFxConverter(); }
+  function refreshFxRateManual() { refreshFxRate(true); }
 
   function sanitizeCompletedChallenges(list) {
     if (!Array.isArray(list)) return [];
@@ -915,12 +998,37 @@
   }
 
   function sanitizePackingState(value) {
-    const out = {};
+    // Schema: { [crewCode]: { [item]: boolean } }.
+    // Legacy flat shape { [item]: boolean } is migrated to the current user bucket.
     const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-    packingItems.forEach(function (item) {
-      out[item] = !!source[item];
+    const out = {};
+    const looksFlat = Object.keys(source).some(function (k) {
+      return typeof source[k] === 'boolean';
+    });
+    if (looksFlat) {
+      const bucket = {};
+      packingItems.forEach(function (item) { bucket[item] = !!source[item]; });
+      const code = (typeof getCrewBday === 'function' ? getCrewBday() : '') || 'shared';
+      out[code] = bucket;
+      return out;
+    }
+    Object.keys(source).slice(0, 12).forEach(function (code) {
+      const raw = source[code];
+      if (!raw || typeof raw !== 'object') return;
+      const bucket = {};
+      packingItems.forEach(function (item) { bucket[item] = !!raw[item]; });
+      out[String(code).slice(0, 32)] = bucket;
     });
     return out;
+  }
+
+  function getPackingBucket(code) {
+    if (!packingChecked || typeof packingChecked !== 'object') packingChecked = {};
+    const key = code || 'shared';
+    if (!packingChecked[key] || typeof packingChecked[key] !== 'object') {
+      packingChecked[key] = {};
+    }
+    return packingChecked[key];
   }
 
   function sanitizeList(list, sanitizer) {
@@ -2797,6 +2905,7 @@
     displayApprovedScheduleSuggestions();
     displayApprovedSiteChangeSuggestions();
     displayApprovedActivitySuggestions();
+    initPackingList();
   }
 
   function shakeLoginBox() {
@@ -3557,6 +3666,7 @@
     const payer = document.getElementById('expense-payer');
     const amount = document.getElementById('expense-amount');
     const note = document.getElementById('expense-note');
+    const currencyEl = document.getElementById('expense-currency');
     const msg = document.getElementById('expense-msg');
     if (!payer || !amount || !note || !msg) return;
     const numericAmount = Number(amount.value);
@@ -3565,10 +3675,14 @@
       msg.style.color = 'var(--error)';
       return;
     }
+    const currency = (currencyEl && currencyEl.value === 'EUR') ? 'EUR' : 'GBP';
+    const rounded = Math.round(numericAmount * 100) / 100;
     expenseEntries.unshift({
       id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
       payer: payer.value,
-      amount: Math.round(numericAmount * 100) / 100,
+      amount: rounded,
+      currency: currency,
+      amountGbp: Math.round(convertToGbp(rounded, currency) * 100) / 100,
       note: note.value.trim() || 'General',
       createdAt: Date.now()
     });
@@ -3599,14 +3713,20 @@
     clearElement(summary);
     clearElement(list);
 
-    const total = expenseEntries.reduce(function (sum, item) { return sum + Number(item.amount || 0); }, 0);
+    const total = expenseEntries.reduce(function (sum, item) {
+      const gbp = Number(item.amountGbp);
+      if (Number.isFinite(gbp) && gbp > 0) return sum + gbp;
+      return sum + convertToGbp(Number(item.amount || 0), item.currency);
+    }, 0);
     const perHead = crewMembers.length ? (total / crewMembers.length) : 0;
     const balances = {};
     crewMembers.forEach(function (name) {
       balances[name] = -perHead;
     });
     expenseEntries.forEach(function (item) {
-      balances[item.payer] = (balances[item.payer] || 0) + Number(item.amount || 0);
+      const gbp = Number(item.amountGbp);
+      const contribution = Number.isFinite(gbp) && gbp > 0 ? gbp : convertToGbp(Number(item.amount || 0), item.currency);
+      balances[item.payer] = (balances[item.payer] || 0) + contribution;
     });
 
     const headline = document.createElement('p');
@@ -3683,7 +3803,11 @@
       const payerStrong = document.createElement('strong');
       payerStrong.textContent = item.payer;
       text.appendChild(payerStrong);
-      text.appendChild(document.createTextNode(' paid £' + Number(item.amount).toFixed(2) + ' for ' + item.note));
+      const native = formatMoney(item.amount, item.currency);
+      const converted = (item.currency === 'EUR')
+        ? ' (≈£' + (Number(item.amountGbp) || convertToGbp(item.amount, 'EUR')).toFixed(2) + ')'
+        : '';
+      text.appendChild(document.createTextNode(' paid ' + native + converted + ' for ' + item.note));
       row.appendChild(text);
       row.appendChild(makeActionButton(
         'Remove',
@@ -4234,29 +4358,41 @@
     if (!container) return;
     clearElement(container);
     packingChecked = sanitizePackingState(packingChecked);
+
+    const activeCode = (typeof getCrewBday === 'function' ? getCrewBday() : '') || 'shared';
+    const bucket = getPackingBucket(activeCode);
     const total = packingItems.length;
-    const doneCount = packingItems.filter(item => packingChecked[item]).length;
+
+    const heading = document.createElement('p');
+    heading.className = 'packing-progress-heading';
+    const displayName = (typeof getCrewDisplayName === 'function' && activeCode !== 'shared')
+      ? (getCrewDisplayName(activeCode) || 'Your')
+      : 'Your';
+    heading.textContent = displayName + ' list';
+    container.appendChild(heading);
 
     const progress = document.createElement('p');
     progress.className = 'packing-progress';
     progress.id = 'packing-progress';
+    const doneCount = packingItems.filter(item => bucket[item]).length;
     progress.textContent = doneCount + ' / ' + total + ' packed' + (doneCount === total ? ' — Ready to go!' : '');
     container.appendChild(progress);
 
     packingItems.forEach(item => {
       const div = document.createElement('div');
-      div.className = 'packing-item' + (packingChecked[item] ? ' checked' : '');
+      div.className = 'packing-item' + (bucket[item] ? ' checked' : '');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.id = 'pack-' + item.replace(/\s+/g, '-');
-      checkbox.checked = packingChecked[item] || false;
+      checkbox.checked = !!bucket[item];
       checkbox.onchange = () => {
-        packingChecked[item] = checkbox.checked;
+        bucket[item] = checkbox.checked;
         div.classList.toggle('checked', checkbox.checked);
         saveChallengeData();
-        const updatedCount = packingItems.filter(i => packingChecked[i]).length;
+        const updatedCount = packingItems.filter(i => bucket[i]).length;
         const prog = document.getElementById('packing-progress');
         if (prog) prog.textContent = updatedCount + ' / ' + total + ' packed' + (updatedCount === total ? ' — Ready to go!' : '');
+        renderPackingCrewRoster();
       };
       const label = document.createElement('label');
       label.htmlFor = checkbox.id;
@@ -4264,6 +4400,47 @@
       div.appendChild(checkbox);
       div.appendChild(label);
       container.appendChild(div);
+    });
+
+    const roster = document.createElement('div');
+    roster.className = 'packing-roster';
+    roster.id = 'packing-roster';
+    container.appendChild(roster);
+    renderPackingCrewRoster();
+  }
+
+  function renderPackingCrewRoster() {
+    const roster = document.getElementById('packing-roster');
+    if (!roster) return;
+    clearElement(roster);
+    const header = document.createElement('p');
+    header.className = 'packing-roster-heading';
+    header.textContent = 'Crew progress';
+    roster.appendChild(header);
+    const codeByMember = { Joshua: '160698', Emmanuel: '230997', Ross: '170997', Kealen: '270298', Jack: '120398', Ciaran: '240598' };
+    Object.keys(codeByMember).forEach(function (name) {
+      const code = codeByMember[name];
+      const b = (packingChecked && packingChecked[code]) || {};
+      const done = packingItems.filter(function (item) { return !!b[item]; }).length;
+      const pct = Math.round((done / packingItems.length) * 100);
+      const row = document.createElement('div');
+      row.className = 'packing-roster-row';
+      const label = document.createElement('span');
+      label.className = 'packing-roster-name';
+      label.textContent = name;
+      const bar = document.createElement('span');
+      bar.className = 'packing-roster-bar';
+      const fill = document.createElement('span');
+      fill.className = 'packing-roster-fill';
+      fill.style.width = pct + '%';
+      bar.appendChild(fill);
+      const count = document.createElement('span');
+      count.className = 'packing-roster-count';
+      count.textContent = done + '/' + packingItems.length;
+      row.appendChild(label);
+      row.appendChild(bar);
+      row.appendChild(count);
+      roster.appendChild(row);
     });
   }
   initPackingList();
@@ -4275,6 +4452,7 @@
     updateCrewAccess();
   });
   startChallengeCloudPolling();
+  refreshFxRate(false);
 
   window.addEventListener('beforeunload', function () {
     queueChallengeStateSync(true);
@@ -4821,7 +4999,10 @@
       onChallengeSortChange: typeof onChallengeSortChange === 'function' ? onChallengeSortChange : null,
       forceLiveFeedRefresh: typeof forceLiveFeedRefresh === 'function' ? forceLiveFeedRefresh : null,
       scrollToChallengeForm: typeof scrollToChallengeForm === 'function' ? scrollToChallengeForm : null,
-      applyQuickPreset: typeof applyQuickPreset === 'function' ? applyQuickPreset : null
+      applyQuickPreset: typeof applyQuickPreset === 'function' ? applyQuickPreset : null,
+      refreshFxRateManual: typeof refreshFxRateManual === 'function' ? refreshFxRateManual : null,
+      onFxConvertInput: typeof onFxConvertInput === 'function' ? onFxConvertInput : null,
+      onFxConvertDirection: typeof onFxConvertDirection === 'function' ? onFxConvertDirection : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');
@@ -5338,7 +5519,11 @@
       Object.keys(activityVoteLog || {}).forEach(function (k) {
         if (k.indexOf(code + ':') === 0) votesCast += 1;
       });
-      expenseEntries.forEach(function (e) { if (e && e.payer === name) spend += Number(e.amount || 0); });
+      expenseEntries.forEach(function (e) {
+        if (!e || e.payer !== name) return;
+        const gbp = Number(e.amountGbp);
+        spend += Number.isFinite(gbp) && gbp > 0 ? gbp : convertToGbp(Number(e.amount || 0), e.currency);
+      });
       const points = (challenges * 3) + (activities * 3) + (schedule * 2) + (votesCast * 1) + (completed * 4);
       board.push({ name: name, code: code, points: points, challenges: challenges, activities: activities, schedule: schedule, votesCast: votesCast, completed: completed, spend: spend });
     });
