@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260414-7">
+<link rel="stylesheet" href="rossstag.css?v=20260414-8">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -732,6 +732,11 @@
       </div>
       <p id="approval-code-msg" class="admin-msg"></p>
       <div id="joshua-approval-list"></div>
+      <div class="admin-danger-zone">
+        <h3>Challenge scoreboard</h3>
+        <p style="opacity:.7; margin-bottom:12px;">Zero out all challenge-related leaderboard points: deletes submitted challenges, clears completion marks, wipes challenge votes. Activities, schedule, expenses, and team battle are untouched.</p>
+        <button data-action="resetChallengeScoresByJoshua" class="btn btn-danger btn-sm">Reset challenge scores to 0</button>
+      </div>
     </div>
   </div>
 </section>
@@ -952,7 +957,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260414-7"></script>
+<script src="rossstag.js?v=20260414-8"></script>
 </body>
 </html>
 

@@ -2582,6 +2582,37 @@
     updateCrewAccess();
   }
 
+  function resetChallengeScoresByJoshua() {
+    if (!requireAdminSession()) return;
+    if (!confirmModerationAction(
+      'Reset all challenge scores to 0?\n\nThis deletes every submitted challenge, clears completion marks, and wipes challenge votes. Activities, schedule, expenses, and team battle are untouched.'
+    )) return;
+
+    pendingChallenges = [];
+    approvedChallenges = [];
+    challengeVoteLog = {};
+    challengeReportLog = {};
+    challengeSubmissionLog = {};
+    completedChallengeIds = [];
+
+    saveChallengeData();
+    queueChallengeStateSync(true);
+
+    displayPendingChallenges();
+    displayApprovedChallenges();
+    if (typeof renderLeaderboard === 'function') renderLeaderboard();
+    if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
+    if (typeof updateActivityBadge === 'function') updateActivityBadge();
+
+    const msg = document.getElementById('approval-code-msg');
+    if (msg) {
+      msg.textContent = 'Challenge scores reset to 0.';
+      msg.style.color = 'var(--gold)';
+    }
+    showToast('Challenge scores reset.', 2600);
+    buzz([40, 30, 40]);
+  }
+
   function updateLadsPersonalization() {
     const titleEl = document.getElementById('lads-title');
     const subtitleEl = document.getElementById('lads-subtitle');
@@ -4753,6 +4784,7 @@
       suggestSiteChange: typeof suggestSiteChange === 'function' ? suggestSiteChange : null,
       suggestActivity: typeof suggestActivity === 'function' ? suggestActivity : null,
       addCrewCodeByJoshua: typeof addCrewCodeByJoshua === 'function' ? addCrewCodeByJoshua : null,
+      resetChallengeScoresByJoshua: typeof resetChallengeScoresByJoshua === 'function' ? resetChallengeScoresByJoshua : null,
       getDrinkingChallenge: typeof getDrinkingChallenge === 'function' ? getDrinkingChallenge : null,
       getChallenge: typeof getChallenge === 'function' ? getChallenge : null,
       skipChallenge: typeof skipChallenge === 'function' ? skipChallenge : null,
