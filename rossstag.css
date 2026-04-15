@@ -2168,3 +2168,137 @@
 
   /* Textareas that auto-grow feel smoother with a tiny transition. */
   textarea.form-input { transition: height .12s ease; }
+
+  /* PWA install hint (Add to Home Screen). */
+  .install-hint {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 88px;
+    z-index: 850;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(22, 22, 22, 0.97);
+    border: 1px solid rgba(212, 168, 67, 0.45);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: #f5f2e6;
+    font-size: 14px;
+    line-height: 1.35;
+    transform: translateY(14px);
+    opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+  }
+  .install-hint.is-visible {
+    display: flex;
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .install-hint-body { flex: 1; }
+  .install-hint-title { font-weight: 700; color: #f1d884; margin-bottom: 2px; }
+  .install-hint-actions { display: inline-flex; gap: 6px; }
+  .install-hint .btn {
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .install-hint .btn.primary {
+    background: linear-gradient(135deg, #D4A843, #B8902F);
+    color: #1a1a1a;
+    border-color: transparent;
+  }
+  @media (min-width: 900px) {
+    .install-hint { left: auto; right: 24px; bottom: 28px; max-width: 340px; }
+  }
+
+  /* Pull-to-refresh indicator above the live feed. */
+  .ptr-indicator {
+    max-height: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12.5px;
+    color: rgba(241, 216, 132, 0.85);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transition: max-height .18s ease;
+  }
+  .ptr-indicator.is-pulling { max-height: 42px; }
+  .ptr-indicator.is-ready { max-height: 42px; color: #f1d884; }
+  .ptr-indicator.is-loading { max-height: 42px; }
+  .ptr-indicator .ptr-spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(241, 216, 132, 0.35);
+    border-top-color: #f1d884;
+    margin-right: 8px;
+    animation: refresh-spin 0.9s linear infinite;
+    display: none;
+  }
+  .ptr-indicator.is-loading .ptr-spinner { display: inline-block; }
+
+  /* Unread activity badge. */
+  .activity-badge {
+    display: none;
+    min-width: 8px;
+    height: 8px;
+    padding: 0 4px;
+    margin-left: 4px;
+    border-radius: 999px;
+    background: #e04f4f;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+    vertical-align: middle;
+  }
+  .activity-badge.has-unread { display: inline-block; }
+
+  /* Quick challenge preset buttons. */
+  .quick-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 12px;
+  }
+  .quick-presets .preset-chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 168, 67, 0.35);
+    background: rgba(212, 168, 67, 0.08);
+    color: #f1d884;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .12s ease, background .18s ease;
+  }
+  .quick-presets .preset-chip:hover { background: rgba(212, 168, 67, 0.18); }
+  .quick-presets .preset-chip:active { transform: translateY(1px); }
+
+  /* Swipe-to-share hint on challenge cards. */
+  .challenge-card {
+    position: relative;
+    touch-action: pan-y;
+  }
+  .challenge-card.swiping { transition: none; }
+  .challenge-card.swipe-ready {
+    box-shadow: -6px 0 0 rgba(212, 168, 67, 0.45) inset;
+  }
+  .challenge-card.swipe-ready::after {
+    content: "Share \2192";
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #f1d884;
+    pointer-events: none;
+  }

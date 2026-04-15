@@ -1250,6 +1250,7 @@
     renderChallengeInsights();
     initPackingList();
     if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
+    if (typeof updateActivityBadge === 'function') updateActivityBadge();
   }
 
   function getSupabaseHeaders() {
@@ -3331,6 +3332,7 @@
     displayApprovedChallenges();
     if (typeof renderLeaderboard === 'function') renderLeaderboard();
     if (typeof renderCrewActivityFeed === 'function') renderCrewActivityFeed();
+    if (typeof updateActivityBadge === 'function') updateActivityBadge();
   }
 
   function shareLiveChallenge(id) {
@@ -4360,6 +4362,300 @@
     }
   }
 
+  // ── PWA install prompt (Android/Chromium) ─────────────────────────────
+  var deferredInstallPrompt = null;
+  var INSTALL_DISMISSED_KEY = 'stagInstallDismissedAt';
+  function isInstallDismissed() {
+    try {
+      var ts = parseInt(localStorage.getItem(INSTALL_DISMISSED_KEY) || '0', 10);
+      if (!ts) return false;
+      // Re-show after 14 days.
+      return (Date.now() - ts) < (14 * 24 * 60 * 60 * 1000);
+    } catch (_) { return false; }
+  }
+  function setInstallDismissed() {
+    try { localStorage.setItem(INSTALL_DISMISSED_KEY, String(Date.now())); } catch (_) {}
+  }
+  function showInstallHint() {
+    if (document.getElementById('install-hint')) return;
+    if (isInstallDismissed()) return;
+    var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+      || window.navigator.standalone === true;
+    if (isStandalone) return;
+    var hint = document.createElement('div');
+    hint.id = 'install-hint';
+    hint.className = 'install-hint';
+    hint.setAttribute('role', 'dialog');
+    hint.setAttribute('aria-label', 'Install the Stag HQ app');
+    hint.innerHTML = '<span class="install-hint-icon" aria-hidden="true">\uD83C\uDDEA\uD83C\uDDF8</span>'
+      + '<span class="install-hint-text">Add Stag HQ to your home screen for one-tap access.</span>'
+      + '<button type="button" class="btn btn-gold btn-sm install-hint-yes">Install</button>'
+      + '<button type="button" class="install-hint-close" aria-label="Dismiss">\u2715</button>';
+    document.body.appendChild(hint);
+    setTimeout(function () { hint.classList.add('visible'); }, 60);
+    hint.querySelector('.install-hint-yes').addEventListener('click', function () {
+      buzz(12);
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(function (choice) {
+          if (choice && choice.outcome === 'accepted') {
+            if (typeof showToast === 'function') showToast('Installed — launch Stag HQ from your home screen.');
+          }
+          setInstallDismissed();
+          hideInstallHint();
+          deferredInstallPrompt = null;
+        }).catch(function () { hideInstallHint(); });
+      } else {
+        // iOS / no beforeinstallprompt support — give instructions.
+        if (typeof showToast === 'function') showToast('On iPhone: tap Share → "Add to Home Screen".');
+        setInstallDismissed();
+        hideInstallHint();
+      }
+    });
+    hint.querySelector('.install-hint-close').addEventListener('click', function () {
+      buzz(8);
+      setInstallDismissed();
+      hideInstallHint();
+    });
+  }
+  function hideInstallHint() {
+    var hint = document.getElementById('install-hint');
+    if (!hint) return;
+    hint.classList.remove('visible');
+    setTimeout(function () { if (hint.parentNode) hint.parentNode.removeChild(hint); }, 320);
+  }
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    setTimeout(showInstallHint, 4000);
+  });
+  window.addEventListener('appinstalled', function () {
+    setInstallDismissed();
+    hideInstallHint();
+  });
+  // Fallback for iOS Safari (no beforeinstallprompt): show after a delay if mobile.
+  setTimeout(function () {
+    if (deferredInstallPrompt) return; // Android path will fire its own timer.
+    var ua = (navigator.userAgent || '').toLowerCase();
+    var isIOS = /iphone|ipad|ipod/.test(ua) && !/crios|fxios/.test(ua);
+    if (isIOS) showInstallHint();
+  }, 6000);
+
+  // ── Pull-to-refresh on the live feed ──────────────────────────────────
+  (function wirePullToRefresh() {
+    var feed, ptrEl, startY = 0, pulling = false, dist = 0;
+    var PULL_TRIGGER = 62;
+    function getFeed() { return document.getElementById('approved-challenges'); }
+    function ensurePtr() {
+      if (ptrEl && ptrEl.parentNode) return ptrEl;
+      ptrEl = document.createElement('div');
+      ptrEl.className = 'ptr-indicator';
+      ptrEl.innerHTML = '<span class="ptr-arrow">\u21BB</span> <span class="ptr-text">Pull to refresh</span>';
+      return ptrEl;
+    }
+    function touchstart(e) {
+      feed = getFeed();
+      if (!feed || !e.touches || !e.touches.length) return;
+      // Only trigger when the user is near the top of the page.
+      if ((window.scrollY || window.pageYOffset || 0) > 8) return;
+      startY = e.touches[0].clientY;
+      pulling = true; dist = 0;
+    }
+    function touchmove(e) {
+      if (!pulling || !e.touches || !e.touches.length) return;
+      var y = e.touches[0].clientY;
+      dist = y - startY;
+      if (dist <= 0) return;
+      // Guard: if they're scrolling normally after a downward flick, bail.
+      if ((window.scrollY || window.pageYOffset || 0) > 8) { pulling = false; return; }
+      e.preventDefault && e.preventDefault();
+      var ptr = ensurePtr();
+      if (!ptr.parentNode && feed && feed.parentNode) feed.parentNode.insertBefore(ptr, feed);
+      var clamped = Math.min(dist, 120);
+      ptr.style.height = clamped + 'px';
+      ptr.classList.toggle('ready', clamped >= PULL_TRIGGER);
+      ptr.querySelector('.ptr-text').textContent = clamped >= PULL_TRIGGER ? 'Release to refresh' : 'Pull to refresh';
+    }
+    function touchend() {
+      if (!pulling) return;
+      pulling = false;
+      var ptr = ptrEl;
+      if (dist >= PULL_TRIGGER) {
+        buzz(18);
+        if (ptr) { ptr.style.height = '40px'; ptr.classList.add('loading'); ptr.querySelector('.ptr-text').textContent = 'Refreshing…'; }
+        if (typeof forceLiveFeedRefresh === 'function') forceLiveFeedRefresh();
+        setTimeout(function () {
+          if (ptr) { ptr.style.height = '0'; ptr.classList.remove('loading'); ptr.classList.remove('ready'); }
+          setTimeout(function () { if (ptr && ptr.parentNode) ptr.parentNode.removeChild(ptr); ptrEl = null; }, 350);
+        }, 900);
+      } else {
+        if (ptr) {
+          ptr.style.height = '0';
+          setTimeout(function () { if (ptr && ptr.parentNode) ptr.parentNode.removeChild(ptr); ptrEl = null; }, 350);
+        }
+      }
+      dist = 0;
+    }
+    document.addEventListener('touchstart', touchstart, { passive: true });
+    document.addEventListener('touchmove', touchmove, { passive: false });
+    document.addEventListener('touchend', touchend, { passive: true });
+    document.addEventListener('touchcancel', touchend, { passive: true });
+  })();
+
+  // ── Activity-feed unread badge ────────────────────────────────────────
+  var ACTIVITY_SEEN_KEY = 'stagActivitySeenTs';
+  function getLastSeenActivityTs() {
+    try { return parseInt(localStorage.getItem(ACTIVITY_SEEN_KEY) || '0', 10) || 0; } catch (_) { return 0; }
+  }
+  function setLastSeenActivityTs(ts) {
+    try { localStorage.setItem(ACTIVITY_SEEN_KEY, String(ts)); } catch (_) {}
+  }
+  function collectActivityTimestamps() {
+    var tss = [];
+    approvedChallenges.forEach(function (c) {
+      if (!c || c.hidden) return;
+      if (c.createdAt) tss.push(c.createdAt);
+      if (Array.isArray(c.completions)) {
+        c.completions.forEach(function (_, idx) { tss.push((c.createdAt || 0) + ((idx + 1) * 1000)); });
+      }
+    });
+    [approvedActivitySuggestions, approvedScheduleSuggestions, approvedSiteChangeSuggestions].forEach(function (arr) {
+      (arr || []).forEach(function (i) { if (i && i.createdAt) tss.push(i.createdAt); });
+    });
+    return tss;
+  }
+  function updateActivityBadge() {
+    var lastSeen = getLastSeenActivityTs();
+    var tss = collectActivityTimestamps();
+    var unread = tss.filter(function (t) { return t > lastSeen; }).length;
+    var badges = document.querySelectorAll('[data-activity-badge]');
+    badges.forEach(function (node) {
+      node.setAttribute('data-count', String(unread));
+      if (unread > 0) {
+        node.classList.add('has-unread');
+        node.textContent = unread > 99 ? '99+' : String(unread);
+      } else {
+        node.classList.remove('has-unread');
+        node.textContent = '';
+      }
+    });
+  }
+  function markActivitySeen() {
+    var tss = collectActivityTimestamps();
+    var max = tss.length ? Math.max.apply(null, tss) : Date.now();
+    setLastSeenActivityTs(max);
+    updateActivityBadge();
+  }
+  // Clear badge when the activity section scrolls into view.
+  if ('IntersectionObserver' in window) {
+    var _obsTimer = setTimeout(function () {
+      var sec = document.getElementById('activity-feed-section');
+      if (!sec) return;
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) markActivitySeen(); });
+      }, { threshold: 0.3 });
+      io.observe(sec);
+    }, 1200);
+  }
+
+  // ── Quick challenge presets ───────────────────────────────────────────
+  var QUICK_CHALLENGE_PRESETS = {
+    'drinking-easy': {
+      type: 'Drinking', difficulty: 'Easy',
+      titles: ['Cheers in Catalan before every drink', 'Order the next round in Spanish only', 'Match the groom sip-for-sip for this round', 'Take a drink every time someone says "Ross"']
+    },
+    'drinking-chaos': {
+      type: 'Drinking', difficulty: 'Chaos',
+      titles: ['Chug-off: last one to finish buys the next round', 'Shots roulette — the lad on your left picks', 'Drink swap with a stranger at the bar', 'Beer + shot combo every bar stop for the next hour']
+    },
+    'dares-chaos': {
+      type: 'Dares', difficulty: 'Chaos',
+      titles: ['Convince a stranger you\'re the groom for 2 minutes', 'Serenade the groom in the middle of the bar', 'Get a high-five from every bartender in the next venue', 'Propose a toast in broken Spanish to the whole room']
+    },
+    'team-medium': {
+      type: 'Team', difficulty: 'Medium',
+      titles: ['Team photo with a live flamenco dancer', 'Get 3 locals to join our round of cheers', 'Coordinate a 6-man conga line through the next bar', 'Team karaoke — a full verse each before we leave']
+    },
+    'chill-easy': {
+      type: 'Chill', difficulty: 'Easy',
+      titles: ['Rate the best tapa of the day', 'Share one embarrassing Ross story', 'Post a group photo to the crew chat', 'Describe the day in exactly 3 emojis']
+    }
+  };
+  function applyQuickPreset(key) {
+    var p = QUICK_CHALLENGE_PRESETS[key];
+    if (!p) return;
+    var titleInput = document.getElementById('challenge-title');
+    var typeInput = document.getElementById('challenge-type');
+    var diffInput = document.getElementById('challenge-difficulty');
+    var notesInput = document.getElementById('challenge-notes');
+    if (!titleInput || !typeInput || !diffInput) return;
+    var randomTitle = p.titles[Math.floor(Math.random() * p.titles.length)];
+    titleInput.value = randomTitle;
+    typeInput.value = p.type;
+    diffInput.value = p.difficulty;
+    if (notesInput && !notesInput.value) notesInput.value = '';
+    buzz(12);
+    try { titleInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    setTimeout(function () { try { titleInput.focus({ preventScroll: true }); } catch (_) { titleInput.focus(); } }, 400);
+    if (typeof showToast === 'function') showToast('Preset loaded — tweak and submit.');
+  }
+
+  // ── Swipe-left on challenge card to share ─────────────────────────────
+  (function wireSwipeToShare() {
+    var startX = 0, startY = 0, currentCard = null, tracking = false, suppressed = false;
+    function touchstart(e) {
+      if (!e.touches || !e.touches.length) return;
+      var card = e.target.closest && e.target.closest('.challenge-card');
+      if (!card) return;
+      // Ignore if the touch began on a button/input.
+      if (e.target.closest('button, a, input, textarea, select')) { suppressed = true; return; }
+      suppressed = false;
+      currentCard = card;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+      currentCard.classList.add('swiping');
+    }
+    function touchmove(e) {
+      if (!tracking || suppressed || !currentCard || !e.touches || !e.touches.length) return;
+      var dx = e.touches[0].clientX - startX;
+      var dy = Math.abs(e.touches[0].clientY - startY);
+      // If vertical scroll dominates, stop tracking.
+      if (dy > 18 && Math.abs(dx) < dy) {
+        currentCard.style.transform = '';
+        currentCard.classList.remove('swiping');
+        currentCard.classList.remove('swipe-ready');
+        tracking = false;
+        return;
+      }
+      if (dx >= 0) { currentCard.style.transform = ''; currentCard.classList.remove('swipe-ready'); return; }
+      var offset = Math.max(dx, -140);
+      currentCard.style.transform = 'translateX(' + offset + 'px)';
+      currentCard.classList.toggle('swipe-ready', offset <= -80);
+    }
+    function touchend(e) {
+      if (!tracking || suppressed || !currentCard) { tracking = false; suppressed = false; return; }
+      var ready = currentCard.classList.contains('swipe-ready');
+      currentCard.style.transition = 'transform .22s ease';
+      currentCard.style.transform = '';
+      currentCard.classList.remove('swipe-ready');
+      var id = currentCard.getAttribute('data-challenge-id');
+      setTimeout(function () { if (currentCard) currentCard.style.transition = ''; }, 240);
+      currentCard.classList.remove('swiping');
+      tracking = false;
+      var targetCard = currentCard;
+      currentCard = null;
+      if (ready && id && typeof shareLiveChallenge === 'function') {
+        buzz(22);
+        shareLiveChallenge(id);
+      }
+    }
+    document.addEventListener('touchstart', touchstart, { passive: true });
+    document.addEventListener('touchmove', touchmove, { passive: true });
+    document.addEventListener('touchend', touchend, { passive: true });
+    document.addEventListener('touchcancel', touchend, { passive: true });
+  })();
+
   // ── Welcome greeting bar ──
   function showWelcomeGreeting(name) {
     var existing = document.querySelector('.welcome-greeting');
@@ -4492,7 +4788,8 @@
       onChallengeDifficultyChange: typeof onChallengeDifficultyChange === 'function' ? onChallengeDifficultyChange : null,
       onChallengeSortChange: typeof onChallengeSortChange === 'function' ? onChallengeSortChange : null,
       forceLiveFeedRefresh: typeof forceLiveFeedRefresh === 'function' ? forceLiveFeedRefresh : null,
-      scrollToChallengeForm: typeof scrollToChallengeForm === 'function' ? scrollToChallengeForm : null
+      scrollToChallengeForm: typeof scrollToChallengeForm === 'function' ? scrollToChallengeForm : null,
+      applyQuickPreset: typeof applyQuickPreset === 'function' ? applyQuickPreset : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');

@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260414-6">
+<link rel="stylesheet" href="rossstag.css?v=20260414-7">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -71,7 +71,7 @@
         <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
         <a class="top-sub-link" href="#mission-section">Missions</a>
         <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
-        <a class="top-sub-link" href="#activity-feed-section">Activity</a>
+        <a class="top-sub-link" href="#activity-feed-section">Activity <span class="activity-badge" data-activity-badge></span></a>
         <a class="top-sub-link" href="#poll-section">Poll</a>
       </div>
     </div>
@@ -112,7 +112,7 @@
       <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
       <a class="top-sub-link" href="#mission-section">Missions</a>
       <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
-      <a class="top-sub-link" href="#activity-feed-section">Activity</a>
+      <a class="top-sub-link" href="#activity-feed-section">Activity <span class="activity-badge" data-activity-badge></span></a>
       <a class="top-sub-link" href="#poll-section">Poll</a>
     </div>
     <div class="nav-drawer-group">
@@ -625,6 +625,14 @@
   <div class="info-card fade-in" style="margin-top:20px; text-align:center;">
     <h3>Submit Your Challenge</h3>
     <p style="opacity:.7; margin-bottom:12px;">No approval needed — challenges go live for the whole crew the moment you hit submit. No daily limit either; submit as many as you want.</p>
+    <div class="quick-presets" role="group" aria-label="Quick challenge presets">
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="applyQuickPreset" data-action-arg="drinking-easy">&#x1F37A; Drinking · Easy</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="applyQuickPreset" data-action-arg="drinking-chaos">&#x1F525; Drinking · Chaos</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="applyQuickPreset" data-action-arg="dares-chaos">&#x1F604; Dare · Chaos</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="applyQuickPreset" data-action-arg="team-medium">&#x1F465; Team · Medium</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="applyQuickPreset" data-action-arg="chill-easy">&#x1F634; Chill · Easy</button>
+    </div>
+    <p style="opacity:.55; font-size:12px; margin:6px 0 10px;">Tap a preset to pre-fill a random title — tweak and submit.</p>
     <input type="text" id="challenge-title" placeholder="Challenge title" class="form-input form-input-wide">
     <select id="challenge-type" class="form-input form-input-mid">
       <option value="Drinking">Drinking</option>
@@ -944,7 +952,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260414-6"></script>
+<script src="rossstag.js?v=20260414-7"></script>
 </body>
 </html>
 
