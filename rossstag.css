@@ -2294,6 +2294,43 @@
   .quick-presets .preset-chip:hover { background: rgba(212, 168, 67, 0.18); }
   .quick-presets .preset-chip:active { transform: translateY(1px); }
 
+  /* Expense-form quick preset row (Tourist tax etc.) */
+  .expense-presets { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0 4px; }
+
+  /* Tourist tax callout inside the hotel card */
+  .tourist-tax-card {
+    margin-top: 22px;
+    padding: 14px 16px;
+    border: 1px solid rgba(212, 168, 67, 0.35);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.10), rgba(212, 168, 67, 0.02));
+    text-align: left;
+  }
+  .tourist-tax-head {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    color: var(--gold);
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .tourist-tax-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: baseline;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  .tourist-tax-body strong { color: #f1d884; font-weight: 700; }
+  .tourist-tax-sep { opacity: 0.35; }
+  .tourist-tax-note { font-size: 12px; opacity: 0.55; line-height: 1.55; margin-top: 8px; }
+  .light-theme .tourist-tax-card {
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.14), rgba(212, 168, 67, 0.04));
+    border-color: rgba(155, 113, 30, 0.35);
+  }
+  .light-theme .tourist-tax-head { color: #8a6617; }
+  .light-theme .tourist-tax-body strong { color: #8a6617; }
+
   /* Swipe-to-share hint on challenge cards. */
   .challenge-card {
     position: relative;

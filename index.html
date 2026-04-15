@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260415-1">
+<link rel="stylesheet" href="rossstag.css?v=20260415-3">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -258,7 +258,16 @@
       <div class="hotel-detail-item"><div class="hotel-detail-label">Board</div><div class="hotel-detail-value">Room Only</div></div>
       <div class="hotel-detail-item"><div class="hotel-detail-label">Code</div><div class="hotel-detail-value" id="hotel-booking-code" style="font-size:12px;font-family:monospace;">Loading...</div></div>
     </div>
-    <p style="font-size:12px; opacity:.4; margin-top:20px; line-height:1.6;">Tourism tax ~&#8364;1.10/person/night. Hotel may request a security deposit at check-in.</p>
+    <div class="tourist-tax-card" role="note" aria-label="Tourist tax">
+      <div class="tourist-tax-head">&#x1F4B0; Tourist tax &mdash; paid at checkout</div>
+      <div class="tourist-tax-body">
+        <span><strong>~&#8364;5.50</strong> per lad per night</span>
+        <span class="tourist-tax-sep" aria-hidden="true">&middot;</span>
+        <span><strong>3 nights &times; 6 lads &asymp; &#8364;99</strong> total</span>
+      </div>
+      <p class="tourist-tax-note">Barcelona charges a municipal + regional tourist levy. Htop BCN City collects it in cash or card at checkout. Rates rise yearly, so budget &#8364;15&ndash;&#8364;20 per person just in case. Under&#8209;16s are exempt.</p>
+      <p class="tourist-tax-note" style="margin-top:6px;">Hotel may also request a refundable security deposit (~&#8364;50/room) at check-in.</p>
+    </div>
     <p><a href="https://maps.google.com/?q=Htop+BCN+City,+Calle+Travessera+De+Gracia,+Barcelona+08025" target="_blank" rel="noopener noreferrer" style="color:var(--gold); text-decoration:none;">View Hotel on Google Maps</a></p>
   </div>
 </section>
@@ -869,6 +878,9 @@
     <input type="text" id="expense-note" placeholder="What was it for?" class="form-input" style="width:45%;" aria-label="Expense note">
     <button data-action="addExpense" class="btn btn-gold btn-sm">Add Expense</button>
     <button data-action="clearExpenses" class="btn btn-outline-light btn-sm ml-6">Clear</button>
+    <div class="expense-presets" role="group" aria-label="Quick fill expense">
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="prefillTouristTax" title="Fill your 3-night Barcelona tourist tax share">&#x1F4B0; Tourist tax (&#8364;16.50)</button>
+    </div>
     <p id="expense-msg" style="margin-top:10px;"></p>
     <div id="expense-summary" style="margin-top:14px; text-align:left;"></div>
     <div id="expense-list" style="margin-top:8px; text-align:left;"></div>
@@ -993,7 +1005,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260415-1"></script>
+<script src="rossstag.js?v=20260415-3"></script>
 </body>
 </html>
 

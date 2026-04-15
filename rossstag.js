@@ -3701,6 +3701,25 @@
     renderExpenseBoard();
   }
 
+  // Tourist tax (Barcelona): ~€5.50/person/night × 3 nights = €16.50 per lad.
+  // Prefills the expense form so the payer can edit before saving.
+  function prefillTouristTax() {
+    const amount = document.getElementById('expense-amount');
+    const note = document.getElementById('expense-note');
+    const currencyEl = document.getElementById('expense-currency');
+    const msg = document.getElementById('expense-msg');
+    if (!amount || !note) return;
+    amount.value = '16.50';
+    note.value = 'Barcelona tourist tax (3 nights)';
+    if (currencyEl) currencyEl.value = 'EUR';
+    if (msg) {
+      msg.textContent = 'Tourist tax prefilled — pick who paid and hit Add Expense.';
+      msg.style.color = 'var(--gold)';
+    }
+    try { amount.focus({ preventScroll: true }); } catch (_) { amount.focus(); }
+    if (typeof hapticTap === 'function') hapticTap(12);
+  }
+
   function removeExpense(id) {
     expenseEntries = expenseEntries.filter(item => item.id !== id);
     saveChallengeData();
@@ -3958,22 +3977,25 @@
 
   // Drinking Game
   const drinkingChallenges = [
-    "Power Hour opener: everyone takes one sip every minute for 10 minutes.",
-    "Take 10 push-ups, then finish with a loud 'VAMOS' before your next sip.",
-    "Tell the most chaotic groom story you know. Group scores it 1-10.",
-    "If you have ever missed a flight alarm, finish your drink and refill.",
-    "Choose a rival lad for a stare-down. Loser takes two sips.",
-    "Nominate one player for a mystery penalty sip every 5 minutes for 20 minutes.",
-    "Dance battle for 30 seconds. Crowd picks loser for a double sip.",
-    "Everyone points at who gets lost first tonight. Most votes takes two sips.",
-    "Accent round: speak only Spanish accent English for 5 minutes or drink.",
-    "Groom spotlight: everyone drinks while Ross tells one true and one fake story.",
-    "Last person to touch their shoe takes a full drink penalty.",
-    "Name 5 Barcelona landmarks in 15 seconds. Fail and drink.",
-    "No names challenge: first person to say a real name drinks.",
-    "Impression duel: best groom impression stays safe, loser drinks.",
-    "Phone roulette: show your last emoji-only text or take a drink.",
-    "Final whistle: everyone stands, toasts the groom, and takes one full sip together."
+    "Waterfall: everyone drinks continuously. You can't stop until the lad on your left stops.",
+    "Three-rule round — no first names, no pointing, no swearing. First to break finishes their glass.",
+    "Groom truth: Ross answers one question fully honestly. He can skip, but then he drinks twice.",
+    "Categories — Spanish football clubs. Three seconds per lad round the circle. Blank or repeat = drink.",
+    "Never Have I Ever, Ross edition. If the groom has, you drink. If he lies, he downs one for the table.",
+    "Shot ladder: each lad names a shot worse than the last. Chicken out and you drink the one you refused.",
+    "Power minute: take a sip every 10 seconds for a full 60. No phones, no seats, no excuses.",
+    "Stranger cheers: clink glasses with a total stranger inside 60 seconds or finish whatever you're holding.",
+    "Silent sixty: not a word for one minute. Crack a smile, drop a laugh, finish your drink.",
+    "Rolling 21: count round the circle, skipping every multiple of 3. Fluff it and drink + redefine a number for next round.",
+    "Pronoun lockdown: only he/she/they for the next 2 minutes. First real name drinks.",
+    "Roast round: each lad delivers a 15-second roast of Ross. Weakest performance drinks double.",
+    "Mystery shot: whoever has the lowest phone battery picks the bartender's surprise for the table.",
+    "Nose goes: on the count of three, touch your nose. Last lad drinks — no warning rounds after the first.",
+    "Accent hostage: Scottish accent until your glass is empty. Slip even once and you refill.",
+    "Hot pint: pass a full drink round the circle. When the best man yells 'Vamos!', whoever's holding it finishes it.",
+    "High-five hunt: next stranger to high-five you buys you a sip — or you buy one for the lad beside you.",
+    "Chant lap: entire crew chants 'ROSS' for a full 20 seconds. First to fall quiet drinks.",
+    "Confession pint: reveal the most Ross-like thing you've ever done. Worst admission drinks, best admission keeps the pint."
   ];
   function getDrinkingChallenge() {
     const random = drinkingChallenges[Math.floor(Math.random() * drinkingChallenges.length)];
@@ -3983,22 +4005,41 @@
 
   // Challenge Generator
   const fallbackChallenges = [
-    { title: "Lead a one-minute bar chant and get 5 strangers to join in.", type: "Dares", difficulty: "Chaos", notes: "Volume and confidence decide success." },
-    { title: "Sing a full chorus chosen by the lads from memory only.", type: "Dares", difficulty: "Medium", notes: "No phone, no lyrics." },
-    { title: "Team relay: 25 squats each, no breaks between players.", type: "Team", difficulty: "Chaos", notes: "Clock starts when first rep drops." },
-    { title: "Call a contact and deliver a dramatic wedding invitation voice note.", type: "Dares", difficulty: "Medium", notes: "Group approves the performance." },
-    { title: "Spicy gauntlet: finish spicy snack, then recite the crew names backward.", type: "Drinking", difficulty: "Chaos", notes: "No water until finished." },
-    { title: "Rapid-fire joke round: make three lads laugh in 60 seconds.", type: "Chill", difficulty: "Easy", notes: "Fail means instant retry with accents." },
-    { title: "Wardrobe swap: trade one key clothing item for the next round.", type: "Team", difficulty: "Medium", notes: "Commit fully to the bit." },
-    { title: "Deliver a best-man style toast with one made-up memory and one real one.", type: "Chill", difficulty: "Easy", notes: "Crew guesses which is fake." },
-    { title: "Photo hunt: capture a group selfie with a birthday crew nearby.", type: "Dares", difficulty: "Medium", notes: "Ask politely and keep it friendly." },
-    { title: "Carry challenge: piggyback your teammate for 60 metres total.", type: "Team", difficulty: "Chaos", notes: "Switch halfway if needed." },
-    { title: "Recreate an iconic film scene in public with full commitment.", type: "Dares", difficulty: "Chaos", notes: "30-second performance minimum." },
-    { title: "Order a full round in Spanish with no English fallback.", type: "Chill", difficulty: "Medium", notes: "Accent points are bonus points." },
-    { title: "Start a conga line and keep it alive for 45 seconds.", type: "Team", difficulty: "Medium", notes: "Minimum 6 participants." },
-    { title: "Freestyle challenge: 8 bars about the groom, no repeated words.", type: "Dares", difficulty: "Chaos", notes: "Beatbox backing from the crew." },
-    { title: "Dance battle finals: winner safe, loser completes a forfeit.", type: "Team", difficulty: "Chaos", notes: "Crowd vote decides." },
-    { title: "Iron core: hold a plank while each lad gives one travel rule.", type: "Team", difficulty: "Chaos", notes: "Drop early and restart once." }
+    { title: "Walk into the next bar and shout 'THE GROOM IS FREE!' — Ross must shake hands with the first stranger who reacts.", type: "Dares", difficulty: "Chaos", notes: "Commitment is non-negotiable. Volume marks the score." },
+    { title: "Flash proposal: Ross drops to one knee and 'proposes' to a willing stranger. Ring optional, photo mandatory.", type: "Dares", difficulty: "Chaos", notes: "Must ask consent first. If declined, retry with the next willing stranger." },
+    { title: "Phone roulette: hand your unlocked phone to the crew for 60 seconds. They can post one photo to your story — no edits, no veto.", type: "Dares", difficulty: "Chaos", notes: "Keep it tasteful enough that HR wouldn't call you in." },
+    { title: "Groom auction: best man sells 60 seconds of Ross's company to another stag/hen group. Highest bid goes straight to the kitty.", type: "Team", difficulty: "Chaos", notes: "Ross stays put until the timer runs out." },
+    { title: "Stranger cheers parade: collect 10 handshakes and compliments in under 3 minutes. One word compliments are a foul.", type: "Dares", difficulty: "Medium", notes: "Keep the compliments clean but bold." },
+    { title: "Accent hostage: speak only in a Welsh accent until the next round arrives. Every slip is one shot.", type: "Chill", difficulty: "Medium", notes: "Strangers you meet mid-round must also be addressed in character." },
+    { title: "Wardrobe trade: swap one visible item (shirt, cap, jacket, glasses) with a willing stranger. You wear it to the next venue.", type: "Dares", difficulty: "Chaos", notes: "They keep yours. No take-backs until tomorrow." },
+    { title: "Catalan 101: learn one full phrase from a local and deploy it unprompted in the next bar.", type: "Chill", difficulty: "Medium", notes: "Bar staff judge the pronunciation." },
+    { title: "Serenade squad: full chorus to Ross in the middle of the bar with crew backing vocals. No phones, memory only.", type: "Team", difficulty: "Medium", notes: "If fewer than 4 lads sing, the round re-runs." },
+    { title: "Signature hunt: collect autographs from 5 strangers on a bar napkin as official 'witnesses to the groom'.", type: "Dares", difficulty: "Medium", notes: "Names only — nothing sketchy." },
+    { title: "Mariachi pivot: find a street performer and commission them to play 'Congratulations' or a love song for Ross. Tip generously.", type: "Dares", difficulty: "Chaos", notes: "Busker's choice counts if they improvise." },
+    { title: "Porrón duel: drink from a Spanish porrón without touching the spout. Shirt splashes double your next round's bill.", type: "Drinking", difficulty: "Chaos", notes: "Ask the bar nicely first." },
+    { title: "Bar-top toast: with bar staff permission, climb the nearest stool and give a 30-second speech on why Ross deserves this.", type: "Dares", difficulty: "Chaos", notes: "Crew rates 1-10. Anything under 7 earns a shot." },
+    { title: "Chant takeover: get the whole bar chanting 'ROSS ROSS ROSS' for 15 straight seconds.", type: "Team", difficulty: "Chaos", notes: "Volume is marked. Phone recording required." },
+    { title: "Lost in translation: order entirely through Google Translate's voice mode. No English fallback, take what arrives.", type: "Dares", difficulty: "Medium", notes: "Weirdest item wins bonus points." },
+    { title: "Tapas roulette: order the single weirdest plate on the menu. Whole crew takes a bite. No exceptions.", type: "Dares", difficulty: "Medium", notes: "Gambas a la plancha doesn't count. Be brave." },
+    { title: "Ross-themed shot: design a drink, name it after the groom, talk the bartender into making it.", type: "Dares", difficulty: "Chaos", notes: "Whole crew drinks it, even if it's terrible." },
+    { title: "Human pyramid: 3-man pyramid on the beach or plaza, held for 10 seconds, photo from two angles.", type: "Team", difficulty: "Chaos", notes: "No falls onto pavement — beach or grass only." },
+    { title: "Dance floor takeover: start a circle and get at least 10 strangers inside it within 2 minutes.", type: "Team", difficulty: "Chaos", notes: "A conga counts if the line actually reaches 10." },
+    { title: "Karaoke draft: Ross picks the song for you. No backing out, no lyrics assistance, crew gives zero support.", type: "Dares", difficulty: "Chaos", notes: "Finishing is a pass. Walking off is a shot." },
+    { title: "Local legend: get a stranger to share their favourite bar in the city. Crew must visit it before the night ends.", type: "Dares", difficulty: "Medium", notes: "Taxi fares count toward the kitty." },
+    { title: "Blind date pitch: 60 seconds to convince a stranger why Ross's single mate is 'the one'. Don't actually set anyone up.", type: "Dares", difficulty: "Chaos", notes: "Stay wholesome — this is theatre, not Tinder." },
+    { title: "Silent disco: 60 seconds of synchronised choreography to no music. Bar applause or the whole crew drinks.", type: "Team", difficulty: "Chaos", notes: "Pick the moves before you start." },
+    { title: "Translation duel: two lads get 60 seconds to order entirely in Spanish. Worse accent buys the round.", type: "Team", difficulty: "Medium", notes: "Bar staff ruling is final." },
+    { title: "Paella police: any lad who orders something non-Spanish at dinner tonight pays double their share.", type: "Chill", difficulty: "Medium", notes: "Group chat screenshots count as evidence." },
+    { title: "Confession circle: Ross reveals one thing the fiancée doesn't know. Crew votes — stays in Barcelona or goes home with him.", type: "Chill", difficulty: "Medium", notes: "Majority rules. No vetoes." },
+    { title: "Taxi tale: convince the cab driver to tell you his best Barcelona story on the ride home. Tip him before he starts.", type: "Chill", difficulty: "Medium", notes: "Best story of the night wins a free round tomorrow." },
+    { title: "Handshake agreement: shake hands with 10 strangers in 3 minutes and deliver a genuine compliment to each.", type: "Dares", difficulty: "Medium", notes: "Same compliment twice = disqualified." },
+    { title: "Iron core: hold a 60-second plank while each lad shouts one rule the groom must obey for the rest of the trip.", type: "Team", difficulty: "Chaos", notes: "Drop early, restart once, second drop = punishment wheel." },
+    { title: "Freestyle round: 8 bars about Ross, no repeated words, crew provides beatbox backing.", type: "Dares", difficulty: "Chaos", notes: "Recorded for the wedding speech. No take two." },
+    { title: "Piggyback Grand Prix: 30-metre piggyback relay between two pairs. Loser pair buys shots for the winners.", type: "Team", difficulty: "Chaos", notes: "Dropped rider eats a time penalty. Beach or grass only." },
+    { title: "Hotel sprint: last lad back to the hotel buys tomorrow's breakfast for the crew.", type: "Team", difficulty: "Easy", notes: "Groom gets a 30-second head start. No shortcuts through traffic." },
+    { title: "Late-night kebab czar: first lad to spot a 2am kebab shop picks every topping for the crew.", type: "Chill", difficulty: "Easy", notes: "Any refusal from the crew = they pay their own." },
+    { title: "Story time: each lad shares their most embarrassing Ross memory. Crowd votes worst — that lad buys Ross his next drink.", type: "Chill", difficulty: "Easy", notes: "Wedding-speech worthy answers get bonus points." },
+    { title: "Bouncer charm: the bouncer must share the best club he's ever worked. Must be longer than 20 seconds to count.", type: "Dares", difficulty: "Medium", notes: "Be respectful — if he's busy, wait." }
   ];
 
   function getFilteredApprovedChallenges(includeShown) {
@@ -5006,7 +5047,8 @@
       applyQuickPreset: typeof applyQuickPreset === 'function' ? applyQuickPreset : null,
       refreshFxRateManual: typeof refreshFxRateManual === 'function' ? refreshFxRateManual : null,
       onFxConvertInput: typeof onFxConvertInput === 'function' ? onFxConvertInput : null,
-      onFxConvertDirection: typeof onFxConvertDirection === 'function' ? onFxConvertDirection : null
+      onFxConvertDirection: typeof onFxConvertDirection === 'function' ? onFxConvertDirection : null,
+      prefillTouristTax: typeof prefillTouristTax === 'function' ? prefillTouristTax : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');
