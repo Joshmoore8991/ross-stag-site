@@ -571,6 +571,13 @@
   });
   let challengeHistory = loadJSON('challengeHistory', []);
   let packingChecked = loadJSON('packingChecked', {});
+  // Declared here (before updateCrewAccess runs at top level) so that
+  // initPackingList() — invoked via updateCrewAccess — does not hit the
+  // temporal dead zone for this const, which previously threw a ReferenceError
+  // and halted the rest of the script (breaking the login button wiring).
+  const packingItems = [
+    "Passport", "Flight tickets", "Hotel key", "Phone charger", "Toothbrush", "Deodorant", "Shirts", "Trousers", "Underwear", "Socks", "Shoes", "Jacket", "Sunglasses", "Hat", "Swimwear", "Towels", "Medications", "Cash/Euros", "Credit cards", "ID", "Good vibes"
+  ];
   let currentChallenge = null;
   let currentChallengeOutcome = '';
   let currentChallengeDeadline = 0;
@@ -4349,10 +4356,7 @@
     getChallenge();
   }
 
-  // Packing Checklist
-  const packingItems = [
-    "Passport", "Flight tickets", "Hotel key", "Phone charger", "Toothbrush", "Deodorant", "Shirts", "Trousers", "Underwear", "Socks", "Shoes", "Jacket", "Sunglasses", "Hat", "Swimwear", "Towels", "Medications", "Cash/Euros", "Credit cards", "ID", "Good vibes"
-  ];
+  // Packing Checklist (packingItems is declared earlier, above updateCrewAccess)
   function initPackingList() {
     const container = document.getElementById('packing-list');
     if (!container) return;
