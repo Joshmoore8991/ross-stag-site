@@ -1,12 +1,12 @@
 // Minimal service worker — caches the app shell for offline read access.
-const CACHE = 'stag-shell-v12';
+const CACHE = 'stag-shell-v13';
 const SHELL = [
-  '/',
-  '/index.html',
-  '/rossstag.css?v=20260415-1',
-  '/rossstag.js?v=20260415-1',
-  '/manifest.webmanifest',
-  '/404.html'
+  './',
+  './index.html',
+  './rossstag.css?v=20260415-1',
+  './rossstag.js?v=20260415-1',
+  './manifest.webmanifest',
+  './404.html'
 ];
 
 self.addEventListener('install', function (event) {
@@ -54,7 +54,7 @@ self.addEventListener('fetch', function (event) {
             caches.open(CACHE).then(function (cache) { cache.put(req, copy); }).catch(function () {});
           }
           return res;
-        }).catch(function () { return caches.match('/index.html'); });
+        }).catch(function () { return caches.match('./index.html'); });
       })
     );
     return;
@@ -73,7 +73,7 @@ self.addEventListener('fetch', function (event) {
       })
       .catch(function () {
         return caches.match(req).then(function (hit) {
-          return hit || caches.match('/index.html');
+          return hit || caches.match('./index.html');
         });
       })
   );
