@@ -240,7 +240,14 @@
     document.documentElement.style.setProperty('--top-nav-height', height + 'px');
   }
   syncTopNavHeightVar();
-  window.addEventListener('resize', syncTopNavHeightVar);
+  let syncNavRaf = 0;
+  window.addEventListener('resize', function () {
+    if (syncNavRaf) return;
+    syncNavRaf = requestAnimationFrame(function () {
+      syncNavRaf = 0;
+      syncTopNavHeightVar();
+    });
+  });
 
   if (navMap.length) {
     setActiveNavLink(navMap[0].section.id);
@@ -2126,7 +2133,15 @@
     clearElement(container);
 
     if (!approvedSiteChangeSuggestions.length) {
-      container.innerHTML = '<p style="opacity:.6;">No crew site change suggestions yet.</p>';
+      const empty = document.createElement('p');
+      empty.style.opacity = '.6';
+      const linkText = document.createTextNode('No crew site change suggestions yet. ');
+      const link = document.createElement('a');
+      link.href = '#suggestion-section';
+      link.textContent = 'Suggest a change.';
+      empty.appendChild(linkText);
+      empty.appendChild(link);
+      container.appendChild(empty);
       return;
     }
 
@@ -4919,20 +4934,7 @@
     queueChallengeStateSync(true);
   });
 
-  // ── Scroll-to-top button ──
-  (function () {
-    var scrollBtn = document.getElementById('scroll-top-btn');
-    if (!scrollBtn) return;
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        scrollBtn.classList.toggle('visible', window.scrollY > 600);
-        ticking = false;
-      });
-    }, { passive: true });
-  })();
+  // Scroll-to-top visibility wired up later in wireScrollTopVisibility.
 
   // ── Toast notification system ──
   function showToast(message, duration) {
@@ -6134,12 +6136,14 @@
   function refreshWeather(force) {
     const body = document.getElementById('weather-body');
     const updated = document.getElementById('weather-updated');
+    const refreshBtn = document.querySelector('[data-action="refreshWeather"]');
     if (!body) return;
     let cached = null;
     try { cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || 'null'); } catch (_) { cached = null; }
     const fresh = cached && cached.ts && (Date.now() - cached.ts) < WEATHER_CACHE_MS;
     if (cached && cached.data) renderWeatherData(cached.data);
     if (fresh && !force) return;
+    if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.classList.add('is-loading'); }
 
     // Trip runs 3-6 May 2026. Open-Meteo's forecast window is ~16 days,
     // so if the trip is outside the window show the next 7 days instead
@@ -6182,7 +6186,10 @@
         try { localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: json })); } catch (_) { /* ignore */ }
       })
       .catch(function () { if (!cached) body.textContent = 'Weather unavailable.'; })
-      .finally(function () { body.removeAttribute('data-loading'); });
+      .finally(function () {
+        body.removeAttribute('data-loading');
+        if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.classList.remove('is-loading'); }
+      });
   }
 
   // ── Nightlife map (Leaflet) + group location ping ─────────────────────

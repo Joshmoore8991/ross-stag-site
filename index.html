@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260416-1">
+<link rel="stylesheet" href="rossstag.css?v=20260416-2">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -215,10 +215,10 @@
   <div class="lads-customizer fade-in" id="lads-customizer" style="display:none;">
     <h3>My Crew Profile</h3>
     <div class="lads-customizer-row">
-      <input type="text" id="lads-custom-title" placeholder="Your personal heading">
-      <input type="text" id="lads-custom-role" placeholder="Your role label">
+      <input type="text" id="lads-custom-title" placeholder="Your personal heading" aria-label="Your personal heading">
+      <input type="text" id="lads-custom-role" placeholder="Your role label" aria-label="Your role label">
     </div>
-    <textarea id="lads-custom-subtitle" rows="2" placeholder="Your personal subtitle"></textarea>
+    <textarea id="lads-custom-subtitle" rows="2" placeholder="Your personal subtitle" aria-label="Your personal subtitle"></textarea>
     <div class="lads-customizer-actions">
       <button type="button" class="btn btn-gold btn-sm" data-action="saveMyCrewPersonalization">Save My Profile</button>
       <button type="button" class="btn btn-outline-light btn-sm" data-action="resetMyCrewPersonalization">Reset</button>
@@ -935,40 +935,40 @@
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="applyQuickPreset" data-action-arg="chill-easy">&#x1F634; Chill · Easy</button>
     </div>
     <p style="opacity:.55; font-size:12px; margin:6px 0 10px;">Tap a preset to pre-fill a random title — tweak and submit.</p>
-    <input type="text" id="challenge-title" placeholder="Challenge title" class="form-input form-input-wide">
-    <select id="challenge-type" class="form-input form-input-mid">
+    <input type="text" id="challenge-title" placeholder="Challenge title" aria-label="Challenge title" class="form-input form-input-wide">
+    <select id="challenge-type" class="form-input form-input-mid" aria-label="Challenge type">
       <option value="Drinking">Drinking</option>
       <option value="Dares">Dares</option>
       <option value="Team">Team</option>
       <option value="Chill">Chill</option>
     </select>
-    <select id="challenge-difficulty" class="form-input form-input-mid">
+    <select id="challenge-difficulty" class="form-input form-input-mid" aria-label="Challenge difficulty">
       <option value="Easy">Easy</option>
       <option value="Medium">Medium</option>
       <option value="Chaos">Chaos</option>
     </select>
-    <textarea id="challenge-notes" rows="3" placeholder="Optional details..." class="form-input form-input-wide"></textarea>
+    <textarea id="challenge-notes" rows="3" placeholder="Optional details..." aria-label="Challenge details" class="form-input form-input-wide"></textarea>
     <button data-action="suggestChallenge" class="btn btn-gold btn-sm">Submit Challenge</button>
     <p id="challenge-msg" style="margin-top:10px;"></p>
   </div>
   <div class="info-card fade-in" style="margin-top:20px; text-align:center;">
     <h3>Suggest a Schedule Item</h3>
     <p style="opacity:.7; margin-bottom:12px;">Suggest a plan entry with a time, details and optional link. It goes live immediately.</p>
-    <input type="text" id="schedule-title" placeholder="Title (e.g. Sunset Rooftop Drinks)" class="form-input form-input-wide">
-    <input type="text" id="schedule-day" placeholder="Day/Date (e.g. 4 May)" class="form-input form-input-mid">
-    <input type="text" id="schedule-time" placeholder="Time (e.g. 15:30)" class="form-input form-input-mid">
-    <textarea id="schedule-details" rows="3" placeholder="Details..." class="form-input form-input-wide"></textarea>
-    <input type="url" id="schedule-link" placeholder="Optional link (https://...)" class="form-input form-input-wide">
+    <input type="text" id="schedule-title" placeholder="Title (e.g. Sunset Rooftop Drinks)" aria-label="Schedule item title" class="form-input form-input-wide">
+    <input type="text" id="schedule-day" placeholder="Day/Date (e.g. 4 May)" aria-label="Day or date" class="form-input form-input-mid">
+    <input type="text" id="schedule-time" placeholder="Time (e.g. 15:30)" aria-label="Time" class="form-input form-input-mid">
+    <textarea id="schedule-details" rows="3" placeholder="Details..." aria-label="Schedule item details" class="form-input form-input-wide"></textarea>
+    <input type="url" id="schedule-link" placeholder="Optional link (https://...)" aria-label="Optional link" class="form-input form-input-wide">
     <button data-action="suggestScheduleItem" class="btn btn-gold btn-sm">Submit Schedule Item</button>
     <p id="schedule-suggestion-msg" style="margin-top:10px;"></p>
   </div>
   <div class="info-card fade-in" style="margin-top:20px; text-align:center;">
     <h3>Suggest a Site Change (Any Section)</h3>
     <p style="opacity:.7; margin-bottom:12px;">Suggest edits for any part of the site. Crew members can submit them directly.</p>
-    <input type="text" id="site-change-section" placeholder="Section (e.g. Flights, Rules, Tips, Any Section)" class="form-input form-input-wide">
-    <input type="text" id="site-change-title" placeholder="Change title" class="form-input form-input-wide">
-    <textarea id="site-change-details" rows="3" placeholder="Describe the change..." class="form-input form-input-wide"></textarea>
-    <input type="url" id="site-change-link" placeholder="Optional link (https://...)" class="form-input form-input-wide">
+    <input type="text" id="site-change-section" placeholder="Section (e.g. Flights, Rules, Tips, Any Section)" aria-label="Section name" class="form-input form-input-wide">
+    <input type="text" id="site-change-title" placeholder="Change title" aria-label="Change title" class="form-input form-input-wide">
+    <textarea id="site-change-details" rows="3" placeholder="Describe the change..." aria-label="Describe the change" class="form-input form-input-wide"></textarea>
+    <input type="url" id="site-change-link" placeholder="Optional link (https://...)" aria-label="Optional link" class="form-input form-input-wide">
     <button data-action="suggestSiteChange" class="btn btn-gold btn-sm">Submit Site Change</button>
     <p id="site-change-msg" style="margin-top:10px;"></p>
   </div>
@@ -1377,7 +1377,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260416-1"></script>
+<script src="rossstag.js?v=20260416-2"></script>
 </body>
 </html>
 

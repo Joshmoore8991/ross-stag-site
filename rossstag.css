@@ -1682,7 +1682,7 @@
     .admin-add-row .btn { width: 100%; }
     #toast-container { top: 84px; width: calc(100% - 16px); }
     .btn-experience { display: block; text-align: center; }
-    #scroll-top-btn { bottom: 16px; right: 16px; width: 42px; height: 42px; font-size: 18px; }
+    #scroll-top-btn { bottom: 16px; right: 16px; width: 44px; height: 44px; font-size: 18px; }
   }
 
   @media (max-width: 560px) {
@@ -1692,8 +1692,8 @@
     .countdown-item { min-width: 120px; }
     .hotel-details { grid-template-columns: 1fr 1fr; }
     .hero-controls { top: 76px; right: 8px; gap: 8px; }
-    .icon-btn { width: 42px; height: 42px; font-size: 16px; }
-    .icon-btn-secondary { width: 40px; height: 40px; font-size: 14px; }
+    .icon-btn { width: 44px; height: 44px; font-size: 16px; }
+    .icon-btn-secondary { width: 44px; height: 44px; font-size: 14px; }
   }
 
   @media (max-width: 420px) {
@@ -1852,6 +1852,7 @@
   .weather-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
   .weather-head h3 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--gold); font-size: 20px; }
   .weather-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+  .weather-body[data-loading] { opacity: .55; filter: saturate(.75); transition: opacity .2s ease, filter .2s ease; }
   .weather-day {
     border: 1px solid rgba(212,168,67,.18); border-radius: 12px; padding: 10px 8px; text-align: center;
     background: rgba(0,0,0,.35);
@@ -2069,8 +2070,10 @@
   .challenge-card.just-submitted { animation: just-submitted-pulse 2.4s ease-out 1; }
 
   /* Refresh button loading state. */
-  #live-feed-refresh.is-loading { opacity: .6; pointer-events: none; }
-  #live-feed-refresh.is-loading::after {
+  #live-feed-refresh.is-loading,
+  [data-action="refreshWeather"].is-loading { opacity: .6; pointer-events: none; }
+  #live-feed-refresh.is-loading::after,
+  [data-action="refreshWeather"].is-loading::after {
     content: '';
     display: inline-block;
     width: 10px; height: 10px;
@@ -2102,7 +2105,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .challenge-card.just-submitted { animation: none; background-color: rgba(212, 168, 67, 0.12); }
-    #live-feed-refresh.is-loading::after { animation: none; }
+    #live-feed-refresh.is-loading::after,
+    [data-action="refreshWeather"].is-loading::after { animation: none; }
   }
 
   /* ── Feed mini stats ──────────────────────────────────────────────── */
