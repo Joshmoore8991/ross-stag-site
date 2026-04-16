@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data: blob:; font-src 'self' https: data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; manifest-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' https: data: blob:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; manifest-src 'self';">
 <meta name="supabase-url" content="">
 <meta name="supabase-anon-key" content="">
 <meta name="description" content="Ross Wightman's Stag Do in Barcelona, May 2026. 3 nights, 6 lads, maximum fun!">
@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260416-2">
+<link rel="stylesheet" href="rossstag.css?v=20260416-3">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -1017,7 +1017,14 @@
     </div>
     <p style="opacity:.55; font-size:12px; margin:8px 0 0;">Tap refresh to pull the latest from Supabase without waiting for the 4-second auto-poll.</p>
   </div>
-  <div id="approved-challenges" style="margin-top:20px;"></div>
+  <div id="approved-challenges" style="margin-top:20px;" aria-busy="true">
+    <div class="feed-skeleton" aria-hidden="true">
+      <div class="feed-skeleton-heading"></div>
+      <div class="feed-skeleton-card"></div>
+      <div class="feed-skeleton-card"></div>
+      <div class="feed-skeleton-card"></div>
+    </div>
+  </div>
   <div id="approved-site-change-suggestions" style="margin-top:20px;"></div>
 </section>
 
@@ -1377,7 +1384,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260416-2"></script>
+<script src="rossstag.js?v=20260416-3"></script>
 </body>
 </html>
 

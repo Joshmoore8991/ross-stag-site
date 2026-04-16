@@ -3297,6 +3297,7 @@
       return (b.votes || 0) - (a.votes || 0) || (b.createdAt || 0) - (a.createdAt || 0);
     });
     container.innerHTML = '';
+    container.removeAttribute('aria-busy');
     const heading = document.createElement('h3');
     heading.textContent = 'Live Crew Challenges';
     container.appendChild(heading);
@@ -4470,7 +4471,25 @@
     { title: "Hotel sprint: last lad back to the hotel buys tomorrow's breakfast for the crew.", type: "Team", difficulty: "Easy", notes: "Groom gets a 30-second head start. No shortcuts through traffic." },
     { title: "Late-night kebab czar: first lad to spot a 2am kebab shop picks every topping for the crew.", type: "Chill", difficulty: "Easy", notes: "Any refusal from the crew = they pay their own." },
     { title: "Story time: each lad shares their most embarrassing Ross memory. Crowd votes worst — that lad buys Ross his next drink.", type: "Chill", difficulty: "Easy", notes: "Wedding-speech worthy answers get bonus points." },
-    { title: "Bouncer charm: the bouncer must share the best club he's ever worked. Must be longer than 20 seconds to count.", type: "Dares", difficulty: "Medium", notes: "Be respectful — if he's busy, wait." }
+    { title: "Bouncer charm: the bouncer must share the best club he's ever worked. Must be longer than 20 seconds to count.", type: "Dares", difficulty: "Medium", notes: "Be respectful — if he's busy, wait." },
+    { title: "Stag veil relay: Ross wears a veil for 30 straight minutes in public. Any lad who lets it slip off buys the next round.", type: "Dares", difficulty: "Chaos", notes: "Bonus point every time a stranger cheers him on." },
+    { title: "Impostor round: one lad claims to be Ross all night to every new stranger. Real Ross can't correct them.", type: "Team", difficulty: "Chaos", notes: "If three strangers in a row figure it out, the impostor buys." },
+    { title: "Name and shame: collect the full government name of 3 bartenders and thank each one by it before leaving.", type: "Dares", difficulty: "Medium", notes: "Asking nicely counts. Don't be creepy." },
+    { title: "Dance-off drafted: the crew votes one lad onto a public dance floor — no phone, no drink, no leaving until 60 seconds pass.", type: "Team", difficulty: "Chaos", notes: "Applause from at least 3 strangers cancels any punishment." },
+    { title: "Spanish-only hour: from this moment, one hour of Spanish-only conversation. Every English slip is a shot.", type: "Chill", difficulty: "Chaos", notes: "Google Translate on airplane mode is legal. Pointing is not." },
+    { title: "Stag throne: Ross sits, crew forms a royal court around him in the next plaza for 3 minutes of genuine hyping.", type: "Team", difficulty: "Medium", notes: "Strangers joining the court is worth a round of praise." },
+    { title: "Mystery shot: bartender's choice, no questions. Pay first, ask what it was after.", type: "Drinking", difficulty: "Chaos", notes: "Grimace scored 1-10 by the crew. Under 5 earns a second." },
+    { title: "Pub-golf pivot: crew picks a 3-venue mini-crawl, one drink each, 25 minutes total. Slowest drinker pays for the last round.", type: "Drinking", difficulty: "Chaos", notes: "Water breaks between venues are mandatory." },
+    { title: "Selfie tax: every lad owes the kitty €2 for every crewless selfie they post tonight.", type: "Chill", difficulty: "Easy", notes: "Best man audits the group chat at breakfast." },
+    { title: "Dance-floor proposal: Ross gets down on one knee to propose a dance to the best dancer in the room.", type: "Dares", difficulty: "Chaos", notes: "Must be polite, must be loud. Consent before any contact." },
+    { title: "Local secret swap: trade a true story about your home city for a local's secret about Barcelona. Crew scores the swap.", type: "Chill", difficulty: "Medium", notes: "Generic tourist tips don't count — push for something real." },
+    { title: "Crowd-surf dry run: coordinate a human wave between the 6 lads at the bar — crouch, stand, arms up, timed.", type: "Team", difficulty: "Medium", notes: "Count it three times. Bar staff approval beats any veto." },
+    { title: "One-word-only round: buy the next round using five single-word commands maximum. Bartender tips are doubled on success.", type: "Dares", difficulty: "Chaos", notes: "'Please' counts as a word. So does 'gracias'." },
+    { title: "Crew tattoo: everyone draws a matching stick-figure tattoo on the groom's non-dominant arm. Sharpie only, must survive til morning.", type: "Team", difficulty: "Chaos", notes: "Photograph before showering. Ink check at breakfast." },
+    { title: "Mid-bar speech: any lad on request must stand and give a 30-second toast about someone absent (Ross's fiancée, his mum, etc.).", type: "Dares", difficulty: "Medium", notes: "Crew votes sincerity. Tears earn a bonus round." },
+    { title: "Karaoke cartel: the crew books a round of Spanish-language songs. No English lyrics allowed on the screen.", type: "Team", difficulty: "Chaos", notes: "Mispronunciation is fine. Reading along silently is not." },
+    { title: "Dare draft: each lad writes a dare and drops it in a cap. Groom draws 3 and must complete 2 before last call.", type: "Dares", difficulty: "Chaos", notes: "Nothing illegal, nothing cruel. Crew vetoes once if needed." },
+    { title: "Locals-only bar: ask 3 locals for the least touristy bar they know. Crew commits to the most-recommended one.", type: "Chill", difficulty: "Medium", notes: "Must be walkable or on the metro. No Ubers to the outskirts." }
   ];
 
   function getFilteredApprovedChallenges(includeShown) {
@@ -4951,7 +4970,11 @@
   }
 
   // ── Haptic buzz (mobile-only, no-op on desktop/unsupported) ───────────
+  function prefersReducedMotion() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
   function buzz(pattern) {
+    if (prefersReducedMotion()) return;
     try {
       if (navigator && typeof navigator.vibrate === 'function') {
         navigator.vibrate(pattern);
@@ -5234,23 +5257,55 @@
   var QUICK_CHALLENGE_PRESETS = {
     'drinking-easy': {
       type: 'Drinking', difficulty: 'Easy',
-      titles: ['Cheers in Catalan before every drink', 'Order the next round in Spanish only', 'Match the groom sip-for-sip for this round', 'Take a drink every time someone says "Ross"']
+      titles: [
+        'Salut in Catalan before every drink — miss once, down the next',
+        'Order the next round in Spanish only — no English rescue',
+        'Match the groom sip-for-sip for this round, no cheating',
+        'Every time someone says "Ross", everyone drinks. Last one in takes a shot'
+      ]
     },
     'drinking-chaos': {
       type: 'Drinking', difficulty: 'Chaos',
-      titles: ['Chug-off: last one to finish buys the next round', 'Shots roulette — the lad on your left picks', 'Drink swap with a stranger at the bar', 'Beer + shot combo every bar stop for the next hour']
+      titles: [
+        'Chug-off: last one to finish buys the next two rounds',
+        'Shots roulette — the lad on your left picks the liquor, the bar picks the chaser',
+        'Drink swap with a willing stranger at the bar — finish whatever lands in front of you',
+        'Beer-and-shot combo every bar stop for the next hour, no skips',
+        'Spanish bartender\'s choice — no menu, no questions, pay up front',
+        'Porrón showdown: longest continuous pour without touching the spout takes the crown. Splashes = shots'
+      ]
     },
     'dares-chaos': {
       type: 'Dares', difficulty: 'Chaos',
-      titles: ['Convince a stranger you\'re the groom for 2 minutes', 'Serenade the groom in the middle of the bar', 'Get a high-five from every bartender in the next venue', 'Propose a toast in broken Spanish to the whole room']
+      titles: [
+        'Convince a stranger you\'re the groom for 2 full minutes — no breaking character',
+        'Serenade the groom in the middle of the bar. No phones, crew backing vocals only',
+        'Get a high-five from every bartender in the next venue — no exceptions',
+        'Propose a loud toast in broken Spanish to the whole room — louder scores higher',
+        'Stand on the bar (with staff permission) and declare the groom\'s top 3 qualities',
+        'Swap one visible item of clothing with a stranger and wear it to the next bar'
+      ]
     },
     'team-medium': {
       type: 'Team', difficulty: 'Medium',
-      titles: ['Team photo with a live flamenco dancer', 'Get 3 locals to join our round of cheers', 'Coordinate a 6-man conga line through the next bar', 'Team karaoke — a full verse each before we leave']
+      titles: [
+        'Team photo with a live flamenco dancer — the dancer has to be mid-performance',
+        'Convince 3 locals to join our next round of cheers and learn their names',
+        'Coordinate a 6-man conga line through the next bar — 10 strangers joining triples the score',
+        'Team karaoke — one full verse each, back-to-back, before we leave',
+        'Human pyramid in the plaza, held for 10 seconds, photo from two angles',
+        'Plan the ambush: crew talks the bar into chanting the groom\'s name for 20 seconds straight'
+      ]
     },
     'chill-easy': {
       type: 'Chill', difficulty: 'Easy',
-      titles: ['Rate the best tapa of the day', 'Share one embarrassing Ross story', 'Post a group photo to the crew chat', 'Describe the day in exactly 3 emojis']
+      titles: [
+        'Rate the best tapa of the day — loser picks tomorrow\'s breakfast spot',
+        'Share one embarrassing Ross story the fiancée hasn\'t heard',
+        'Post a group photo to the crew chat with a 10-word caption minimum',
+        'Describe the day in exactly 3 emojis — crew guesses the story',
+        'Name the most Spanish thing you\'ve done so far — weakest answer pays the tip'
+      ]
     }
   };
   function applyQuickPreset(key) {
@@ -5586,6 +5641,7 @@
   // ── Haptic feedback helper ──
   function hapticTap(pattern) {
     if (!navigator.vibrate) return;
+    if (typeof prefersReducedMotion === 'function' && prefersReducedMotion()) return;
     try { navigator.vibrate(pattern || 18); } catch (_) { /* ignore */ }
   }
   window.hapticTap = hapticTap;

@@ -2109,6 +2109,33 @@
     [data-action="refreshWeather"].is-loading::after { animation: none; }
   }
 
+  /* ── Live-feed skeleton (pre-first-load placeholder) ──────────────── */
+  .feed-skeleton { display: grid; gap: 12px; }
+  .feed-skeleton-heading,
+  .feed-skeleton-card {
+    border-radius: 12px;
+    background: linear-gradient(90deg,
+      rgba(212,168,67,.06) 0%,
+      rgba(212,168,67,.16) 50%,
+      rgba(212,168,67,.06) 100%);
+    background-size: 200% 100%;
+    animation: feed-skeleton-shimmer 1.4s linear infinite;
+  }
+  .feed-skeleton-heading { height: 22px; width: 45%; max-width: 240px; }
+  .feed-skeleton-card { height: 88px; }
+  @keyframes feed-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .light-theme .feed-skeleton-heading,
+  .light-theme .feed-skeleton-card {
+    background: linear-gradient(90deg,
+      rgba(10,10,10,.04) 0%,
+      rgba(10,10,10,.1) 50%,
+      rgba(10,10,10,.04) 100%);
+    background-size: 200% 100%;
+  }
+
   /* ── Feed mini stats ──────────────────────────────────────────────── */
   .feed-stats {
     display: flex;
