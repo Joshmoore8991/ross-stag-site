@@ -1733,22 +1733,29 @@
 
   function spinPunishmentWheel() {
     const punishments = [
-      'Buy the next two rounds: one now, one later.',
-      'Do 30 bodyweight squats in under 90 seconds.',
-      'Finish your current drink, then hold a 60-second plank.',
-      'Deliver a 60-second wedding speech with no filler words.',
-      'You are the DJ for 3 songs and must dance through all of them.',
-      'Swap your top with the nearest lad for the next full venue.',
-      'Order chips or snacks for the full table immediately.',
-      'Keep one hand on your drink for 15 minutes or restart the timer.',
-      'Do a wall sit for 90 seconds while the lads count down.',
-      'Take a group selfie with 3 strangers photobombing in frame.',
-      'Speak only in dramatic commentator voice for 10 minutes.',
-      'Serenade the groom with a full chorus and eye contact.',
-      'Give piggyback transport to one lad for 40 metres.',
-      'No phone for 30 minutes. Another lad is your camera operator.',
-      'Learn and perform an 8-count dance move chosen by the group.',
-      'Down a full glass of water, then lead a loud team chant.'
+      'Buy the next full round for the crew — no questions, no swaps.',
+      'Down your drink, then hold a 60-second plank while the lads count you down.',
+      'Deliver a 60-second wedding speech for Ross with no filler words. Every "um" adds a shot.',
+      'You are the DJ for 3 songs and must dance through every single one.',
+      'Swap your top with the nearest lad for the rest of this venue.',
+      'Speak only in a dramatic sports-commentator voice for the next 10 minutes.',
+      'Serenade Ross with a full chorus and unbroken eye contact. Lyrics from memory only.',
+      'Piggyback the lightest lad 40 metres. Drop him, restart. Drop him twice, take a shot.',
+      'No phone for 30 minutes. Another lad is your camera operator and social media manager.',
+      'Learn an 8-count dance move on the spot and perform it to a stranger for approval.',
+      'Buy Ross whatever he wants at the bar. He has 60 seconds to order, you have 10 to hand over cash.',
+      'Ask the next 3 strangers to sign a napkin as witnesses to the groom\'s final hours.',
+      'Propose a toast to the entire bar in Spanish. Applause rating under 6/10 = repeat round.',
+      'Wear your sunglasses backwards and keep them on until you finish your next drink.',
+      'Give piggyback rides to any lad who asks for the next 15 minutes.',
+      'Buy Ross a drink named after his worst ex — your choice, must be a real cocktail.',
+      'Down a full glass of water between every drink for the rest of the night. No negotiating.',
+      'Phone Ross\'s mum, put her on speaker, and tell her one (true) good thing Ross has done.',
+      'Hand your wallet to the best man for 30 minutes. He orders on your behalf.',
+      'Get a high-five from every bartender in the next venue before ordering anything.',
+      'Record a 30-second voice note to Ross\'s fiancée explaining the groom\'s behaviour tonight. She gets it at the wedding.',
+      'Chug a pint of water, then do 10 burpees while chanting Ross\'s name.',
+      'Whatever you\'re wearing on your feet, swap with a lad. Stays swapped until morning.'
     ];
     const chosen = punishments[Math.floor(Math.random() * punishments.length)];
     const result = document.getElementById('punishment-result');
