@@ -3727,6 +3727,415 @@
     if (typeof hapticTap === 'function') hapticTap(12);
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Flight Day checklist — persists ticks locally.
+  // ─────────────────────────────────────────────────────────────
+  const FLIGHT_DAY_KEY = 'flightDayChecklist';
+  function renderFlightDayChecklist() {
+    const list = document.getElementById('flight-day-checklist');
+    if (!list) return;
+    const state = loadJSON(FLIGHT_DAY_KEY, {});
+    Array.from(list.querySelectorAll('li')).forEach(function (li) {
+      const task = li.getAttribute('data-task');
+      if (!task) return;
+      li.classList.toggle('done', !!state[task]);
+      if (!li.dataset.wired) {
+        li.dataset.wired = '1';
+        li.addEventListener('click', function () {
+          const cur = loadJSON(FLIGHT_DAY_KEY, {});
+          cur[task] = !cur[task];
+          saveJSON(FLIGHT_DAY_KEY, cur);
+          li.classList.toggle('done', !!cur[task]);
+          updateFlightDayStatus();
+          if (typeof hapticTap === 'function') hapticTap(8);
+        });
+      }
+    });
+    updateFlightDayStatus();
+  }
+  function updateFlightDayStatus() {
+    const status = document.getElementById('flight-day-status');
+    if (!status) return;
+    const state = loadJSON(FLIGHT_DAY_KEY, {});
+    const total = document.querySelectorAll('#flight-day-checklist li[data-task]').length;
+    const done = Object.keys(state).filter(function (k) { return state[k]; }).length;
+    const dep = new Date('2026-05-03T06:10:00+01:00').getTime();
+    const now = Date.now();
+    const daysOut = Math.ceil((dep - now) / 86400000);
+    let label;
+    if (daysOut > 1) label = 'T-' + daysOut + ' days to takeoff';
+    else if (daysOut === 1) label = 'Tomorrow — final checks!';
+    else if (daysOut === 0) label = 'TODAY IS THE DAY';
+    else if (now < dep + 86400000 * 4) label = 'In-flight / on the ground';
+    else label = 'Post-trip — legend status';
+    status.textContent = label + ' · ' + done + ' / ' + total + ' checks done';
+  }
+  function resetFlightDayChecklist() {
+    saveJSON(FLIGHT_DAY_KEY, {});
+    renderFlightDayChecklist();
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Who Pays? — spinner that picks a lad (Ross excluded).
+  // ─────────────────────────────────────────────────────────────
+  const WHOPAYS_KEY = 'whoPaysHistory';
+  let whoPaysLast = null;
+  let whoPaysHistory = loadJSON(WHOPAYS_KEY, []);
+  function renderWhoPaysHistory() {
+    const el = document.getElementById('whopays-history');
+    if (!el) return;
+    if (!whoPaysHistory.length) { el.textContent = ''; return; }
+    el.textContent = 'Recent: ' + whoPaysHistory.slice(0, 6).map(function (h) {
+      return h.name + ' → ' + h.reason;
+    }).join(' · ');
+  }
+  function resetWhoPaysHistory() {
+    whoPaysHistory = [];
+    whoPaysLast = null;
+    saveJSON(WHOPAYS_KEY, whoPaysHistory);
+    renderWhoPaysHistory();
+    const result = document.getElementById('whopays-result');
+    if (result) result.textContent = 'History cleared. Spin again.';
+  }
+  function spinWhoPays() {
+    const eligible = crewMembers.filter(function (n) { return n !== 'Ross'; });
+    const pool = eligible.filter(function (n) { return n !== whoPaysLast; });
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const reasonEl = document.getElementById('whopays-reason');
+    const reason = reasonEl ? reasonEl.value : 'the next round';
+    const track = document.getElementById('whopays-reel-track');
+    const result = document.getElementById('whopays-result');
+    const btn = document.querySelector('[data-action="spinWhoPays"]');
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (track) {
+      const reelSeq = [];
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < eligible.length; j++) {
+          reelSeq.push(eligible[(i + j) % eligible.length]);
+        }
+      }
+      reelSeq.push(pick);
+      clearElement(track);
+      reelSeq.forEach(function (name) {
+        const div = document.createElement('div');
+        div.className = 'whopays-reel-name';
+        div.textContent = name;
+        track.appendChild(div);
+      });
+      // Land the final pick inside the pointer window — offset = final index.
+      track.style.setProperty('--reel-offset', String(reelSeq.length - 1));
+    }
+    function reveal() {
+      whoPaysLast = pick;
+      whoPaysHistory.unshift({ name: pick, reason: reason, at: Date.now() });
+      whoPaysHistory = whoPaysHistory.slice(0, 10);
+      saveJSON(WHOPAYS_KEY, whoPaysHistory);
+      if (result) {
+        result.innerHTML = '';
+        const strong = document.createElement('strong');
+        strong.textContent = pick;
+        strong.style.color = 'var(--gold)';
+        result.appendChild(strong);
+        result.appendChild(document.createTextNode(' is paying for ' + reason + '.'));
+        result.classList.remove('whopays-reveal');
+        void result.offsetWidth;
+        result.classList.add('whopays-reveal');
+      }
+      renderWhoPaysHistory();
+      if (btn) btn.disabled = false;
+      if (track) track.classList.remove('spinning');
+      if (typeof hapticTap === 'function') hapticTap([12, 40, 20]);
+    }
+    if (track && !reducedMotion) {
+      if (btn) btn.disabled = true;
+      track.classList.remove('spinning');
+      void track.offsetWidth;
+      track.classList.add('spinning');
+      setTimeout(reveal, 1800);
+    } else {
+      reveal();
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Stag Trip Trivia — 10 questions from the site.
+  // ─────────────────────────────────────────────────────────────
+  const TRIVIA_BEST_KEY = 'triviaBestScore';
+  const triviaQuestions = [
+    { q: 'What time does the outbound EasyJet flight leave Belfast?', a: ['04:00', '05:30', '06:10', '07:00'], correct: 2 },
+    { q: 'Where is the crew staying?', a: ['Hotel Catalonia', 'Htop BCN City', 'Hotel Arts', 'Generator Hostel'], correct: 1 },
+    { q: 'Barcelona tourist tax is roughly how much per lad per night?', a: ['€1', '€5.50', '€12', '€20'], correct: 1 },
+    { q: 'What does "una caña" mean at a Spanish bar?', a: ['A pint', 'A shot', 'A small draught beer', 'A bottle of wine'], correct: 2 },
+    { q: 'Which metro line serves Barcelona airport?', a: ['L1', 'L3', 'L9 Sud', 'L5'], correct: 2 },
+    { q: 'On which night does the Barcelona metro run 24 hours?', a: ['Friday', 'Saturday', 'Sunday', 'Every night'], correct: 1 },
+    { q: 'What emergency number works from any phone in Spain?', a: ['999', '911', '112', '118'], correct: 2 },
+    { q: 'How many nights are the crew in Barcelona?', a: ['2', '3', '4', '5'], correct: 1 },
+    { q: 'Who is the groom?', a: ['Joshua', 'Emmanuel', 'Ross', 'Kealen'], correct: 2 },
+    { q: 'What is the magic phrase for a free shot at the bar?', a: ['Es su cumpleaños', 'Es su despedida de soltero', '¡Viva España!', 'Invita la casa'], correct: 1 }
+  ];
+  let triviaIndex = 0;
+  let triviaScore = 0;
+  let triviaAnswered = false;
+  function startTrivia() {
+    triviaIndex = 0;
+    triviaScore = 0;
+    triviaAnswered = false;
+    const intro = document.getElementById('trivia-intro');
+    const play = document.getElementById('trivia-play');
+    const result = document.getElementById('trivia-result');
+    if (intro) intro.style.display = 'none';
+    if (result) result.style.display = 'none';
+    if (play) play.style.display = 'block';
+    renderTriviaQuestion();
+  }
+  function renderTriviaQuestion() {
+    const q = triviaQuestions[triviaIndex];
+    const qEl = document.getElementById('trivia-question');
+    const optsEl = document.getElementById('trivia-options');
+    const prog = document.getElementById('trivia-progress');
+    const score = document.getElementById('trivia-score');
+    const fill = document.getElementById('trivia-progress-fill');
+    const feedback = document.getElementById('trivia-feedback');
+    if (!q || !qEl || !optsEl) return;
+    triviaAnswered = false;
+    qEl.textContent = q.q;
+    if (prog) prog.textContent = 'Question ' + (triviaIndex + 1) + ' / ' + triviaQuestions.length;
+    if (score) score.textContent = 'Score: ' + triviaScore;
+    if (fill) fill.style.width = ((triviaIndex / triviaQuestions.length) * 100) + '%';
+    if (feedback) { feedback.textContent = ''; feedback.className = 'trivia-feedback'; }
+    clearElement(optsEl);
+    q.a.forEach(function (answer, idx) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-outline-gold trivia-option';
+      btn.textContent = answer;
+      btn.addEventListener('click', function () { answerTrivia(idx); });
+      optsEl.appendChild(btn);
+    });
+  }
+  function answerTrivia(pickIdx) {
+    if (triviaAnswered) return;
+    triviaAnswered = true;
+    const q = triviaQuestions[triviaIndex];
+    const feedback = document.getElementById('trivia-feedback');
+    const opts = document.querySelectorAll('#trivia-options .trivia-option');
+    opts.forEach(function (b, i) {
+      b.disabled = true;
+      if (i === q.correct) b.classList.add('trivia-correct');
+      else if (i === pickIdx) b.classList.add('trivia-wrong');
+    });
+    if (pickIdx === q.correct) {
+      triviaScore++;
+      if (feedback) { feedback.textContent = 'Correct!'; feedback.classList.add('is-correct'); }
+      if (typeof hapticTap === 'function') hapticTap(15);
+    } else {
+      if (feedback) {
+        feedback.textContent = 'Nope — it was: ' + q.a[q.correct];
+        feedback.classList.add('is-wrong');
+      }
+      if (typeof hapticTap === 'function') hapticTap([25, 40, 25]);
+    }
+    const score = document.getElementById('trivia-score');
+    if (score) score.textContent = 'Score: ' + triviaScore;
+    setTimeout(function () {
+      triviaIndex++;
+      if (triviaIndex >= triviaQuestions.length) finishTrivia();
+      else renderTriviaQuestion();
+    }, 1200);
+  }
+  function finishTrivia() {
+    const play = document.getElementById('trivia-play');
+    const result = document.getElementById('trivia-result');
+    const finalEl = document.getElementById('trivia-final-score');
+    const verdict = document.getElementById('trivia-verdict');
+    const fill = document.getElementById('trivia-progress-fill');
+    if (fill) fill.style.width = '100%';
+    if (play) play.style.display = 'none';
+    if (result) result.style.display = 'block';
+    if (finalEl) finalEl.textContent = triviaScore + ' / ' + triviaQuestions.length;
+    const best = Number(loadJSON(TRIVIA_BEST_KEY, 0)) || 0;
+    if (triviaScore > best) saveJSON(TRIVIA_BEST_KEY, triviaScore);
+    let text;
+    if (triviaScore === 10) text = 'Perfect. You are the best man, period.';
+    else if (triviaScore >= 8) text = 'Nailed it. Site-reading lad.';
+    else if (triviaScore >= 5) text = 'Passable. Re-read the Phrasebook before you fly.';
+    else text = 'Shocking. You are buying the first round.';
+    if (verdict) verdict.textContent = text + ' (Best: ' + Math.max(best, triviaScore) + '/10)';
+    renderTriviaBestLabel();
+  }
+  function renderTriviaBestLabel() {
+    const best = Number(loadJSON(TRIVIA_BEST_KEY, 0)) || 0;
+    const el = document.getElementById('trivia-best');
+    if (!el) return;
+    el.textContent = best ? 'Best score so far: ' + best + '/10' : 'No score yet. First run is free.';
+  }
+  function shareTriviaScore() {
+    const msg = 'I scored ' + triviaScore + '/10 on the Barcelona Stag trivia. Beat it.';
+    if (navigator.share) {
+      navigator.share({ title: 'Stag Trivia', text: msg }).catch(function () {});
+      return;
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(msg).then(function () {
+        if (typeof showToast === 'function') showToast('Score copied');
+      }).catch(function () {});
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Memory Wall — on-device photos + shared album URL.
+  // ─────────────────────────────────────────────────────────────
+  const MEMORY_WALL_KEY = 'memoryWallPhotos';
+  const SHARED_ALBUM_KEY = 'sharedAlbumUrl';
+  const MEMORY_MAX = 20;
+  const MEMORY_THUMB_MAX = 720;
+  function renderMemoryWall() {
+    const grid = document.getElementById('memory-wall-grid');
+    if (!grid) return;
+    const photos = loadJSON(MEMORY_WALL_KEY, []);
+    clearElement(grid);
+    if (!photos.length) {
+      const empty = document.createElement('p');
+      empty.className = 'subtle-note';
+      empty.style.gridColumn = '1 / -1';
+      empty.textContent = 'No photos yet. Hit "Add Photos" to drop a few in.';
+      grid.appendChild(empty);
+      return;
+    }
+    photos.forEach(function (p, idx) {
+      const cell = document.createElement('figure');
+      cell.className = 'memory-wall-cell';
+      const img = document.createElement('img');
+      img.src = p.data;
+      img.alt = p.name || ('Memory ' + (idx + 1));
+      img.loading = 'lazy';
+      cell.appendChild(img);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'memory-wall-remove';
+      btn.setAttribute('aria-label', 'Remove photo');
+      btn.textContent = '\u00d7';
+      btn.addEventListener('click', function () { removeMemoryPhoto(p.id); });
+      cell.appendChild(btn);
+      grid.appendChild(cell);
+    });
+  }
+  function removeMemoryPhoto(id) {
+    const photos = loadJSON(MEMORY_WALL_KEY, []).filter(function (p) { return p.id !== id; });
+    saveJSON(MEMORY_WALL_KEY, photos);
+    renderMemoryWall();
+  }
+  function clearMemoryWall() {
+    if (!confirm('Remove all photos from this device? This does not affect any shared album.')) return;
+    saveJSON(MEMORY_WALL_KEY, []);
+    renderMemoryWall();
+  }
+  function downscaleImage(file) {
+    return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+      reader.onerror = function () { reject(new Error('read fail')); };
+      reader.onload = function () {
+        const img = new Image();
+        img.onerror = function () { reject(new Error('img fail')); };
+        img.onload = function () {
+          const ratio = Math.min(1, MEMORY_THUMB_MAX / Math.max(img.width, img.height));
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          try { resolve(canvas.toDataURL('image/jpeg', 0.78)); }
+          catch (e) { reject(e); }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  async function onMemoryUpload() {
+    const input = document.getElementById('memory-upload');
+    const msg = document.getElementById('memory-wall-msg');
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+    let photos = loadJSON(MEMORY_WALL_KEY, []);
+    const slots = Math.max(0, MEMORY_MAX - photos.length);
+    if (slots === 0) {
+      if (msg) { msg.textContent = 'Wall is full (max ' + MEMORY_MAX + '). Clear some first.'; msg.style.color = 'var(--gold)'; }
+      input.value = '';
+      return;
+    }
+    const take = files.slice(0, slots);
+    if (msg) { msg.textContent = 'Processing ' + take.length + ' photo' + (take.length === 1 ? '' : 's') + '...'; msg.style.color = ''; }
+    for (const file of take) {
+      if (!/^image\//.test(file.type)) continue;
+      try {
+        const data = await downscaleImage(file);
+        photos.push({ id: 'p' + Date.now() + Math.random().toString(36).slice(2, 6), name: file.name, data: data, at: Date.now() });
+        try { saveJSON(MEMORY_WALL_KEY, photos); }
+        catch (e) { /* quota handled below */ }
+      } catch (_) { /* skip unreadable */ }
+    }
+    input.value = '';
+    renderMemoryWall();
+    if (msg) {
+      const remaining = MEMORY_MAX - loadJSON(MEMORY_WALL_KEY, []).length;
+      msg.textContent = 'Saved. ' + remaining + ' slot' + (remaining === 1 ? '' : 's') + ' left on this device.';
+      msg.style.color = 'var(--gold)';
+    }
+    if (typeof hapticTap === 'function') hapticTap(12);
+  }
+  function onSharedAlbumInput() {
+    const input = document.getElementById('shared-album-url');
+    if (!input) return;
+    const url = input.value.trim();
+    saveJSON(SHARED_ALBUM_KEY, url);
+    renderSharedAlbumMsg();
+  }
+  function renderSharedAlbumMsg() {
+    const msg = document.getElementById('shared-album-msg');
+    const input = document.getElementById('shared-album-url');
+    if (!msg || !input) return;
+    const url = loadJSON(SHARED_ALBUM_KEY, '');
+    if (url && !input.value) input.value = url;
+    msg.textContent = url ? 'Saved on this device. Tap Open to launch the album.' : 'No shared album saved yet. Best man: paste a URL and hit Open.';
+  }
+  function openSharedAlbum() {
+    const input = document.getElementById('shared-album-url');
+    const url = (input && input.value.trim()) || loadJSON(SHARED_ALBUM_KEY, '');
+    if (!url) {
+      const msg = document.getElementById('shared-album-msg');
+      if (msg) { msg.textContent = 'Paste an album URL first.'; msg.style.color = 'var(--gold)'; }
+      return;
+    }
+    saveJSON(SHARED_ALBUM_KEY, url);
+    try { window.open(url, '_blank', 'noopener,noreferrer'); }
+    catch (_) { location.href = url; }
+  }
+  function copySharedAlbum() {
+    const stored = loadJSON(SHARED_ALBUM_KEY, '');
+    const inputEl = document.getElementById('shared-album-url');
+    const url = stored || (inputEl ? inputEl.value : '') || '';
+    if (!url) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function () {
+        if (typeof showToast === 'function') showToast('Album link copied');
+      }).catch(function () {});
+    }
+  }
+  function initStagExtras() {
+    try { renderFlightDayChecklist(); } catch (_) {}
+    try { renderWhoPaysHistory(); } catch (_) {}
+    try { renderTriviaBestLabel(); } catch (_) {}
+    try { renderMemoryWall(); } catch (_) {}
+    try { renderSharedAlbumMsg(); } catch (_) {}
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStagExtras);
+  } else {
+    initStagExtras();
+  }
+
   function removeExpense(id) {
     expenseEntries = expenseEntries.filter(item => item.id !== id);
     saveChallengeData();
@@ -5055,7 +5464,17 @@
       refreshFxRateManual: typeof refreshFxRateManual === 'function' ? refreshFxRateManual : null,
       onFxConvertInput: typeof onFxConvertInput === 'function' ? onFxConvertInput : null,
       onFxConvertDirection: typeof onFxConvertDirection === 'function' ? onFxConvertDirection : null,
-      prefillTouristTax: typeof prefillTouristTax === 'function' ? prefillTouristTax : null
+      prefillTouristTax: typeof prefillTouristTax === 'function' ? prefillTouristTax : null,
+      resetFlightDayChecklist: typeof resetFlightDayChecklist === 'function' ? resetFlightDayChecklist : null,
+      spinWhoPays: typeof spinWhoPays === 'function' ? spinWhoPays : null,
+      resetWhoPaysHistory: typeof resetWhoPaysHistory === 'function' ? resetWhoPaysHistory : null,
+      startTrivia: typeof startTrivia === 'function' ? startTrivia : null,
+      shareTriviaScore: typeof shareTriviaScore === 'function' ? shareTriviaScore : null,
+      openSharedAlbum: typeof openSharedAlbum === 'function' ? openSharedAlbum : null,
+      copySharedAlbum: typeof copySharedAlbum === 'function' ? copySharedAlbum : null,
+      onSharedAlbumInput: typeof onSharedAlbumInput === 'function' ? onSharedAlbumInput : null,
+      onMemoryUpload: typeof onMemoryUpload === 'function' ? onMemoryUpload : null,
+      clearMemoryWall: typeof clearMemoryWall === 'function' ? clearMemoryWall : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');

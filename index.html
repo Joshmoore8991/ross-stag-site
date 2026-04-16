@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260415-6">
+<link rel="stylesheet" href="rossstag.css?v=20260416-1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -64,10 +64,12 @@
       <div class="nav-group-menu">
         <a class="top-sub-link" href="#trip-schedule-section">Crew</a>
         <a class="top-sub-link" href="#flights-section">Flights</a>
+        <a class="top-sub-link" href="#flight-day-section">Flight Day</a>
         <a class="top-sub-link" href="#base-section">Hotel</a>
         <a class="top-sub-link" href="#itinerary-section">Itinerary</a>
         <a class="top-sub-link" href="#rules-section">Rules</a>
         <a class="top-sub-link" href="#essentials-section">Essentials</a>
+        <a class="top-sub-link" href="#hangover-kit-section">Hangover Kit</a>
       </div>
     </div>
     <div class="nav-group">
@@ -88,6 +90,8 @@
       <div class="nav-group-menu">
         <a class="top-sub-link" href="#challenge-generator-section">Challenges</a>
         <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
+        <a class="top-sub-link" href="#trivia-section">Trivia</a>
+        <a class="top-sub-link" href="#whopays-section">Who Pays?</a>
         <a class="top-sub-link" href="#mission-section">Missions</a>
         <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
         <a class="top-sub-link" href="#activity-feed-section">Activity <span class="activity-badge" data-activity-badge></span></a>
@@ -99,6 +103,7 @@
       <div class="nav-group-menu">
         <a class="top-sub-link" href="#suggestion-section">Suggestions</a>
         <a class="top-sub-link" href="#expenses-section">Expenses</a>
+        <a class="top-sub-link" href="#memory-wall-section">Memory Wall</a>
         <a class="top-sub-link" href="#finale-section">Finale</a>
       </div>
     </div>
@@ -113,10 +118,12 @@
       <span class="nav-drawer-label">Trip</span>
       <a class="top-sub-link" href="#trip-schedule-section">Crew</a>
       <a class="top-sub-link" href="#flights-section">Flights</a>
+      <a class="top-sub-link" href="#flight-day-section">Flight Day</a>
       <a class="top-sub-link" href="#base-section">Hotel</a>
       <a class="top-sub-link" href="#itinerary-section">Itinerary</a>
       <a class="top-sub-link" href="#rules-section">Rules</a>
       <a class="top-sub-link" href="#essentials-section">Essentials</a>
+      <a class="top-sub-link" href="#hangover-kit-section">Hangover Kit</a>
     </div>
     <div class="nav-drawer-group">
       <span class="nav-drawer-label">City</span>
@@ -133,6 +140,8 @@
       <span class="nav-drawer-label">Games</span>
       <a class="top-sub-link" href="#challenge-generator-section">Challenges</a>
       <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
+      <a class="top-sub-link" href="#trivia-section">Trivia</a>
+      <a class="top-sub-link" href="#whopays-section">Who Pays?</a>
       <a class="top-sub-link" href="#mission-section">Missions</a>
       <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
       <a class="top-sub-link" href="#activity-feed-section">Activity <span class="activity-badge" data-activity-badge></span></a>
@@ -142,6 +151,7 @@
       <span class="nav-drawer-label">Admin</span>
       <a class="top-sub-link" href="#suggestion-section">Suggestions</a>
       <a class="top-sub-link" href="#expenses-section">Expenses</a>
+      <a class="top-sub-link" href="#memory-wall-section">Memory Wall</a>
       <a class="top-sub-link" href="#finale-section">Finale</a>
     </div>
   </div>
@@ -251,6 +261,46 @@
 
   </div>
   <p class="fade-in subtle-note">Hand luggage only (45x36x20cm). No hold bags. Check-in opens 30 days before at easyjet.com.</p>
+</section>
+
+<section id="flight-day-section">
+  <h2 class="section-title fade-in">Flight Day Hub</h2>
+  <div class="info-card fade-in flight-day-card" style="text-align:center;">
+    <div id="flight-day-status" class="flight-day-status" role="status" aria-live="polite">Preparing...</div>
+    <div class="flight-day-grid">
+      <div class="flight-day-item">
+        <div class="flight-day-label">Outbound</div>
+        <div class="flight-day-value">Sun 3 May &middot; 06:10 BFS</div>
+      </div>
+      <div class="flight-day-item">
+        <div class="flight-day-label">Meet-up</div>
+        <div class="flight-day-value">Belfast Intl, 04:00</div>
+      </div>
+      <div class="flight-day-item">
+        <div class="flight-day-label">Return</div>
+        <div class="flight-day-value">Wed 6 May &middot; 14:00 BCN</div>
+      </div>
+    </div>
+    <ul class="flight-day-checklist" id="flight-day-checklist" aria-label="Pre-flight checklist">
+      <li data-task="passport">Passport in-date, valid &ge;3 months after 6 May</li>
+      <li data-task="checkin">EasyJet check-in complete (opens 30 days before)</li>
+      <li data-task="boarding">Boarding pass saved offline (Apple Wallet / Google Wallet)</li>
+      <li data-task="bag">Hand luggage measured &mdash; 45&times;36&times;20cm, 15kg</li>
+      <li data-task="euros">Got some euros &mdash; &euro;50&ndash;&euro;100 for first day</li>
+      <li data-task="card">Travel card activated / notify bank</li>
+      <li data-task="phone">EU roaming confirmed or local eSIM ready</li>
+      <li data-task="ghic">GHIC card packed (valid in Spain)</li>
+      <li data-task="alarm">Alarm set for 02:30 on 3 May</li>
+      <li data-task="transfer">Transfer code + driver number saved</li>
+    </ul>
+    <div class="flight-day-actions">
+      <a class="btn btn-outline-gold btn-sm" href="https://www.easyjet.com/en/manage-bookings" target="_blank" rel="noopener noreferrer">EasyJet Manage Booking</a>
+      <a class="btn btn-outline-gold btn-sm" href="https://www.belfastairport.com/" target="_blank" rel="noopener noreferrer">Belfast Intl Live</a>
+      <a class="btn btn-outline-gold btn-sm" href="https://www.aena.es/en/barcelona.html" target="_blank" rel="noopener noreferrer">BCN Airport Live</a>
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="resetFlightDayChecklist">Reset checklist</button>
+    </div>
+    <p class="subtle-note" style="margin-top:14px;">Ticks save to your device and sync across reloads. 4am alarms are non-negotiable.</p>
+  </div>
 </section>
 
 <section id="base-section">
@@ -1059,6 +1109,60 @@
   </div>
 </section>
 
+<section id="trivia-section">
+  <h2 class="section-title fade-in">Stag Trip Trivia</h2>
+  <p class="section-lead fade-in">10 questions straight from this site. Ace it before you land &mdash; losers buy the first round.</p>
+  <div class="info-card fade-in" style="text-align:center;" id="trivia-card">
+    <div id="trivia-intro">
+      <p id="trivia-best" class="trivia-best" style="opacity:.75; margin-bottom:10px;">No score yet. First run is free.</p>
+      <button type="button" class="btn btn-gold" data-action="startTrivia">Start Quiz</button>
+    </div>
+    <div id="trivia-play" style="display:none;">
+      <div class="trivia-meta">
+        <span id="trivia-progress">Question 1 / 10</span>
+        <span id="trivia-score">Score: 0</span>
+      </div>
+      <div class="trivia-progress-track" aria-hidden="true"><div id="trivia-progress-fill" class="trivia-progress-fill"></div></div>
+      <p id="trivia-question" class="trivia-question"></p>
+      <div id="trivia-options" class="trivia-options"></div>
+      <p id="trivia-feedback" class="trivia-feedback" aria-live="polite"></p>
+    </div>
+    <div id="trivia-result" style="display:none;">
+      <div id="trivia-final-score" class="trivia-final-score"></div>
+      <p id="trivia-verdict" class="trivia-verdict"></p>
+      <button type="button" class="btn btn-gold" data-action="startTrivia">Play Again</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareTriviaScore">Share Score</button>
+    </div>
+  </div>
+</section>
+
+<section id="whopays-section">
+  <h2 class="section-title fade-in">Who Pays?</h2>
+  <p class="section-lead fade-in">The fairest way to pick the next round. Or the taxi. Or the apology flowers.</p>
+  <div class="info-card fade-in" style="text-align:center;">
+    <div class="whopays-reel" aria-hidden="true">
+      <div id="whopays-reel-track" class="whopays-reel-track"></div>
+      <div class="whopays-reel-pointer" aria-hidden="true"></div>
+    </div>
+    <p id="whopays-result" class="whopays-result" aria-live="polite">Hit the button to pick a victim.</p>
+    <div class="whopays-controls">
+      <select id="whopays-reason" class="form-input" aria-label="What are they paying for">
+        <option value="the next round">the next round</option>
+        <option value="this taxi">this taxi</option>
+        <option value="the breakfast bill">the breakfast bill</option>
+        <option value="the shot round">the shot round</option>
+        <option value="Ross's drink">Ross's drink</option>
+        <option value="the Uber home">the Uber home</option>
+        <option value="the hotel minibar">the hotel minibar</option>
+      </select>
+      <button type="button" class="btn btn-gold" data-action="spinWhoPays">Spin</button>
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="resetWhoPaysHistory">Reset history</button>
+    </div>
+    <p id="whopays-history" class="whopays-history"></p>
+    <p class="subtle-note" style="margin-top:10px;">Ross is excluded &mdash; groom drinks free. Wheel avoids picking the same lad twice in a row.</p>
+  </div>
+</section>
+
 <section id="mission-section">
   <h2 class="section-title fade-in">Daily Mission Leaderboard</h2>
   <div class="info-card fade-in" style="text-align:center;">
@@ -1181,6 +1285,25 @@
   </div>
 </section>
 
+<section id="hangover-kit-section">
+  <h2 class="section-title fade-in">Hangover Kit</h2>
+  <p class="section-lead fade-in">Pack this. You will need it by Monday morning.</p>
+  <div class="rules-grid">
+    <div class="rule-card fade-in"><div class="rule-num">01</div><h3>Ibuprofen &amp; Paracetamol</h3><p>Alternate, don&apos;t double-up. Spanish farmacias sell both over the counter.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">02</div><h3>Electrolytes</h3><p>Dioralyte sachets or SOS tabs. One in a pint of water before bed saves a day.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">03</div><h3>Bottled Water</h3><p>Grab a big one at Dia or Carrefour on day 1. Pint glass by the bed every night.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">04</div><h3>Eye Drops</h3><p>Optrex or similar. 4am flights + shisha = bloodshot city. Fixes photos too.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">05</div><h3>Plasters &amp; Blister Pads</h3><p>New shoes + 12-hour days = carnage. Compeed saves the day.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">06</div><h3>Deodorant &amp; Mouthwash</h3><p>Travel sizes. Rescue kit for the 20-minute shower-and-go turnaround.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">07</div><h3>Imodium</h3><p>Aioli on everything + midnight kebabs. Pack it. Tell no one. Everyone will need it.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">08</div><h3>Factor 30+ Suncream</h3><p>May sun in Barcelona is deceptive. Pool-day burns ruin the next night.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">09</div><h3>Spare Charger + Plug</h3><p>EU 2-pin. One dead phone on a night out = one lost lad.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">10</div><h3>Vitamin C / Berocca</h3><p>Fizz it in water with breakfast. Placebo or not, it helps.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">11</div><h3>Flip-flops</h3><p>Hotel room, pool, beach, emergency walk home. Pack them.</p></div>
+    <div class="rule-card fade-in"><div class="rule-num">12</div><h3>Snacks for the Room</h3><p>Crisps, nuts, chocolate. 4am returns + closed minibar = despair.</p></div>
+  </div>
+</section>
+
 <section id="poll-section">
   <h2 class="section-title fade-in">Stag Do Poll</h2>
   <div class="info-card fade-in" style="text-align:center;">
@@ -1201,6 +1324,27 @@
     <p>Generate a quick summary card for the night.</p>
     <button data-action="generateWrapUp" class="btn btn-gold">Generate Wrap-Up</button>
     <div id="wrap-output" style="margin-top:14px; text-align:left; opacity:.9;"></div>
+  </div>
+</section>
+
+<section id="memory-wall-section">
+  <h2 class="section-title fade-in">Memory Wall</h2>
+  <p class="section-lead fade-in">Quick snaps from the trip. Photos stay on this device only &mdash; for the real shared album, use the WhatsApp group or paste a Google Photos link below.</p>
+  <div class="info-card fade-in" style="text-align:center;">
+    <div class="memory-album-row">
+      <input type="url" id="shared-album-url" class="form-input" placeholder="Paste shared album URL (Google Photos / iCloud / Dropbox)" aria-label="Shared album URL" data-input-action="onSharedAlbumInput" style="flex:1; min-width:220px;">
+      <button type="button" class="btn btn-gold btn-sm" data-action="openSharedAlbum">Open Album</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="copySharedAlbum">Copy Link</button>
+    </div>
+    <p id="shared-album-msg" class="subtle-note" style="margin-top:6px;">No shared album saved yet. Best man: paste a URL and hit Open.</p>
+    <hr style="border:none; border-top:1px solid rgba(255,255,255,.08); margin:18px 0;">
+    <div class="memory-upload-row">
+      <label for="memory-upload" class="btn btn-gold btn-sm" style="cursor:pointer;">&#x1F4F8; Add Photos</label>
+      <input type="file" id="memory-upload" accept="image/*" multiple style="display:none;" data-change-action="onMemoryUpload">
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="clearMemoryWall">Clear Device Photos</button>
+    </div>
+    <p id="memory-wall-msg" class="subtle-note" style="margin-top:8px;">On-device only. Saved to your browser storage, private to this device, max 20 photos (~3MB each).</p>
+    <div id="memory-wall-grid" class="memory-wall-grid" aria-label="Memory wall photos"></div>
   </div>
 </section>
 
@@ -1233,7 +1377,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260415-6"></script>
+<script src="rossstag.js?v=20260416-1"></script>
 </body>
 </html>
 
