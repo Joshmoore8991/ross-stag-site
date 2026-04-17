@@ -5823,6 +5823,50 @@
   let speechStartMs = 0;
   let speechClips = [];
   const SPEECH_MAX_MS = 30 * 1000;
+  const SPEECH_DB_NAME = 'stag-speeches';
+  const SPEECH_STORE = 'clips';
+  function speechDbOpen() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) { reject(new Error('no-idb')); return; }
+      const req = indexedDB.open(SPEECH_DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(SPEECH_STORE)) db.createObjectStore(SPEECH_STORE, { keyPath: 'id' });
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function speechDbPut(record) {
+    return speechDbOpen().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(SPEECH_STORE, 'readwrite');
+        tx.objectStore(SPEECH_STORE).put(record);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+  function speechDbGetAll() {
+    return speechDbOpen().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(SPEECH_STORE, 'readonly');
+        const req = tx.objectStore(SPEECH_STORE).getAll();
+        req.onsuccess = function () { resolve(req.result || []); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }).catch(function () { return []; });
+  }
+  function speechDbDelete(id) {
+    return speechDbOpen().then(function (db) {
+      return new Promise(function (resolve) {
+        const tx = db.transaction(SPEECH_STORE, 'readwrite');
+        tx.objectStore(SPEECH_STORE).delete(id);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { resolve(); };
+      });
+    }).catch(function () {});
+  }
   function updateSpeechTimerDisplay() {
     const el = document.getElementById('speeches-timer');
     if (!el) return;
@@ -5866,9 +5910,13 @@
         const url = URL.createObjectURL(blob);
         const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
         const name = (typeof getCrewDisplayName === 'function' && code ? getCrewDisplayName(code) : '') || 'A lad';
-        const clip = { id: 'speech-' + Date.now(), url: url, name: name, ts: Date.now(), mime: blob.type, durationMs: Date.now() - speechStartMs };
+        const id = 'speech-' + Date.now();
+        const clip = { id: id, url: url, name: name, ts: Date.now(), mime: blob.type, durationMs: Date.now() - speechStartMs };
         speechClips.unshift(clip);
         renderSpeechList();
+        speechDbPut({ id: id, blob: blob, name: name, ts: clip.ts, mime: clip.mime, durationMs: clip.durationMs })
+          .catch(function () { /* quota/private-mode ignored */ });
+        try { if (typeof addActivity === 'function') addActivity('speech', name + ' recorded a speech clip.'); } catch (_) {}
         if (status) status.textContent = 'Saved — preview below, then hit Download to send to the best man.';
         if (msg) msg.textContent = '';
       };
@@ -5921,6 +5969,7 @@
       del.addEventListener('click', function () {
         try { URL.revokeObjectURL(clip.url); } catch (_) {}
         speechClips = speechClips.filter(function (c) { return c.id !== clip.id; });
+        speechDbDelete(clip.id);
         renderSpeechList();
       });
       actions.appendChild(dl);
@@ -5930,6 +5979,17 @@
     });
   }
   renderSpeechList();
+  // Rehydrate clips from IndexedDB so previous recordings survive a refresh.
+  speechDbGetAll().then(function (rows) {
+    if (!rows || !rows.length) return;
+    rows.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    rows.forEach(function (row) {
+      if (!row || !row.blob) return;
+      const url = URL.createObjectURL(row.blob);
+      speechClips.push({ id: row.id, url: url, name: row.name || 'A lad', ts: row.ts || 0, mime: row.mime || 'audio/webm', durationMs: row.durationMs || 0 });
+    });
+    renderSpeechList();
+  });
 
   // ── Auto-ping toggle for the nightlife map ──────────────────────────
   let autoPingInterval = null;
@@ -5971,6 +6031,433 @@
     updateAutoPingButton();
     if (typeof showToast === 'function') showToast('Auto-ping on — pings every 5 min for 2h.');
   }
+
+  // ── SOS panel ───────────────────────────────────────────────────────
+  function openSosPanel() {
+    const panel = document.getElementById('sos-panel');
+    if (!panel) return;
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('sos-panel-open');
+    const closeBtn = panel.querySelector('.sos-close');
+    if (closeBtn) try { closeBtn.focus({ preventScroll: true }); } catch (_) { closeBtn.focus(); }
+  }
+  function closeSosPanel() {
+    const panel = document.getElementById('sos-panel');
+    if (!panel) return;
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('sos-panel-open');
+    const fab = document.getElementById('sos-fab');
+    if (fab) try { fab.focus({ preventScroll: true }); } catch (_) {}
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    const panel = document.getElementById('sos-panel');
+    if (panel && panel.classList.contains('open')) closeSosPanel();
+  });
+  document.addEventListener('click', function (e) {
+    const panel = document.getElementById('sos-panel');
+    if (!panel || !panel.classList.contains('open')) return;
+    if (e.target === panel) closeSosPanel();
+  });
+
+  // ── Kitty tracker ───────────────────────────────────────────────────
+  const KITTY_KEY = 'kittyState_v1';
+  const KITTY_LOW_THRESHOLD_GBP = 60;
+  let kittyState = loadJSON(KITTY_KEY, { contributions: [] });
+  if (!kittyState || !Array.isArray(kittyState.contributions)) kittyState = { contributions: [] };
+  function populateKittyPayer() {
+    const sel = document.getElementById('kitty-payer');
+    if (!sel || sel.options.length) return;
+    crewMembers.forEach(function (n) {
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n;
+      sel.appendChild(opt);
+    });
+  }
+  function kittyExpenseTotalGbp() {
+    if (typeof expenseEntries === 'undefined' || !expenseEntries) return 0;
+    return expenseEntries.reduce(function (sum, item) {
+      const gbp = Number(item && item.amountGbp);
+      if (Number.isFinite(gbp) && gbp > 0) return sum + gbp;
+      return sum + (typeof convertToGbp === 'function' ? convertToGbp(Number(item.amount || 0), item.currency) : 0);
+    }, 0);
+  }
+  function kittyContributedGbp() {
+    return kittyState.contributions.reduce(function (sum, c) { return sum + (Number(c.amountGbp) || 0); }, 0);
+  }
+  function renderKitty() {
+    populateKittyPayer();
+    const summary = document.getElementById('kitty-summary');
+    const list = document.getElementById('kitty-contributions');
+    if (!summary || !list) return;
+    const pot = kittyContributedGbp();
+    const drained = kittyExpenseTotalGbp();
+    const balance = pot - drained;
+    const low = balance < KITTY_LOW_THRESHOLD_GBP;
+    summary.innerHTML = '';
+    const row = document.createElement('div');
+    row.className = 'kitty-row';
+    row.innerHTML =
+      '<div class="kitty-cell"><span class="kitty-label">In the pot</span><span class="kitty-val">£' + pot.toFixed(2) + '</span></div>' +
+      '<div class="kitty-cell"><span class="kitty-label">Spent</span><span class="kitty-val">£' + drained.toFixed(2) + '</span></div>' +
+      '<div class="kitty-cell ' + (low ? 'kitty-low' : '') + '"><span class="kitty-label">Balance</span><span class="kitty-val">£' + balance.toFixed(2) + '</span></div>';
+    summary.appendChild(row);
+    if (low && pot > 0) {
+      const warn = document.createElement('p');
+      warn.className = 'kitty-warn';
+      warn.textContent = 'Pot under £' + KITTY_LOW_THRESHOLD_GBP + ' — time for a top-up round.';
+      summary.appendChild(warn);
+    }
+    list.innerHTML = '';
+    if (!kittyState.contributions.length) {
+      const empty = document.createElement('p');
+      empty.className = 'subtle-note';
+      empty.textContent = 'No top-ups yet. First in gets bragging rights.';
+      list.appendChild(empty);
+      return;
+    }
+    const perLad = {};
+    kittyState.contributions.forEach(function (c) {
+      perLad[c.payer] = (perLad[c.payer] || 0) + (Number(c.amountGbp) || 0);
+    });
+    crewMembers.forEach(function (name) {
+      const amt = perLad[name] || 0;
+      if (amt <= 0) return;
+      const p = document.createElement('p');
+      p.className = 'kitty-line';
+      p.textContent = name + ' — £' + amt.toFixed(2);
+      list.appendChild(p);
+    });
+    const recent = document.createElement('details');
+    recent.className = 'kitty-recent';
+    const sum = document.createElement('summary');
+    sum.textContent = 'Top-up history (' + kittyState.contributions.length + ')';
+    recent.appendChild(sum);
+    kittyState.contributions.slice().reverse().forEach(function (c) {
+      const li = document.createElement('p');
+      li.className = 'kitty-history-line';
+      const dt = new Date(c.ts || Date.now());
+      const cur = (c.currency === 'GBP') ? '£' : '€';
+      li.textContent = dt.toLocaleDateString() + ' · ' + c.payer + ' +' + cur + Number(c.amount || 0).toFixed(2) + ' (£' + Number(c.amountGbp || 0).toFixed(2) + ')';
+      recent.appendChild(li);
+    });
+    list.appendChild(recent);
+  }
+  function addKittyTopUp() {
+    const payerEl = document.getElementById('kitty-payer');
+    const amountEl = document.getElementById('kitty-amount');
+    const currencyEl = document.getElementById('kitty-currency');
+    const msg = document.getElementById('kitty-msg');
+    if (!payerEl || !amountEl) return;
+    const amount = Number(amountEl.value);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      if (msg) { msg.textContent = 'Enter an amount first.'; msg.style.color = 'var(--error)'; }
+      return;
+    }
+    const currency = (currencyEl && currencyEl.value === 'GBP') ? 'GBP' : 'EUR';
+    const amountGbp = typeof convertToGbp === 'function' ? convertToGbp(amount, currency) : amount;
+    kittyState.contributions.push({
+      id: 'kitty-' + Date.now() + Math.random().toString(36).slice(2, 6),
+      payer: payerEl.value,
+      amount: Math.round(amount * 100) / 100,
+      amountGbp: Math.round(amountGbp * 100) / 100,
+      currency: currency,
+      ts: Date.now()
+    });
+    saveJSON(KITTY_KEY, kittyState);
+    amountEl.value = '';
+    if (msg) { msg.textContent = 'Top-up saved. Legend.'; msg.style.color = 'var(--gold)'; }
+    renderKitty();
+    refreshAchievements();
+  }
+  function resetKitty() {
+    if (!kittyState.contributions.length) return;
+    kittyState = { contributions: [] };
+    saveJSON(KITTY_KEY, kittyState);
+    renderKitty();
+  }
+  renderKitty();
+
+  // ── Pre-drinks playlist board ───────────────────────────────────────
+  const PLAYLIST_KEY = 'playlistBoard_v1';
+  let playlistState = loadJSON(PLAYLIST_KEY, { link: '', tracks: [] });
+  if (!playlistState || typeof playlistState !== 'object') playlistState = { link: '', tracks: [] };
+  if (!Array.isArray(playlistState.tracks)) playlistState.tracks = [];
+  function persistPlaylist() { saveJSON(PLAYLIST_KEY, playlistState); }
+  function renderPlaylist() {
+    const linkInput = document.getElementById('playlist-link');
+    const openBtn = document.getElementById('playlist-open');
+    const list = document.getElementById('playlist-tracks');
+    if (linkInput && document.activeElement !== linkInput) linkInput.value = playlistState.link || '';
+    if (openBtn) {
+      if (playlistState.link) { openBtn.href = playlistState.link; openBtn.style.display = ''; }
+      else { openBtn.style.display = 'none'; }
+    }
+    if (!list) return;
+    list.innerHTML = '';
+    if (!playlistState.tracks.length) {
+      const empty = document.createElement('p');
+      empty.className = 'subtle-note';
+      empty.textContent = 'Empty board — first track sets the tone.';
+      list.appendChild(empty);
+      return;
+    }
+    const sorted = playlistState.tracks.slice().sort(function (a, b) {
+      const av = (a.votes || 0), bv = (b.votes || 0);
+      if (av !== bv) return bv - av;
+      return (b.ts || 0) - (a.ts || 0);
+    });
+    sorted.forEach(function (track) {
+      const row = document.createElement('div');
+      row.className = 'playlist-track';
+      const main = document.createElement('div');
+      main.className = 'playlist-track-main';
+      const title = document.createElement('strong');
+      title.textContent = track.title;
+      const sub = document.createElement('span');
+      sub.className = 'playlist-track-sub';
+      sub.textContent = (track.artist ? track.artist + ' · ' : '') + 'Added by ' + (track.suggester || 'a lad');
+      main.appendChild(title);
+      main.appendChild(sub);
+      const actions = document.createElement('div');
+      actions.className = 'playlist-track-actions';
+      const up = document.createElement('button');
+      up.type = 'button';
+      up.className = 'btn btn-outline-gold btn-sm playlist-vote';
+      up.textContent = '\u{1F44D} ' + (track.votes || 0);
+      up.setAttribute('aria-label', 'Upvote ' + track.title);
+      up.addEventListener('click', function () { voteTrack(track.id); });
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn btn-outline-light btn-sm';
+      del.textContent = 'Remove';
+      del.addEventListener('click', function () { removeTrack(track.id); });
+      actions.appendChild(up);
+      actions.appendChild(del);
+      row.appendChild(main);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+  function savePlaylistLink() {
+    const input = document.getElementById('playlist-link');
+    const msg = document.getElementById('playlist-msg');
+    if (!input) return;
+    const raw = input.value.trim();
+    if (raw && !/^https?:\/\//i.test(raw)) {
+      if (msg) { msg.textContent = 'Link must start with http(s)://'; msg.style.color = 'var(--error)'; }
+      return;
+    }
+    playlistState.link = raw;
+    persistPlaylist();
+    if (msg) { msg.textContent = raw ? 'Link saved.' : 'Link cleared.'; msg.style.color = 'var(--gold)'; }
+    renderPlaylist();
+  }
+  function suggestTrack() {
+    const titleEl = document.getElementById('playlist-track-title');
+    const artistEl = document.getElementById('playlist-track-artist');
+    const msg = document.getElementById('playlist-msg');
+    if (!titleEl) return;
+    const title = titleEl.value.trim();
+    if (!title) {
+      if (msg) { msg.textContent = 'Need a track title.'; msg.style.color = 'var(--error)'; }
+      return;
+    }
+    const suggester = (typeof getCrewBday === 'function' && typeof getCrewDisplayName === 'function')
+      ? (getCrewDisplayName(getCrewBday()) || 'A lad') : 'A lad';
+    playlistState.tracks.push({
+      id: 'track-' + Date.now() + Math.random().toString(36).slice(2, 6),
+      title: title.slice(0, 100),
+      artist: (artistEl ? artistEl.value.trim() : '').slice(0, 80),
+      suggester: suggester,
+      votes: 1,
+      ts: Date.now()
+    });
+    titleEl.value = '';
+    if (artistEl) artistEl.value = '';
+    persistPlaylist();
+    if (msg) { msg.textContent = 'Track added — rally the votes.'; msg.style.color = 'var(--gold)'; }
+    renderPlaylist();
+    refreshAchievements();
+  }
+  function voteTrack(id) {
+    const t = playlistState.tracks.find(function (x) { return x.id === id; });
+    if (!t) return;
+    t.votes = (t.votes || 0) + 1;
+    persistPlaylist();
+    renderPlaylist();
+    if (typeof hapticTap === 'function') hapticTap(8);
+  }
+  function removeTrack(id) {
+    playlistState.tracks = playlistState.tracks.filter(function (x) { return x.id !== id; });
+    persistPlaylist();
+    renderPlaylist();
+  }
+  renderPlaylist();
+
+  // ── Achievements / badges ───────────────────────────────────────────
+  const ACHIEVEMENTS = [
+    { id: 'first-challenge', icon: '🎯', title: 'First Blood', hint: 'Complete your first challenge.',
+      check: function () { try { return (loadJSON('completedChallenges', []) || []).length >= 1; } catch (_) { return false; } } },
+    { id: 'ten-challenges', icon: '🔥', title: 'Challenge Crusher', hint: 'Complete 10 challenges.',
+      check: function () { try { return (loadJSON('completedChallenges', []) || []).length >= 10; } catch (_) { return false; } } },
+    { id: 'bingo-line', icon: '🎱', title: 'Line Caller', hint: 'Complete a bingo line.',
+      check: function () {
+        try {
+          const state = loadJSON('bingoState', {}) || {};
+          for (const k in state) {
+            const b = state[k];
+            if (b && b.titles && b.marks && typeof hasBingoLine === 'function' && hasBingoLine(b.marks, b.titles)) return true;
+          }
+        } catch (_) {}
+        return false;
+      } },
+    { id: 'bingo-full', icon: '🏅', title: 'Full House', hint: 'Tick every bingo square.',
+      check: function () {
+        try {
+          const state = loadJSON('bingoState', {}) || {};
+          for (const k in state) {
+            const b = state[k];
+            if (!b || !b.titles || !b.marks) continue;
+            const done = b.titles.reduce(function (s, t) { return s + (b.marks[t] ? 1 : 0); }, 0);
+            if (done === b.titles.length) return true;
+          }
+        } catch (_) {}
+        return false;
+      } },
+    { id: 'speech-mvp', icon: '🎤', title: 'Speech MVP', hint: 'Record a wedding speech clip.',
+      check: function () { return Array.isArray(speechClips) && speechClips.length > 0; } },
+    { id: 'memory-mogul', icon: '📸', title: 'Memory Mogul', hint: 'Pin 5 photos to the memory wall.',
+      check: function () {
+        try {
+          const wall = loadJSON('memoryWall_v1', null) || loadJSON('memoryWall', []) || [];
+          return Array.isArray(wall) ? wall.length >= 5 : false;
+        } catch (_) { return false; }
+      } },
+    { id: 'first-round', icon: '💷', title: 'First Round', hint: 'Log your first expense.',
+      check: function () { try { return (typeof expenseEntries !== 'undefined') && expenseEntries.length >= 1; } catch (_) { return false; } } },
+    { id: 'kitty-contributor', icon: '🫙', title: 'Pot Stirrer', hint: 'Chuck in on the kitty.',
+      check: function () { return kittyState && kittyState.contributions && kittyState.contributions.length > 0; } },
+    { id: 'playlist-dj', icon: '🎧', title: 'Dancefloor DJ', hint: 'Suggest a playlist track.',
+      check: function () { return playlistState && playlistState.tracks && playlistState.tracks.length > 0; } },
+    { id: 'ping-crew', icon: '📍', title: 'Lighthouse', hint: 'Share your location once.',
+      check: function () { try { const locs = loadJSON('crewLocations', {}); return locs && Object.keys(locs).length > 0; } catch (_) { return false; } } },
+    { id: 'trivia-boss', icon: '🧠', title: 'Trivia Boss', hint: 'Score 8+ on trivia.',
+      check: function () { try { const s = loadJSON('triviaBestScore', 0); return Number(s) >= 8; } catch (_) { return false; } } },
+    { id: 'wrap-it-up', icon: '🏆', title: 'Wrap-Up Legend', hint: 'Generate the trip wrap-up.',
+      check: function () { try { return !!loadJSON('wrapUpGenerated', false); } catch (_) { return false; } } }
+  ];
+  function renderAchievements() {
+    const grid = document.getElementById('achievements-grid');
+    const msg = document.getElementById('achievements-msg');
+    if (!grid) return;
+    grid.innerHTML = '';
+    let unlocked = 0;
+    ACHIEVEMENTS.forEach(function (a) {
+      let earned = false;
+      try { earned = !!a.check(); } catch (_) { earned = false; }
+      if (earned) unlocked += 1;
+      const card = document.createElement('div');
+      card.className = 'achievement' + (earned ? ' unlocked' : '');
+      card.innerHTML =
+        '<div class="achievement-icon" aria-hidden="true">' + a.icon + '</div>' +
+        '<div class="achievement-body">' +
+          '<div class="achievement-title">' + a.title + '</div>' +
+          '<div class="achievement-hint">' + a.hint + '</div>' +
+        '</div>' +
+        '<div class="achievement-status" aria-hidden="true">' + (earned ? '✓' : '—') + '</div>';
+      grid.appendChild(card);
+    });
+    if (msg) msg.textContent = unlocked + ' / ' + ACHIEVEMENTS.length + ' unlocked.';
+  }
+  function refreshAchievements() {
+    try { renderAchievements(); } catch (_) {}
+  }
+  renderAchievements();
+  // Periodic refresh so achievements keep pace with state changes.
+  setInterval(refreshAchievements, 15000);
+
+  // ── PDF stag-pack export ────────────────────────────────────────────
+  function exportPdfPack() {
+    document.body.classList.add('print-mode');
+    if (typeof showToast === 'function') showToast('Preparing stag pack…', 1500);
+    setTimeout(function () {
+      try { window.print(); } catch (_) {}
+      setTimeout(function () { document.body.classList.remove('print-mode'); }, 200);
+    }, 200);
+  }
+  window.addEventListener('afterprint', function () { document.body.classList.remove('print-mode'); });
+
+  // ── QR onboarding ───────────────────────────────────────────────────
+  function renderQr() {
+    const canvas = document.getElementById('qr-canvas');
+    const urlEl = document.getElementById('qr-url');
+    if (!canvas) return;
+    const siteUrl = window.location.origin + window.location.pathname.replace(/index\.html?$/, '');
+    if (urlEl) urlEl.textContent = siteUrl;
+    if (typeof window.qrcode !== 'function') {
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#D4A843';
+      ctx.font = '12px Outfit, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('QR loading…', canvas.width / 2, canvas.height / 2);
+      return;
+    }
+    try {
+      const qr = window.qrcode(0, 'M');
+      qr.addData(siteUrl);
+      qr.make();
+      const size = qr.getModuleCount();
+      const cellSize = Math.floor(canvas.width / (size + 2));
+      const offset = Math.floor((canvas.width - cellSize * size) / 2);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0c0c0c';
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (qr.isDark(r, c)) ctx.fillRect(offset + c * cellSize, offset + r * cellSize, cellSize, cellSize);
+        }
+      }
+    } catch (err) {
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#E11D48';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  function downloadQr() {
+    const canvas = document.getElementById('qr-canvas');
+    if (!canvas) return;
+    try {
+      canvas.toBlob(function (blob) {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stag-hq-qr.png';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+      });
+    } catch (_) {
+      if (typeof showToast === 'function') showToast('Long-press the QR to save.');
+    }
+  }
+  // Render once loaded; retry briefly in case the external script hasn't evaluated yet.
+  (function ensureQr() {
+    let tries = 0;
+    function attempt() {
+      tries += 1;
+      renderQr();
+      if (typeof window.qrcode !== 'function' && tries < 20) setTimeout(attempt, 200);
+    }
+    if (document.readyState === 'complete') attempt();
+    else window.addEventListener('load', attempt);
+  })();
 
   // ── Data-action delegation (replaces inline onclick for CSP) ──
   (function wireDataActionDelegation() {
@@ -6050,7 +6537,17 @@
       shareBingoCard: typeof shareBingoCard === 'function' ? shareBingoCard : null,
       expenseQuickSplit: typeof expenseQuickSplit === 'function' ? expenseQuickSplit : null,
       toggleSpeechRecording: typeof toggleSpeechRecording === 'function' ? toggleSpeechRecording : null,
-      toggleAutoPing: typeof toggleAutoPing === 'function' ? toggleAutoPing : null
+      toggleAutoPing: typeof toggleAutoPing === 'function' ? toggleAutoPing : null,
+      openSosPanel: typeof openSosPanel === 'function' ? openSosPanel : null,
+      closeSosPanel: typeof closeSosPanel === 'function' ? closeSosPanel : null,
+      addKittyTopUp: typeof addKittyTopUp === 'function' ? addKittyTopUp : null,
+      resetKitty: typeof resetKitty === 'function' ? resetKitty : null,
+      savePlaylistLink: typeof savePlaylistLink === 'function' ? savePlaylistLink : null,
+      suggestTrack: typeof suggestTrack === 'function' ? suggestTrack : null,
+      voteTrack: typeof voteTrack === 'function' ? voteTrack : null,
+      removeTrack: typeof removeTrack === 'function' ? removeTrack : null,
+      exportPdfPack: typeof exportPdfPack === 'function' ? exportPdfPack : null,
+      downloadQr: typeof downloadQr === 'function' ? downloadQr : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');

@@ -2987,3 +2987,235 @@
   border-color: rgba(34, 197, 94, 1);
 }
 .auto-ping-status { font-size: 12px; opacity: .8; margin-top: 6px; min-height: 1em; }
+
+/* ── SOS floating button + modal ─────────────────────────────────── */
+#sos-fab {
+  position: fixed;
+  left: 16px;
+  bottom: 20px;
+  z-index: 9998;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #E11D48, #B91C1C);
+  color: #fff;
+  font-size: 22px;
+  box-shadow: 0 10px 26px rgba(180, 24, 55, 0.5);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+#sos-fab:hover { transform: translateY(-2px); }
+#sos-fab:focus-visible { outline: 3px solid rgba(212, 168, 67, 0.55); outline-offset: 2px; }
+@media (min-width: 900px) {
+  #sos-fab { left: 28px; bottom: 28px; }
+}
+#sos-panel {
+  position: fixed; inset: 0;
+  background: rgba(4, 4, 6, 0.82);
+  backdrop-filter: blur(5px);
+  z-index: 10001;
+  display: none;
+  align-items: flex-start; justify-content: center;
+  padding: 24px 12px;
+  overflow-y: auto;
+}
+#sos-panel[aria-hidden="false"] { display: flex; }
+body.sos-panel-open { overflow: hidden; }
+.sos-panel-inner {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: #141418;
+  color: var(--cream, #f5e9cf);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+.sos-panel-inner h2 {
+  margin: 0 0 6px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 3px;
+  color: var(--gold, #D4A843);
+  font-size: 26px;
+}
+.sos-note { opacity: .7; margin: 0 0 14px; font-size: 13px; }
+.sos-close {
+  position: absolute; top: 8px; right: 10px;
+  background: transparent; border: none; color: var(--cream, #f5e9cf);
+  font-size: 28px; line-height: 1; cursor: pointer; padding: 6px 10px;
+}
+.sos-close:hover { color: var(--gold, #D4A843); }
+.sos-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.sos-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.sos-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; opacity: .7; margin-bottom: 4px; }
+.sos-value { font-size: 17px; font-weight: 600; color: var(--gold, #D4A843); text-decoration: none; display: block; }
+a.sos-value:hover { text-decoration: underline; }
+.sos-sub { font-size: 13px; opacity: .75; margin-top: 4px; }
+.sos-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.sos-steps { margin: 6px 0 0 18px; padding: 0; font-size: 14px; line-height: 1.55; }
+.sos-steps li { margin-bottom: 4px; }
+
+/* ── Kitty tracker ───────────────────────────────────────────────── */
+.kitty-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 10px 0 14px; }
+.kitty-cell {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212, 168, 67, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+}
+.kitty-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: .7; }
+.kitty-val { font-size: 20px; font-weight: 700; color: var(--gold, #D4A843); margin-top: 4px; }
+.kitty-val.kitty-low { color: #E11D48; }
+.kitty-warn { color: #F4A423; font-weight: 600; margin: 6px 0 0; }
+.kitty-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.kitty-contributions { display: grid; gap: 6px; margin-top: 10px; }
+.kitty-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+.kitty-line strong { color: var(--gold, #D4A843); }
+.kitty-recent { margin-top: 12px; font-size: 13px; opacity: .75; }
+.kitty-history-line { padding: 3px 0; }
+
+/* ── Playlist board ──────────────────────────────────────────────── */
+.playlist-head { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.playlist-head .form-input { flex: 1 1 260px; }
+.playlist-suggest { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.playlist-suggest .form-input { flex: 1 1 160px; }
+.playlist-tracks { display: grid; gap: 8px; }
+.playlist-track {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212, 168, 67, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.playlist-track-main { flex: 1 1 auto; min-width: 0; }
+.playlist-track-title { font-weight: 600; }
+.playlist-track-sub { font-size: 12px; opacity: .7; margin-top: 2px; }
+.playlist-track-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.playlist-vote { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--gold, #D4A843); min-width: 1.8em; text-align: center; }
+
+/* ── Achievements grid ───────────────────────────────────────────── */
+.achievements-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.achievement {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 12px 14px;
+  opacity: .55;
+  transition: opacity .3s, transform .3s, border-color .3s;
+}
+.achievement.unlocked {
+  opacity: 1;
+  border-color: rgba(212, 168, 67, 0.55);
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.14), rgba(212, 168, 67, 0.04));
+  box-shadow: 0 6px 18px rgba(212, 168, 67, 0.14);
+}
+.achievement-icon { font-size: 28px; flex-shrink: 0; }
+.achievement-body { flex: 1 1 auto; min-width: 0; }
+.achievement-title { font-weight: 700; font-size: 15px; }
+.achievement-hint { font-size: 12px; opacity: .7; margin-top: 2px; }
+.achievement-status { font-size: 18px; color: var(--gold, #D4A843); font-weight: 700; }
+.achievement:not(.unlocked) .achievement-status { color: rgba(255,255,255,0.3); }
+
+/* ── QR / Share ──────────────────────────────────────────────────── */
+.qr-canvas {
+  background: #fff; border-radius: 12px; padding: 8px;
+  display: block; margin: 12px auto 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.3);
+  max-width: 100%; height: auto;
+}
+.qr-url {
+  font-size: 12px; opacity: .65; word-break: break-all;
+  margin: 0 0 12px;
+}
+.share-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+/* ── PDF print-mode stylesheet ───────────────────────────────────── */
+body.print-mode .top-nav,
+body.print-mode .hero-controls,
+body.print-mode .nav-drawer,
+body.print-mode #scroll-top-btn,
+body.print-mode #submit-fab,
+body.print-mode #sos-fab,
+body.print-mode #sos-panel,
+body.print-mode #toast-container,
+body.print-mode #offline-indicator,
+body.print-mode #confetti-canvas,
+body.print-mode .rsvp-extras,
+body.print-mode .rsvp-btn,
+body.print-mode #login-overlay,
+body.print-mode #approval-panel,
+body.print-mode .print-exclude,
+body.print-mode #poll-section,
+body.print-mode #challenge-generator-section,
+body.print-mode #team-battle-section,
+body.print-mode #trivia-section,
+body.print-mode #bingo-section,
+body.print-mode #playlist-section,
+body.print-mode #whopays-section,
+body.print-mode #mission-section,
+body.print-mode #fx-section,
+body.print-mode #expenses-section,
+body.print-mode #kitty-section,
+body.print-mode #punishment-section,
+body.print-mode #leaderboard-section,
+body.print-mode #achievements-section,
+body.print-mode #activity-feed-section,
+body.print-mode #nightlife-map-section,
+body.print-mode #memory-wall-section,
+body.print-mode #speeches-section,
+body.print-mode #daily-prompt-section,
+body.print-mode #suggestion-section,
+body.print-mode #finale-section {
+  display: none !important;
+}
+body.print-mode {
+  background: #fff !important;
+  color: #000 !important;
+}
+body.print-mode .hero h1,
+body.print-mode .hero h2,
+body.print-mode .section-title { color: #000 !important; text-shadow: none !important; }
+body.print-mode .info-card,
+body.print-mode .flight-card,
+body.print-mode .hotel-card,
+body.print-mode .cost-card,
+body.print-mode .info-card { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+
+@media print {
+  #sos-fab, #sos-panel, .print-exclude,
+  #playlist-section, #achievements-section, #kitty-section, #share-section {
+    display: none !important;
+  }
+}
+
+/* ── Light theme tweaks for new surfaces ─────────────────────────── */
+.light-theme .sos-panel-inner { background: #fff6e0; color: #1a1a1a; }
+.light-theme .sos-item { background: rgba(0,0,0,0.04); }
+.light-theme .achievement { background: rgba(0,0,0,0.04); }
+.light-theme .playlist-track,
+.light-theme .kitty-cell,
+.light-theme .kitty-line { background: rgba(0,0,0,0.04); }
+
+/* ── Small-screen polish ─────────────────────────────────────────── */
+@media (max-width: 560px) {
+  #sos-fab { bottom: 16px; left: 12px; width: 48px; height: 48px; font-size: 18px; }
+  .sos-panel-inner { padding: 18px 14px 16px; }
+  .sos-panel-inner h2 { font-size: 22px; }
+  .kitty-form { justify-content: stretch; }
+  .kitty-form .form-input, .kitty-form .btn { flex: 1 1 auto; }
+  .playlist-head .form-input, .playlist-suggest .form-input { flex: 1 1 100%; }
+}

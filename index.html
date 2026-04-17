@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260416-5">
+<link rel="stylesheet" href="rossstag.css?v=20260416-6">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -94,9 +94,11 @@
         <a class="top-sub-link" href="#team-battle-section"><span class="nav-ico" aria-hidden="true">⚔️</span>Team Battle</a>
         <a class="top-sub-link" href="#trivia-section"><span class="nav-ico" aria-hidden="true">🧠</span>Trivia</a>
         <a class="top-sub-link" href="#bingo-section"><span class="nav-ico" aria-hidden="true">🎱</span>Bingo</a>
+        <a class="top-sub-link" href="#playlist-section"><span class="nav-ico" aria-hidden="true">🎧</span>Playlist</a>
         <a class="top-sub-link" href="#whopays-section"><span class="nav-ico" aria-hidden="true">🎰</span>Who Pays?</a>
         <a class="top-sub-link" href="#mission-section"><span class="nav-ico" aria-hidden="true">🎖️</span>Missions</a>
         <a class="top-sub-link" href="#leaderboard-section"><span class="nav-ico" aria-hidden="true">🏆</span>Leaderboard</a>
+        <a class="top-sub-link" href="#achievements-section"><span class="nav-ico" aria-hidden="true">🏅</span>Achievements</a>
         <a class="top-sub-link" href="#activity-feed-section"><span class="nav-ico" aria-hidden="true">📣</span>Activity <span class="activity-badge" data-activity-badge></span></a>
         <a class="top-sub-link" href="#poll-section"><span class="nav-ico" aria-hidden="true">🗳️</span>Poll</a>
       </div>
@@ -106,8 +108,10 @@
       <div class="nav-group-menu">
         <a class="top-sub-link" href="#suggestion-section"><span class="nav-ico" aria-hidden="true">💡</span>Suggestions</a>
         <a class="top-sub-link" href="#expenses-section"><span class="nav-ico" aria-hidden="true">💷</span>Expenses</a>
+        <a class="top-sub-link" href="#kitty-section"><span class="nav-ico" aria-hidden="true">🫙</span>Kitty</a>
         <a class="top-sub-link" href="#memory-wall-section"><span class="nav-ico" aria-hidden="true">📸</span>Memory Wall</a>
         <a class="top-sub-link" href="#speeches-section"><span class="nav-ico" aria-hidden="true">🎤</span>Speeches</a>
+        <a class="top-sub-link" href="#share-section"><span class="nav-ico" aria-hidden="true">📤</span>Share</a>
         <a class="top-sub-link" href="#finale-section"><span class="nav-ico" aria-hidden="true">🎉</span>Finale</a>
       </div>
     </div>
@@ -156,9 +160,11 @@
       <a class="top-sub-link" href="#team-battle-section"><span class="nav-ico" aria-hidden="true">⚔️</span>Team Battle</a>
       <a class="top-sub-link" href="#trivia-section"><span class="nav-ico" aria-hidden="true">🧠</span>Trivia</a>
       <a class="top-sub-link" href="#bingo-section"><span class="nav-ico" aria-hidden="true">🎱</span>Bingo</a>
+      <a class="top-sub-link" href="#playlist-section"><span class="nav-ico" aria-hidden="true">🎧</span>Playlist</a>
       <a class="top-sub-link" href="#whopays-section"><span class="nav-ico" aria-hidden="true">🎰</span>Who Pays?</a>
       <a class="top-sub-link" href="#mission-section"><span class="nav-ico" aria-hidden="true">🎖️</span>Missions</a>
       <a class="top-sub-link" href="#leaderboard-section"><span class="nav-ico" aria-hidden="true">🏆</span>Leaderboard</a>
+      <a class="top-sub-link" href="#achievements-section"><span class="nav-ico" aria-hidden="true">🏅</span>Achievements</a>
       <a class="top-sub-link" href="#activity-feed-section"><span class="nav-ico" aria-hidden="true">📣</span>Activity <span class="activity-badge" data-activity-badge></span></a>
       <a class="top-sub-link" href="#poll-section"><span class="nav-ico" aria-hidden="true">🗳️</span>Poll</a>
     </div>
@@ -166,8 +172,10 @@
       <span class="nav-drawer-label">Admin</span>
       <a class="top-sub-link" href="#suggestion-section"><span class="nav-ico" aria-hidden="true">💡</span>Suggestions</a>
       <a class="top-sub-link" href="#expenses-section"><span class="nav-ico" aria-hidden="true">💷</span>Expenses</a>
+      <a class="top-sub-link" href="#kitty-section"><span class="nav-ico" aria-hidden="true">🫙</span>Kitty</a>
       <a class="top-sub-link" href="#memory-wall-section"><span class="nav-ico" aria-hidden="true">📸</span>Memory Wall</a>
       <a class="top-sub-link" href="#speeches-section"><span class="nav-ico" aria-hidden="true">🎤</span>Speeches</a>
+      <a class="top-sub-link" href="#share-section"><span class="nav-ico" aria-hidden="true">📤</span>Share</a>
       <a class="top-sub-link" href="#finale-section"><span class="nav-ico" aria-hidden="true">🎉</span>Finale</a>
     </div>
   </div>
@@ -1188,6 +1196,25 @@
   </div>
 </section>
 
+<section id="playlist-section">
+  <h2 class="section-title fade-in">Pre-Drinks Playlist</h2>
+  <p class="section-lead fade-in">Chuck your banger in the pot. Thumbs up the bangers you'd defend on a night out.</p>
+  <div class="info-card fade-in">
+    <div class="playlist-head">
+      <input id="playlist-link" type="url" class="form-input" placeholder="Shared playlist link (Spotify / Apple / YouTube)…" aria-label="Shared playlist link" />
+      <button type="button" class="btn btn-gold btn-sm" data-action="savePlaylistLink">Save link</button>
+      <a id="playlist-open" class="btn btn-outline-gold btn-sm" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Open playlist &#x2197;</a>
+    </div>
+    <div class="playlist-suggest">
+      <input id="playlist-track-title" type="text" class="form-input" placeholder="Track title" aria-label="Track title" />
+      <input id="playlist-track-artist" type="text" class="form-input" placeholder="Artist" aria-label="Artist" />
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="suggestTrack">Add track</button>
+    </div>
+    <div id="playlist-tracks" class="playlist-tracks" aria-live="polite"></div>
+    <p id="playlist-msg" class="subtle-note" style="min-height:1em;"></p>
+  </div>
+</section>
+
 <section id="whopays-section">
   <h2 class="section-title fade-in">Who Pays?</h2>
   <p class="section-lead fade-in">The fairest way to pick the next round. Or the taxi. Or the apology flowers.</p>
@@ -1276,6 +1303,26 @@
   </div>
 </section>
 
+<section id="kitty-section">
+  <h2 class="section-title fade-in">The Kitty</h2>
+  <div class="info-card fade-in">
+    <p class="subtle-note">Everyone throws a few quid in the pot, shared expenses drain it. When the pot runs low, it's top-up time.</p>
+    <div id="kitty-summary" class="kitty-summary" aria-live="polite"></div>
+    <div class="kitty-form">
+      <select id="kitty-payer" class="form-input" aria-label="Who's topping up"></select>
+      <input id="kitty-amount" type="number" min="1" step="1" class="form-input" placeholder="Amount" aria-label="Top-up amount" style="width:110px;" />
+      <select id="kitty-currency" class="form-input" style="width:96px;" aria-label="Currency">
+        <option value="EUR">EUR (€)</option>
+        <option value="GBP">GBP (£)</option>
+      </select>
+      <button type="button" class="btn btn-gold btn-sm" data-action="addKittyTopUp">Top Up</button>
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="resetKitty">Reset</button>
+    </div>
+    <div id="kitty-contributions" class="kitty-contributions" aria-live="polite"></div>
+    <p id="kitty-msg" class="subtle-note" style="min-height:1em;"></p>
+  </div>
+</section>
+
 <section id="punishment-section">
   <h2 class="section-title fade-in">Punishment Wheel</h2>
   <div class="info-card fade-in" style="text-align:center;">
@@ -1304,6 +1351,15 @@
   <div class="info-card fade-in">
     <p style="opacity:.7; margin-bottom:12px;">Points: challenges suggested (3), challenges completed (4), activities (3), plan items (2), votes cast (1). Ross doesn't compete.</p>
     <div id="crew-leaderboard" class="leaderboard"></div>
+  </div>
+</section>
+
+<section id="achievements-section">
+  <h2 class="section-title fade-in">Stag Achievements</h2>
+  <p class="section-lead fade-in">Unlocked during the trip. Fill the board and it's all free drinks on the best man.</p>
+  <div class="info-card fade-in">
+    <div id="achievements-grid" class="achievements-grid"></div>
+    <p id="achievements-msg" class="subtle-note" style="margin-top:10px; min-height:1em;"></p>
   </div>
 </section>
 
@@ -1421,6 +1477,20 @@
   </div>
 </section>
 
+<section id="share-section" class="print-exclude">
+  <h2 class="section-title fade-in">Share & Export</h2>
+  <div class="info-card fade-in" style="text-align:center;">
+    <p class="subtle-note">Scan the QR to open on another phone or save the whole stag pack as a PDF.</p>
+    <canvas id="qr-canvas" class="qr-canvas" width="220" height="220" aria-label="QR code for the Stag HQ site"></canvas>
+    <p id="qr-url" class="qr-url"></p>
+    <div class="share-actions">
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="downloadQr">&#x1F4BE; Save QR</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="exportPdfPack">&#x1F4C4; Export pack (PDF)</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareStagSite">&#x1F4E4; Share link</button>
+    </div>
+  </div>
+</section>
+
 <div id="finale-section" class="rsvp-section fade-in">
   <h2 class="section-title" style="text-align:center;">Vamos Barcelona</h2>
   <p style="opacity:.5; max-width:420px; margin:0 auto; line-height:1.7; font-size:14px;">
@@ -1437,6 +1507,63 @@
 
 <button id="scroll-top-btn" type="button" aria-label="Scroll to top" title="Back to top" data-action="scrollToTop">&uarr;</button>
 <button id="submit-fab" type="button" aria-label="Submit a new challenge" title="Submit a new challenge" data-action="scrollToChallengeForm">&#x2795; <span class="submit-fab-label">New challenge</span></button>
+<button id="sos-fab" type="button" aria-label="Open emergency info" title="Emergency info (offline)" data-action="openSosPanel">&#x1F198;</button>
+<div id="sos-panel" role="dialog" aria-modal="true" aria-labelledby="sos-title" aria-hidden="true">
+  <div class="sos-panel-inner">
+    <button type="button" class="sos-close" aria-label="Close emergency info" data-action="closeSosPanel">&times;</button>
+    <h2 id="sos-title">&#x1F198; Emergency / SOS</h2>
+    <p class="sos-note">Works offline once cached. Screenshot if you're flying blind.</p>
+    <div class="sos-grid">
+      <div class="sos-item">
+        <div class="sos-label">All emergencies (EU)</div>
+        <a class="sos-value" href="tel:112">112</a>
+      </div>
+      <div class="sos-item">
+        <div class="sos-label">Non-emergency police</div>
+        <a class="sos-value" href="tel:+34091">091</a>
+      </div>
+      <div class="sos-item">
+        <div class="sos-label">Hotel — Htop BCN City</div>
+        <div class="sos-value">Travessera de Gràcia, 08025</div>
+        <div class="sos-actions">
+          <button type="button" class="btn btn-outline-gold btn-sm" data-action="copyHotelAddress">Copy</button>
+          <button type="button" class="btn btn-outline-gold btn-sm" data-action="openHotelMaps">Maps</button>
+        </div>
+      </div>
+      <div class="sos-item">
+        <div class="sos-label">Nearest hospital</div>
+        <div class="sos-value">Hospital Clínic de Barcelona</div>
+        <div class="sos-sub">C. de Villarroel 170 · +34 93 227 54 00</div>
+        <div class="sos-actions">
+          <a class="btn btn-outline-gold btn-sm" href="tel:+34932275400">Call</a>
+          <a class="btn btn-outline-gold btn-sm" href="https://maps.google.com/?q=Hospital+Cl%C3%ADnic+de+Barcelona" target="_blank" rel="noopener noreferrer">Maps</a>
+        </div>
+      </div>
+      <div class="sos-item">
+        <div class="sos-label">British Consulate (Barcelona)</div>
+        <div class="sos-value">Avinguda Diagonal 477, 13th</div>
+        <div class="sos-sub">+34 93 366 6200 · Mon–Fri 08:30–13:30</div>
+        <div class="sos-actions">
+          <a class="btn btn-outline-gold btn-sm" href="tel:+34933666200">Call</a>
+        </div>
+      </div>
+      <div class="sos-item">
+        <div class="sos-label">Lost the crew?</div>
+        <div class="sos-value">Default meetup: Hotel lobby</div>
+        <div class="sos-sub">If phones die, it's <strong>21:00 hotel lobby</strong> every night.</div>
+      </div>
+      <div class="sos-item">
+        <div class="sos-label">Lost phone?</div>
+        <ol class="sos-steps">
+          <li>Use another lad's phone — sign into iCloud/Google "Find My".</li>
+          <li>Lock remotely, put a message with the hotel number on-screen.</li>
+          <li>Report at Mossos d'Esquadra station: <em>Carrer Nou de la Rambla</em>.</li>
+          <li>Call bank to freeze cards.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="toast-container"></div>
 <canvas id="confetti-canvas"></canvas>
 
@@ -1450,7 +1577,8 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260416-5"></script>
+<script defer src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="rossstag.js?v=20260416-6"></script>
 </body>
 </html>
 
