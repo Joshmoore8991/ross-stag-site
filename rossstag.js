@@ -73,6 +73,7 @@
   function closeDrawer() {
     if (!topNavEl) return;
     topNavEl.classList.remove('drawer-open');
+    document.body.classList.remove('nav-drawer-open');
     if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'false');
     if (navDrawerEl) navDrawerEl.setAttribute('aria-hidden', 'true');
     syncTopNavHeightVar();
@@ -82,9 +83,14 @@
     hamburgerBtn.addEventListener('click', function (event) {
       event.stopPropagation();
       const isOpen = topNavEl.classList.toggle('drawer-open');
+      document.body.classList.toggle('nav-drawer-open', isOpen);
       hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       if (navDrawerEl) navDrawerEl.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
       syncTopNavHeightVar();
+      if (isOpen) {
+        const filter = document.getElementById('nav-drawer-filter');
+        if (filter) setTimeout(function () { try { filter.focus({ preventScroll: true }); } catch (_) { filter.focus(); } }, 80);
+      }
     });
   }
 
@@ -259,6 +265,66 @@
     }, { threshold: [0.2, 0.45, 0.7], rootMargin: '-30% 0px -55% 0px' });
 
     navMap.forEach(item => navObserver.observe(item.section));
+  }
+
+  // Mobile drawer quick-find: filters link list as you type.
+  const drawerFilterInput = document.getElementById('nav-drawer-filter');
+  const drawerEmptyEl = document.getElementById('nav-drawer-empty');
+  if (drawerFilterInput && navDrawerEl) {
+    const drawerLinks = Array.from(navDrawerEl.querySelectorAll('.top-sub-link'));
+    const drawerGroups = Array.from(navDrawerEl.querySelectorAll('.nav-drawer-group'));
+    function applyDrawerFilter() {
+      const q = (drawerFilterInput.value || '').trim().toLowerCase();
+      let anyMatch = false;
+      drawerLinks.forEach(function (link) {
+        const text = (link.textContent || '').toLowerCase();
+        const matches = !q || text.indexOf(q) !== -1;
+        link.classList.toggle('is-hidden', !matches);
+        if (matches) anyMatch = true;
+      });
+      drawerGroups.forEach(function (group) {
+        const visible = group.querySelector('.top-sub-link:not(.is-hidden)');
+        group.classList.toggle('is-hidden', !visible);
+      });
+      if (drawerEmptyEl) drawerEmptyEl.hidden = !q || anyMatch;
+    }
+    drawerFilterInput.addEventListener('input', applyDrawerFilter);
+    drawerFilterInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        if (drawerFilterInput.value) {
+          drawerFilterInput.value = '';
+          applyDrawerFilter();
+          e.stopPropagation();
+        }
+        return;
+      }
+      if (e.key === 'Enter') {
+        const firstVisible = drawerLinks.find(function (l) { return !l.classList.contains('is-hidden'); });
+        if (firstVisible) { e.preventDefault(); firstVisible.click(); }
+      }
+    });
+  }
+
+  // Scroll progress bar beneath the top nav.
+  const progressBarEl = document.querySelector('.nav-progress-bar');
+  if (progressBarEl) {
+    let progressRaf = 0;
+    function updateNavProgress() {
+      progressRaf = 0;
+      const doc = document.documentElement;
+      const max = (doc.scrollHeight - window.innerHeight) || 1;
+      const ratio = Math.min(1, Math.max(0, window.scrollY / max));
+      progressBarEl.style.width = (ratio * 100).toFixed(2) + '%';
+    }
+    window.addEventListener('scroll', function () {
+      if (progressRaf) return;
+      progressRaf = requestAnimationFrame(updateNavProgress);
+    }, { passive: true });
+    window.addEventListener('resize', function () {
+      if (progressRaf) return;
+      progressRaf = requestAnimationFrame(updateNavProgress);
+    });
+    updateNavProgress();
   }
 
   function updateProgress() {
