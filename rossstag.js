@@ -2935,6 +2935,7 @@
     displayApprovedSiteChangeSuggestions();
     displayApprovedActivitySuggestions();
     initPackingList();
+    if (typeof renderBingoCard === 'function') try { renderBingoCard(); } catch (_) {}
   }
 
   function shakeLoginBox() {
@@ -3707,6 +3708,7 @@
     }
     const currency = (currencyEl && currencyEl.value === 'EUR') ? 'EUR' : 'GBP';
     const rounded = Math.round(numericAmount * 100) / 100;
+    const sharedBy = (typeof getSelectedExpenseShares === 'function' ? getSelectedExpenseShares() : []);
     expenseEntries.unshift({
       id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
       payer: payer.value,
@@ -3714,11 +3716,13 @@
       currency: currency,
       amountGbp: Math.round(convertToGbp(rounded, currency) * 100) / 100,
       note: note.value.trim() || 'General',
+      sharedBy: sharedBy.length ? sharedBy : null,
       createdAt: Date.now()
     });
     saveChallengeData();
     amount.value = '';
     note.value = '';
+    if (typeof resetExpenseSharedOptions === 'function') resetExpenseSharedOptions();
     msg.textContent = 'Expense saved.';
     msg.style.color = 'var(--gold)';
     renderExpenseBoard();
@@ -4171,25 +4175,23 @@
     clearElement(summary);
     clearElement(list);
 
-    const total = expenseEntries.reduce(function (sum, item) {
-      const gbp = Number(item.amountGbp);
-      if (Number.isFinite(gbp) && gbp > 0) return sum + gbp;
-      return sum + convertToGbp(Number(item.amount || 0), item.currency);
-    }, 0);
-    const perHead = crewMembers.length ? (total / crewMembers.length) : 0;
     const balances = {};
-    crewMembers.forEach(function (name) {
-      balances[name] = -perHead;
-    });
+    crewMembers.forEach(function (name) { balances[name] = 0; });
+    let total = 0;
     expenseEntries.forEach(function (item) {
       const gbp = Number(item.amountGbp);
       const contribution = Number.isFinite(gbp) && gbp > 0 ? gbp : convertToGbp(Number(item.amount || 0), item.currency);
+      total += contribution;
+      const shared = (item.sharedBy && item.sharedBy.length) ? item.sharedBy.filter(function (n) { return crewMembers.indexOf(n) !== -1; }) : crewMembers.slice();
+      const per = shared.length ? (contribution / shared.length) : 0;
+      shared.forEach(function (name) { balances[name] = (balances[name] || 0) - per; });
       balances[item.payer] = (balances[item.payer] || 0) + contribution;
     });
+    const perHead = crewMembers.length ? (total / crewMembers.length) : 0;
 
     const headline = document.createElement('p');
     headline.style.fontWeight = '600';
-    headline.textContent = 'Total: £' + total.toFixed(2) + ' | Split each: £' + perHead.toFixed(2);
+    headline.textContent = 'Total: £' + total.toFixed(2) + ' | Crew avg: £' + perHead.toFixed(2);
     summary.appendChild(headline);
 
     crewMembers.forEach(function (name) {
@@ -4267,6 +4269,13 @@
         : '';
       text.appendChild(document.createTextNode(' paid ' + native + converted + ' for ' + item.note));
       row.appendChild(text);
+      if (item.sharedBy && item.sharedBy.length && item.sharedBy.length !== crewMembers.length) {
+        const sharedLine = document.createElement('p');
+        sharedLine.className = 'dynamic-card-text';
+        sharedLine.style.opacity = '.75';
+        sharedLine.textContent = 'Split: ' + item.sharedBy.join(', ');
+        row.appendChild(sharedLine);
+      }
       row.appendChild(makeActionButton(
         'Remove',
         'btn btn-danger btn-sm',
@@ -5461,6 +5470,442 @@
     }
   });
 
+  // ── Daily photo prompt ──────────────────────────────────────────────
+  const DAILY_PROMPTS = [
+    'Photo of the groom with the weirdest-dressed stranger you can find.',
+    'Group selfie with a total of at least 3 local accents in frame.',
+    'Close-up of the most chaotic tapa on the table today.',
+    'Portrait of whoever is currently losing the drinking pace.',
+    'Skyline shot with Ross doing his best Gaudí impression.',
+    'Barman or barmaid giving a thumbs up — they have to know it\'s for a stag do.',
+    'Best man mid-speech in the nearest bar. Crowd optional.',
+    'Someone wearing something they didn\'t start the night in.',
+    'A plate of food so Spanish it could sing flamenco.',
+    'Sunset, sunrise, or disco ball — whichever one is next.',
+    'Ross pointing at something he\'s never seen before.',
+    'The crew forming the letters R-O-S-S with their bodies.'
+  ];
+  function getDailyPromptDayIndex() {
+    try {
+      const override = Number(loadJSON('dailyPromptSkip', 0));
+      const tripStart = Date.parse('2026-05-03T00:00:00+02:00');
+      const ms = Date.now() - tripStart;
+      const day = Math.floor(ms / (24 * 60 * 60 * 1000));
+      const base = day >= 0 ? day : (day % DAILY_PROMPTS.length + DAILY_PROMPTS.length);
+      return (base + (Number.isFinite(override) ? override : 0)) % DAILY_PROMPTS.length;
+    } catch (_) { return 0; }
+  }
+  function renderDailyPrompt() {
+    const textEl = document.getElementById('daily-prompt-text');
+    const dayEl = document.getElementById('daily-prompt-day');
+    if (!textEl) return;
+    const idx = getDailyPromptDayIndex();
+    textEl.textContent = DAILY_PROMPTS[idx];
+    if (dayEl) {
+      const tripStart = Date.parse('2026-05-03T00:00:00+02:00');
+      const diff = Date.now() - tripStart;
+      const day = Math.floor(diff / (24 * 60 * 60 * 1000));
+      if (day < 0) dayEl.textContent = 'T-' + (-day) + ' days';
+      else if (day <= 3) dayEl.textContent = 'Day ' + (day + 1);
+      else dayEl.textContent = 'Post-trip bonus';
+    }
+  }
+  function skipDailyPrompt() {
+    const cur = Number(loadJSON('dailyPromptSkip', 0)) || 0;
+    saveJSON('dailyPromptSkip', cur + 1);
+    renderDailyPrompt();
+    if (typeof buzz === 'function') buzz(10);
+  }
+  function onDailyPromptCapture(event) {
+    const input = document.getElementById('daily-prompt-file');
+    const status = document.getElementById('daily-prompt-status');
+    const file = input && input.files && input.files[0];
+    if (!file) return;
+    // Forward to the memory wall handler if available so it lands in the same grid.
+    if (typeof onMemoryUpload === 'function') {
+      try { onMemoryUpload(event); } catch (_) { /* ignore */ }
+    }
+    if (status) status.textContent = 'Saved to your memory wall. Prompt ticks to the next.';
+    skipDailyPrompt();
+    if (input) input.value = '';
+  }
+  renderDailyPrompt();
+
+  // ── Stag bingo (4×4 per-crew card) ──────────────────────────────────
+  const BINGO_SIZE = 16;
+  const BINGO_TAGLINES = [
+    'Cheers a local in Catalan',
+    'Spot a stag veil in the wild',
+    'Finish a sangría jug',
+    'Order entirely in Spanish',
+    'Hit a rooftop bar',
+    'High-five a bouncer',
+    'Eat something with tentacles',
+    'See the Sagrada Família',
+    'Dance in a plaza with locals',
+    'Pay in coins only once',
+    'Find the best kebab after midnight',
+    'Get a photo with a taxi driver',
+    'Lose and win €5 in the same bar',
+    'Convince a stranger the groom is famous',
+    'Sing a full chorus of a Spanish song',
+    'Finish a €1 shot without wincing',
+    'Share breakfast with a new friend',
+    'Last lad awake writes the group chat summary',
+    'Negotiate a round down in price',
+    'Swap a hat/jacket with a stranger',
+    'Crew unanimous vote on best tapa',
+    'Get a stamp from a bouncer',
+    'Share a beach-sunrise photo',
+    'Sprint back to the hotel after last call'
+  ];
+  let bingoState = loadJSON('bingoState', {});
+  if (!bingoState || typeof bingoState !== 'object' || Array.isArray(bingoState)) bingoState = {};
+  function hashString(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0);
+  }
+  function bingoSeed(code, day) { return hashString((code || 'shared') + ':' + day); }
+  function seededShuffle(pool, seed) {
+    const arr = pool.slice();
+    let s = seed || 1;
+    for (let i = arr.length - 1; i > 0; i--) {
+      s = (s * 1103515245 + 12345) & 0x7fffffff;
+      const j = s % (i + 1);
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+  function buildBingoTitles(code) {
+    const tripDay = Math.max(0, Math.floor((Date.now() - Date.parse('2026-05-03T00:00:00+02:00')) / (24 * 60 * 60 * 1000)));
+    const seed = bingoSeed(code, tripDay + (bingoState[code] && bingoState[code].shuffle ? bingoState[code].shuffle : 0));
+    const approvedTitles = (typeof approvedChallenges !== 'undefined' ? approvedChallenges : [])
+      .filter(function (c) { return c && !c.hidden && (c.reports || 0) < 3 && c.title; })
+      .map(function (c) { return c.title.length > 80 ? c.title.slice(0, 78) + '…' : c.title; });
+    const pool = BINGO_TAGLINES.concat(approvedTitles);
+    return seededShuffle(pool, seed).slice(0, BINGO_SIZE);
+  }
+  function getBingoBucket(code) {
+    const key = code || 'shared';
+    if (!bingoState[key]) bingoState[key] = { marks: {}, shuffle: 0, titles: null };
+    if (!bingoState[key].titles || bingoState[key].titles.length !== BINGO_SIZE) {
+      bingoState[key].titles = buildBingoTitles(key);
+    }
+    return bingoState[key];
+  }
+  function hasBingoLine(marks, titles) {
+    const n = 4;
+    function isMarked(i) { return !!marks[titles[i]]; }
+    for (let r = 0; r < n; r++) {
+      let row = true, col = true;
+      for (let c = 0; c < n; c++) {
+        if (!isMarked(r * n + c)) row = false;
+        if (!isMarked(c * n + r)) col = false;
+      }
+      if (row || col) return true;
+    }
+    let d1 = true, d2 = true;
+    for (let i = 0; i < n; i++) {
+      if (!isMarked(i * n + i)) d1 = false;
+      if (!isMarked(i * n + (n - 1 - i))) d2 = false;
+    }
+    return d1 || d2;
+  }
+  function renderBingoCard() {
+    const grid = document.getElementById('bingo-grid');
+    const status = document.getElementById('bingo-status');
+    if (!grid || !status) return;
+    const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
+    if (!code) {
+      grid.innerHTML = '';
+      status.textContent = 'Log in to draw your bingo card.';
+      return;
+    }
+    const bucket = getBingoBucket(code);
+    const titles = bucket.titles;
+    const marks = bucket.marks || {};
+    const name = (typeof getCrewDisplayName === 'function' ? getCrewDisplayName(code) : '') || 'Your';
+    const done = titles.reduce(function (sum, t) { return sum + (marks[t] ? 1 : 0); }, 0);
+    const line = hasBingoLine(marks, titles);
+    const full = done === BINGO_SIZE;
+    status.textContent = name + (name.endsWith('s') ? "'" : "'s") + ' card — ' + done + '/' + BINGO_SIZE + ' ticked'
+      + (full ? ' · FULL HOUSE!' : line ? ' · line complete!' : '');
+    grid.innerHTML = '';
+    titles.forEach(function (title, idx) {
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'bingo-cell' + (marks[title] ? ' marked' : '');
+      cell.setAttribute('role', 'gridcell');
+      cell.setAttribute('aria-pressed', marks[title] ? 'true' : 'false');
+      cell.setAttribute('data-bingo-title', title);
+      cell.textContent = title;
+      cell.addEventListener('click', function () { toggleBingoCell(title); });
+      grid.appendChild(cell);
+    });
+  }
+  function toggleBingoCell(title) {
+    const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
+    if (!code) return;
+    const bucket = getBingoBucket(code);
+    const prev = !!bucket.marks[title];
+    const justCompletedLineBefore = hasBingoLine(bucket.marks, bucket.titles);
+    if (prev) delete bucket.marks[title];
+    else bucket.marks[title] = Date.now();
+    saveJSON('bingoState', bingoState);
+    renderBingoCard();
+    if (typeof buzz === 'function') buzz(prev ? 8 : 12);
+    const nowLine = hasBingoLine(bucket.marks, bucket.titles);
+    if (nowLine && !justCompletedLineBefore) {
+      if (typeof showToast === 'function') showToast('BINGO! Line complete — rub it in.', 3000);
+      if (typeof launchConfetti === 'function') launchConfetti();
+    }
+    const done = bucket.titles.reduce(function (sum, t) { return sum + (bucket.marks[t] ? 1 : 0); }, 0);
+    if (done === BINGO_SIZE && typeof showToast === 'function') {
+      showToast('FULL HOUSE — the next round is on everyone else.', 4000);
+    }
+  }
+  function shuffleBingo() {
+    const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
+    if (!code) return;
+    const bucket = getBingoBucket(code);
+    bucket.shuffle = (bucket.shuffle || 0) + 1;
+    bucket.titles = buildBingoTitles(code);
+    bucket.marks = {};
+    saveJSON('bingoState', bingoState);
+    renderBingoCard();
+    if (typeof showToast === 'function') showToast('Card reshuffled — fresh 16 squares.');
+  }
+  function resetBingo() {
+    const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
+    if (!code) return;
+    const bucket = getBingoBucket(code);
+    bucket.marks = {};
+    saveJSON('bingoState', bingoState);
+    renderBingoCard();
+  }
+  function shareBingoCard() {
+    const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
+    if (!code) return;
+    const bucket = getBingoBucket(code);
+    const done = bucket.titles.reduce(function (sum, t) { return sum + (bucket.marks[t] ? 1 : 0); }, 0);
+    const name = (typeof getCrewDisplayName === 'function' ? getCrewDisplayName(code) : '') || 'A lad';
+    const msg = name + ' is ' + done + '/' + BINGO_SIZE + ' on the Barcelona Stag bingo card.';
+    if (navigator.share) { navigator.share({ title: 'Stag Bingo', text: msg }).catch(function () {}); }
+    else if (navigator.clipboard) { navigator.clipboard.writeText(msg).then(function () {
+      if (typeof showToast === 'function') showToast('Progress copied to clipboard.');
+    }).catch(function () {}); }
+  }
+
+  // ── Expense splitter upgrade: per-item "shared by" checkboxes ──────
+  function populateExpenseSharedOptions() {
+    const host = document.getElementById('expense-shared-options');
+    if (!host) return;
+    host.innerHTML = '';
+    const members = (typeof crewMembers !== 'undefined' ? crewMembers : []);
+    members.forEach(function (name) {
+      const id = 'expense-shared-' + name.replace(/\s+/g, '-').toLowerCase();
+      const wrap = document.createElement('label');
+      wrap.className = 'expense-shared-option';
+      wrap.setAttribute('for', id);
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.id = id;
+      box.value = name;
+      box.setAttribute('data-shared-by', name);
+      const span = document.createElement('span');
+      span.textContent = name;
+      wrap.appendChild(box);
+      wrap.appendChild(span);
+      host.appendChild(wrap);
+    });
+  }
+  populateExpenseSharedOptions();
+  function getSelectedExpenseShares() {
+    const host = document.getElementById('expense-shared-options');
+    if (!host) return [];
+    return Array.from(host.querySelectorAll('input[type="checkbox"]:checked')).map(function (el) { return el.value; });
+  }
+  function resetExpenseSharedOptions() {
+    const host = document.getElementById('expense-shared-options');
+    if (!host) return;
+    host.querySelectorAll('input[type="checkbox"]').forEach(function (el) { el.checked = false; });
+  }
+  function expenseQuickSplit() {
+    const amountEl = document.getElementById('expense-amount');
+    if (!amountEl) return;
+    const amount = Number(amountEl.value);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      if (typeof showToast === 'function') showToast('Enter the bill amount first.');
+      return;
+    }
+    const currencyEl = document.getElementById('expense-currency');
+    const shares = getSelectedExpenseShares();
+    const n = shares.length || (typeof crewMembers !== 'undefined' ? crewMembers.length : 6);
+    const each = amount / n;
+    const cur = currencyEl && currencyEl.value === 'GBP' ? '£' : '€';
+    const msg = 'Split ' + cur + amount.toFixed(2) + ' across ' + n + ' lad' + (n === 1 ? '' : 's') + ' = ' + cur + each.toFixed(2) + ' each.';
+    const msgEl = document.getElementById('expense-msg');
+    if (msgEl) msgEl.textContent = msg;
+    if (typeof showToast === 'function') showToast(msg, 4000);
+  }
+
+  // ── Wedding speech collector (client-side audio) ────────────────────
+  let speechRecorder = null;
+  let speechChunks = [];
+  let speechTimerInterval = null;
+  let speechStartMs = 0;
+  let speechClips = [];
+  const SPEECH_MAX_MS = 30 * 1000;
+  function updateSpeechTimerDisplay() {
+    const el = document.getElementById('speeches-timer');
+    if (!el) return;
+    const elapsed = speechStartMs ? ((Date.now() - speechStartMs) / 1000) : 0;
+    el.textContent = elapsed.toFixed(1) + 's';
+  }
+  function stopSpeechRecording() {
+    if (speechRecorder && speechRecorder.state === 'recording') {
+      try { speechRecorder.stop(); } catch (_) { /* ignore */ }
+    }
+  }
+  function toggleSpeechRecording() {
+    const btn = document.getElementById('speeches-record-btn');
+    const status = document.getElementById('speeches-status');
+    const msg = document.getElementById('speeches-msg');
+    if (!btn) return;
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      if (status) status.textContent = 'This browser can\'t record audio — use Safari or Chrome on mobile.';
+      return;
+    }
+    if (speechRecorder && speechRecorder.state === 'recording') {
+      stopSpeechRecording();
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      speechChunks = [];
+      try { speechRecorder = new MediaRecorder(stream); }
+      catch (_) { speechRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); }
+      speechStartMs = Date.now();
+      speechRecorder.ondataavailable = function (e) { if (e.data && e.data.size) speechChunks.push(e.data); };
+      speechRecorder.onstop = function () {
+        if (speechTimerInterval) { clearInterval(speechTimerInterval); speechTimerInterval = null; }
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        btn.textContent = '\u{1F534} Start recording';
+        btn.classList.remove('recording');
+        if (!speechChunks.length) {
+          if (status) status.textContent = 'Recording cancelled.';
+          return;
+        }
+        const blob = new Blob(speechChunks, { type: speechRecorder.mimeType || 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        const code = typeof getCrewBday === 'function' ? getCrewBday() : '';
+        const name = (typeof getCrewDisplayName === 'function' && code ? getCrewDisplayName(code) : '') || 'A lad';
+        const clip = { id: 'speech-' + Date.now(), url: url, name: name, ts: Date.now(), mime: blob.type, durationMs: Date.now() - speechStartMs };
+        speechClips.unshift(clip);
+        renderSpeechList();
+        if (status) status.textContent = 'Saved — preview below, then hit Download to send to the best man.';
+        if (msg) msg.textContent = '';
+      };
+      speechRecorder.start();
+      btn.textContent = '\u23F9\uFE0F Stop recording';
+      btn.classList.add('recording');
+      if (status) status.textContent = 'Recording…';
+      speechTimerInterval = setInterval(updateSpeechTimerDisplay, 100);
+      setTimeout(function () { if (speechRecorder && speechRecorder.state === 'recording') stopSpeechRecording(); }, SPEECH_MAX_MS);
+    }).catch(function () {
+      if (status) status.textContent = 'Microphone permission denied.';
+    });
+  }
+  function renderSpeechList() {
+    const list = document.getElementById('speeches-list');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!speechClips.length) {
+      const empty = document.createElement('p');
+      empty.className = 'subtle-note';
+      empty.textContent = 'No clips yet this session.';
+      list.appendChild(empty);
+      return;
+    }
+    speechClips.forEach(function (clip) {
+      const row = document.createElement('div');
+      row.className = 'speech-clip';
+      const head = document.createElement('div');
+      head.className = 'speech-clip-head';
+      const label = document.createElement('strong');
+      label.textContent = clip.name + ' · ' + (clip.durationMs / 1000).toFixed(1) + 's';
+      head.appendChild(label);
+      row.appendChild(head);
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = clip.url;
+      audio.style.width = '100%';
+      row.appendChild(audio);
+      const actions = document.createElement('div');
+      actions.className = 'speech-clip-actions';
+      const dl = document.createElement('a');
+      dl.href = clip.url;
+      dl.download = 'stag-speech-' + clip.name.replace(/\s+/g, '-').toLowerCase() + '-' + clip.id + '.webm';
+      dl.className = 'btn btn-outline-gold btn-sm';
+      dl.textContent = '\u2B07\uFE0F Download';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn btn-outline-light btn-sm';
+      del.textContent = 'Delete';
+      del.addEventListener('click', function () {
+        try { URL.revokeObjectURL(clip.url); } catch (_) {}
+        speechClips = speechClips.filter(function (c) { return c.id !== clip.id; });
+        renderSpeechList();
+      });
+      actions.appendChild(dl);
+      actions.appendChild(del);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+  renderSpeechList();
+
+  // ── Auto-ping toggle for the nightlife map ──────────────────────────
+  let autoPingInterval = null;
+  let autoPingExpiresAt = 0;
+  const AUTO_PING_DURATION_MS = 2 * 60 * 60 * 1000;
+  const AUTO_PING_EVERY_MS = 5 * 60 * 1000;
+  function updateAutoPingButton() {
+    const btn = document.getElementById('auto-ping-btn');
+    const status = document.getElementById('auto-ping-status');
+    if (!btn) return;
+    if (autoPingInterval) {
+      const mins = Math.max(0, Math.round((autoPingExpiresAt - Date.now()) / 60000));
+      btn.textContent = '\u{1F4E1} Auto-ping: on (' + mins + 'm)';
+      btn.setAttribute('aria-pressed', 'true');
+      btn.classList.add('is-active');
+      if (status) status.textContent = 'Sharing your location every 5 minutes for the next ' + mins + ' min.';
+    } else {
+      btn.textContent = '\u{1F4E1} Auto-ping: off';
+      btn.setAttribute('aria-pressed', 'false');
+      btn.classList.remove('is-active');
+      if (status) status.textContent = '';
+    }
+  }
+  function stopAutoPing() {
+    if (autoPingInterval) { clearInterval(autoPingInterval); autoPingInterval = null; }
+    autoPingExpiresAt = 0;
+    updateAutoPingButton();
+  }
+  function toggleAutoPing() {
+    if (autoPingInterval) { stopAutoPing(); return; }
+    if (typeof shareMyLocation !== 'function') return;
+    shareMyLocation();
+    autoPingExpiresAt = Date.now() + AUTO_PING_DURATION_MS;
+    autoPingInterval = setInterval(function () {
+      if (Date.now() >= autoPingExpiresAt) { stopAutoPing(); return; }
+      try { shareMyLocation(); } catch (_) {}
+      updateAutoPingButton();
+    }, AUTO_PING_EVERY_MS);
+    updateAutoPingButton();
+    if (typeof showToast === 'function') showToast('Auto-ping on — pings every 5 min for 2h.');
+  }
+
   // ── Data-action delegation (replaces inline onclick for CSP) ──
   (function wireDataActionDelegation() {
     function scrollToTop() {
@@ -5531,7 +5976,15 @@
       copySharedAlbum: typeof copySharedAlbum === 'function' ? copySharedAlbum : null,
       onSharedAlbumInput: typeof onSharedAlbumInput === 'function' ? onSharedAlbumInput : null,
       onMemoryUpload: typeof onMemoryUpload === 'function' ? onMemoryUpload : null,
-      clearMemoryWall: typeof clearMemoryWall === 'function' ? clearMemoryWall : null
+      clearMemoryWall: typeof clearMemoryWall === 'function' ? clearMemoryWall : null,
+      skipDailyPrompt: typeof skipDailyPrompt === 'function' ? skipDailyPrompt : null,
+      onDailyPromptCapture: typeof onDailyPromptCapture === 'function' ? onDailyPromptCapture : null,
+      shuffleBingo: typeof shuffleBingo === 'function' ? shuffleBingo : null,
+      resetBingo: typeof resetBingo === 'function' ? resetBingo : null,
+      shareBingoCard: typeof shareBingoCard === 'function' ? shareBingoCard : null,
+      expenseQuickSplit: typeof expenseQuickSplit === 'function' ? expenseQuickSplit : null,
+      toggleSpeechRecording: typeof toggleSpeechRecording === 'function' ? toggleSpeechRecording : null,
+      toggleAutoPing: typeof toggleAutoPing === 'function' ? toggleAutoPing : null
     };
     function dispatch(attr, event) {
       const el = event.target.closest('[' + attr + ']');

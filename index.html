@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260416-3">
+<link rel="stylesheet" href="rossstag.css?v=20260416-4">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -91,6 +91,7 @@
         <a class="top-sub-link" href="#challenge-generator-section">Challenges</a>
         <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
         <a class="top-sub-link" href="#trivia-section">Trivia</a>
+        <a class="top-sub-link" href="#bingo-section">Bingo</a>
         <a class="top-sub-link" href="#whopays-section">Who Pays?</a>
         <a class="top-sub-link" href="#mission-section">Missions</a>
         <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
@@ -104,6 +105,7 @@
         <a class="top-sub-link" href="#suggestion-section">Suggestions</a>
         <a class="top-sub-link" href="#expenses-section">Expenses</a>
         <a class="top-sub-link" href="#memory-wall-section">Memory Wall</a>
+        <a class="top-sub-link" href="#speeches-section">Speeches</a>
         <a class="top-sub-link" href="#finale-section">Finale</a>
       </div>
     </div>
@@ -141,6 +143,7 @@
       <a class="top-sub-link" href="#challenge-generator-section">Challenges</a>
       <a class="top-sub-link" href="#team-battle-section">Team Battle</a>
       <a class="top-sub-link" href="#trivia-section">Trivia</a>
+      <a class="top-sub-link" href="#bingo-section">Bingo</a>
       <a class="top-sub-link" href="#whopays-section">Who Pays?</a>
       <a class="top-sub-link" href="#mission-section">Missions</a>
       <a class="top-sub-link" href="#leaderboard-section">Leaderboard</a>
@@ -152,6 +155,7 @@
       <a class="top-sub-link" href="#suggestion-section">Suggestions</a>
       <a class="top-sub-link" href="#expenses-section">Expenses</a>
       <a class="top-sub-link" href="#memory-wall-section">Memory Wall</a>
+      <a class="top-sub-link" href="#speeches-section">Speeches</a>
       <a class="top-sub-link" href="#finale-section">Finale</a>
     </div>
   </div>
@@ -196,6 +200,20 @@
     </div>
     <div id="progress-text" class="progress-text"></div>
   </div>
+</div>
+
+<div id="daily-prompt-card" class="daily-prompt-card fade-in" aria-label="Today's photo prompt">
+  <div class="daily-prompt-head">
+    <span class="daily-prompt-tag" id="daily-prompt-tag">Today's mission</span>
+    <span class="daily-prompt-day" id="daily-prompt-day"></span>
+  </div>
+  <p id="daily-prompt-text" class="daily-prompt-text">Loading today's prompt…</p>
+  <div class="daily-prompt-actions">
+    <label class="btn btn-gold btn-sm daily-prompt-capture" for="daily-prompt-file">&#x1F4F8; Capture photo</label>
+    <input type="file" id="daily-prompt-file" accept="image/*" capture="environment" data-change-action="onDailyPromptCapture" style="display:none;">
+    <button type="button" class="btn btn-outline-gold btn-sm" data-action="skipDailyPrompt" aria-label="Next prompt">&#x21BB; Skip</button>
+  </div>
+  <p id="daily-prompt-status" class="daily-prompt-status" aria-live="polite"></p>
 </div>
 
 <div class="weather-card fade-in" aria-label="Barcelona forecast">
@@ -1143,6 +1161,20 @@
   </div>
 </section>
 
+<section id="bingo-section">
+  <h2 class="section-title fade-in">Stag Bingo</h2>
+  <p class="section-lead fade-in">Your own 4×4 card, reshuffled each trip day. First line wins bragging rights. Full card wins the next round.</p>
+  <div class="info-card fade-in bingo-card-wrap">
+    <div id="bingo-status" class="bingo-status" aria-live="polite">Log in to draw your card.</div>
+    <div id="bingo-grid" class="bingo-grid" role="grid" aria-label="Stag bingo card"></div>
+    <div class="bingo-actions">
+      <button type="button" class="btn btn-gold btn-sm" data-action="shuffleBingo">&#x1F3B2; Reshuffle card</button>
+      <button type="button" class="btn btn-outline-light btn-sm" data-action="resetBingo">Reset marks</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareBingoCard" aria-label="Share bingo progress">&#x1F4E4; Share progress</button>
+    </div>
+  </div>
+</section>
+
 <section id="whopays-section">
   <h2 class="section-title fade-in">Who Pays?</h2>
   <p class="section-lead fade-in">The fairest way to pick the next round. Or the taxi. Or the apology flowers.</p>
@@ -1215,10 +1247,15 @@
       <option value="GBP">GBP (£)</option>
     </select>
     <input type="text" id="expense-note" placeholder="What was it for?" class="form-input" style="width:45%;" aria-label="Expense note">
+    <fieldset id="expense-shared-by" class="expense-shared-by" aria-label="Who shared this bill">
+      <legend class="expense-shared-legend">Shared by <span class="expense-shared-hint">(tick off who was there — blank = whole crew)</span></legend>
+      <div id="expense-shared-options" class="expense-shared-options"></div>
+    </fieldset>
     <button data-action="addExpense" class="btn btn-gold btn-sm">Add Expense</button>
     <button data-action="clearExpenses" class="btn btn-outline-light btn-sm ml-6">Clear</button>
     <div class="expense-presets" role="group" aria-label="Quick fill expense">
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="prefillTouristTax" title="Fill your 3-night Barcelona tourist tax share">&#x1F4B0; Tourist tax (&#8364;16.50)</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="expenseQuickSplit" title="Split a bill across the crew without logging a payer">&#x1F4B8; Split this bill</button>
     </div>
     <p id="expense-msg" style="margin-top:10px;"></p>
     <div id="expense-summary" style="margin-top:14px; text-align:left;"></div>
@@ -1272,8 +1309,10 @@
     <div class="map-actions">
       <button type="button" class="btn btn-gold btn-sm" data-action="toggleNightlifeMap">&#x1F5FA;&#xFE0F; Show / hide map</button>
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareMyLocation">&#x1F4CD; Share my location</button>
+      <button type="button" id="auto-ping-btn" class="btn btn-outline-gold btn-sm" data-action="toggleAutoPing" aria-pressed="false">&#x1F4E1; Auto-ping: off</button>
       <button type="button" class="btn btn-outline-light btn-sm" data-action="clearMyLocation">Clear</button>
     </div>
+    <p id="auto-ping-status" class="auto-ping-status subtle-note" aria-live="polite"></p>
     <div id="nightlife-map" class="nightlife-map" role="region" aria-label="Barcelona venue map"></div>
     <p class="map-legend">
       <span class="legend-dot legend-hotel"></span>Hotel
@@ -1355,6 +1394,20 @@
   </div>
 </section>
 
+<section id="speeches-section">
+  <h2 class="section-title fade-in">Wedding Speech Collector</h2>
+  <p class="section-lead fade-in">Drop a 30-second voice note for the groom. Each clip stays on your device &mdash; hit Download and send it to the best man when you're home.</p>
+  <div class="info-card fade-in" style="text-align:center;">
+    <div id="speeches-status" class="speeches-status" aria-live="polite">Tap record to start. Max 30 seconds per clip.</div>
+    <div class="speeches-controls">
+      <button type="button" id="speeches-record-btn" class="btn btn-gold" data-action="toggleSpeechRecording">&#x1F534; Start recording</button>
+      <span id="speeches-timer" class="speeches-timer" aria-live="polite">0.0s</span>
+    </div>
+    <p id="speeches-msg" class="subtle-note" style="margin-top:10px;"></p>
+    <div id="speeches-list" class="speeches-list" style="margin-top:14px; text-align:left;"></div>
+  </div>
+</section>
+
 <div id="finale-section" class="rsvp-section fade-in">
   <h2 class="section-title" style="text-align:center;">Vamos Barcelona</h2>
   <p style="opacity:.5; max-width:420px; margin:0 auto; line-height:1.7; font-size:14px;">
@@ -1384,7 +1437,7 @@
   </div>
 </footer>
 
-<script src="rossstag.js?v=20260416-3"></script>
+<script src="rossstag.js?v=20260416-4"></script>
 </body>
 </html>
 

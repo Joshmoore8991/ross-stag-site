@@ -2767,3 +2767,132 @@
   transition: background 0.15s;
 }
 .memory-wall-remove:hover { background: rgba(225, 29, 72, 0.9); }
+
+/* ── Daily photo prompt ─────────────────────────────────────────── */
+.daily-prompt-card {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(218, 165, 32, 0.35);
+  background: linear-gradient(135deg, rgba(15, 15, 18, 0.85), rgba(25, 20, 10, 0.85));
+  border-radius: 12px;
+}
+.daily-prompt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.daily-prompt-head h3 { margin: 0; font-size: 16px; letter-spacing: 0.03em; }
+.daily-prompt-day { font-size: 12px; opacity: .7; text-transform: uppercase; letter-spacing: 0.08em; }
+.daily-prompt-text { margin: 6px 0 10px; font-size: 15px; line-height: 1.4; }
+.daily-prompt-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.daily-prompt-actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.daily-prompt-status { margin-top: 8px; font-size: 12px; opacity: .75; min-height: 1em; }
+
+/* ── Stag bingo ─────────────────────────────────────────────────── */
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 10px 0 14px;
+}
+.bingo-cell {
+  aspect-ratio: 1 / 1;
+  padding: 8px 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(218, 165, 32, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
+}
+.bingo-cell:hover { background: rgba(218, 165, 32, 0.12); }
+.bingo-cell:active { transform: scale(0.97); }
+.bingo-cell.marked {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.9), rgba(255, 215, 0, 0.8));
+  color: #1a1a1a;
+  border-color: rgba(255, 215, 0, 1);
+  font-weight: 600;
+}
+.bingo-status { font-size: 13px; opacity: .85; margin: 6px 0; min-height: 1em; }
+.bingo-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ── Expense shared-by fieldset ─────────────────────────────────── */
+.expense-shared-by {
+  border: 1px dashed rgba(218, 165, 32, 0.4);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+.expense-shared-by legend {
+  padding: 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: .8;
+}
+.expense-shared-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+.expense-shared-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-size: 13px;
+}
+.expense-shared-option:hover { background: rgba(218, 165, 32, 0.12); }
+.expense-shared-option input:checked + span { color: var(--gold); font-weight: 600; }
+
+/* ── Wedding speech collector ───────────────────────────────────── */
+.speeches-status { font-size: 13px; opacity: .8; min-height: 1em; margin-top: 6px; }
+.speeches-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.speeches-timer { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 14px; opacity: .8; }
+#speeches-record-btn.recording {
+  background: linear-gradient(135deg, #e11d48, #f43f5e);
+  color: #fff;
+  animation: speechPulse 1.2s ease-in-out infinite;
+}
+@keyframes speechPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #speeches-record-btn.recording { animation: none; }
+}
+.speech-clip {
+  border: 1px solid rgba(218, 165, 32, 0.25);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.speech-clip-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.speech-clip-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+/* ── Auto-ping toggle ───────────────────────────────────────────── */
+#auto-ping-btn.is-active {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.85));
+  color: #0b1f0f;
+  border-color: rgba(34, 197, 94, 1);
+}
+.auto-ping-status { font-size: 12px; opacity: .8; margin-top: 6px; min-height: 1em; }
