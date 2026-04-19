@@ -2656,6 +2656,129 @@
   justify-content: center;
 }
 
+/* ─── T-minus Prep Tracker ──────────────────────────────── */
+#tminus-section { margin-top: 20px; }
+.tminus-card { text-align: left; }
+.tminus-summary {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.tminus-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.tminus-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--sun));
+  transition: width .35s ease;
+}
+.tminus-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  display: grid;
+  gap: 8px;
+}
+.tminus-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, opacity .15s;
+}
+.tminus-item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.tminus-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1.2px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(212,168,67,.14);
+  color: var(--gold);
+  min-width: 52px;
+  text-align: center;
+}
+.tminus-label {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.tminus-hint {
+  font-size: 12px;
+  opacity: .55;
+  margin-top: 2px;
+  line-height: 1.45;
+}
+.tminus-tick {
+  font-size: 18px;
+  opacity: .5;
+  min-width: 22px;
+  text-align: center;
+}
+.tminus-item.tminus-current {
+  border-color: rgba(212,168,67,.45);
+  background: rgba(212,168,67,.06);
+}
+.tminus-item.tminus-current .tminus-tick { opacity: .85; color: var(--gold); }
+.tminus-item.tminus-current:hover {
+  background: rgba(212,168,67,.12);
+  border-color: var(--gold);
+}
+.tminus-item.tminus-done {
+  opacity: .5;
+}
+.tminus-item.tminus-done .tminus-label { text-decoration: line-through; }
+.tminus-item.tminus-done .tminus-tick { color: var(--gold); opacity: 1; }
+.tminus-item.tminus-done .tminus-badge {
+  background: rgba(212,168,67,.25);
+}
+.tminus-item.tminus-locked {
+  opacity: .4;
+  cursor: not-allowed;
+}
+.tminus-item.tminus-locked .tminus-badge {
+  background: rgba(255,255,255,.06);
+  color: rgba(245,240,232,.6);
+}
+.tminus-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.light-theme .tminus-item {
+  background: rgba(10,10,10,.04);
+  border-color: rgba(10,10,10,.1);
+}
+.light-theme .tminus-item.tminus-current {
+  background: rgba(212,168,67,.12);
+  border-color: rgba(212,168,67,.5);
+}
+.light-theme .tminus-progress-track {
+  background: rgba(10,10,10,.08);
+}
+@media (max-width: 480px) {
+  .tminus-item { grid-template-columns: auto 1fr auto; padding: 10px 12px; gap: 10px; }
+  .tminus-badge { min-width: 46px; font-size: 12px; padding: 3px 6px; }
+  .tminus-label { font-size: 13px; }
+  .tminus-hint { font-size: 11.5px; }
+}
+
 /* ─── Who Pays? spinner ───────────────────────────────────── */
 .whopays-reel {
   position: relative;

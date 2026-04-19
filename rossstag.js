@@ -3862,6 +3862,110 @@
   }
 
   // ─────────────────────────────────────────────────────────────
+  // T-minus Prep Tracker — phased checklist that unlocks as the
+  // departure date approaches. Persists ticks per-device.
+  // ─────────────────────────────────────────────────────────────
+  const TMINUS_KEY = 'tminusPrepTracker';
+  const TMINUS_TASKS = [
+    { id: 't30_checkin_window', unlockDay: 30, label: 'EasyJet online check-in window open', hint: 'Opens 30 days out — do it the moment seats become free.' },
+    { id: 't14_bank', unlockDay: 14, label: 'Travel card active / bank notified', hint: 'Revolut, Monzo or Starling beat the EasyJet FX. Tell your main bank you are in Spain.' },
+    { id: 't14_roaming', unlockDay: 14, label: 'EU roaming or eSIM sorted', hint: 'UK networks vary post-Brexit. Airalo or Holafly eSIM €5–€10 gives you 3 GB.' },
+    { id: 't10_passport_copy', unlockDay: 10, label: 'Passport photo saved to phone + cloud', hint: 'Snap the photo page and email it to yourself. Lifesaver if the original walks.' },
+    { id: 't7_checkin_done', unlockDay: 7, label: 'Online check-in done + boarding pass in Wallet', hint: 'Apple Wallet / Google Wallet so you can board even with no signal.' },
+    { id: 't7_offline_map', unlockDay: 7, label: 'Offline Barcelona map downloaded', hint: 'Google Maps → search Barcelona → … → Download offline map. Works without data.' },
+    { id: 't3_euros', unlockDay: 3, label: 'Euros withdrawn (€50–€100)', hint: 'Day 1 taxi tips, metro top-up, kebab money. Cards cover most but cash is king for small spends.' },
+    { id: 't3_bagtest', unlockDay: 3, label: 'Hand-luggage trial pack (45×36×20cm, 15kg)', hint: 'EasyJet gate-checks ruthlessly. Weigh it now, not at 04:30 in Belfast.' },
+    { id: 't1_hangoverkit', unlockDay: 1, label: 'Hangover kit + EU 2-pin adapter packed', hint: 'Electrolytes, ibuprofen, eye drops, charger, adapter. See the Hangover Kit section.' },
+    { id: 't0_gomode', unlockDay: 0, label: 'Flight day — switch to the Flight Day Hub', hint: 'Move to the morning-of checklist. Alarm 02:30. Belfast Intl 04:00 sharp.' }
+  ];
+  const STAG_DEPART_MS = new Date('2026-05-03T06:10:00+01:00').getTime();
+  function tminusDaysOut() {
+    return Math.ceil((STAG_DEPART_MS - Date.now()) / 86400000);
+  }
+  function tminusState(task, state, daysOut) {
+    if (state[task.id]) return 'done';
+    if (daysOut <= task.unlockDay) return 'current';
+    return 'locked';
+  }
+  function renderTminusTracker() {
+    const list = document.getElementById('tminus-list');
+    const summary = document.getElementById('tminus-summary');
+    const fill = document.getElementById('tminus-progress-fill');
+    if (!list || !summary) return;
+    const state = loadJSON(TMINUS_KEY, {});
+    const daysOut = tminusDaysOut();
+    clearElement(list);
+    let doneCount = 0;
+    let nextCurrent = null;
+    TMINUS_TASKS.forEach(function (task) {
+      const status = tminusState(task, state, daysOut);
+      if (status === 'done') doneCount += 1;
+      if (status === 'current' && !nextCurrent) nextCurrent = task;
+      const li = document.createElement('li');
+      li.className = 'tminus-item tminus-' + status;
+      li.setAttribute('role', 'button');
+      li.setAttribute('tabindex', status === 'locked' ? '-1' : '0');
+      li.setAttribute('aria-pressed', status === 'done' ? 'true' : 'false');
+      li.dataset.taskId = task.id;
+      const tMinusBadge = task.unlockDay === 0 ? 'GO' : 'T-' + task.unlockDay;
+      const badge = document.createElement('span');
+      badge.className = 'tminus-badge';
+      badge.textContent = tMinusBadge;
+      li.appendChild(badge);
+      const body = document.createElement('div');
+      body.className = 'tminus-body';
+      const label = document.createElement('div');
+      label.className = 'tminus-label';
+      label.textContent = task.label;
+      body.appendChild(label);
+      const hint = document.createElement('div');
+      hint.className = 'tminus-hint';
+      if (status === 'locked') {
+        const daysUntil = daysOut - task.unlockDay;
+        hint.textContent = 'Unlocks in ' + daysUntil + ' day' + (daysUntil === 1 ? '' : 's') + '.';
+      } else {
+        hint.textContent = task.hint;
+      }
+      body.appendChild(hint);
+      li.appendChild(body);
+      const tick = document.createElement('span');
+      tick.className = 'tminus-tick';
+      tick.setAttribute('aria-hidden', 'true');
+      tick.textContent = status === 'done' ? '✓' : (status === 'locked' ? '🔒' : '○');
+      li.appendChild(tick);
+      const onToggle = function () {
+        if (tminusState(task, loadJSON(TMINUS_KEY, {}), tminusDaysOut()) === 'locked') return;
+        const cur = loadJSON(TMINUS_KEY, {});
+        cur[task.id] = !cur[task.id];
+        saveJSON(TMINUS_KEY, cur);
+        if (typeof hapticTap === 'function') hapticTap(8);
+        renderTminusTracker();
+      };
+      li.addEventListener('click', onToggle);
+      li.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); }
+      });
+      list.appendChild(li);
+    });
+    const total = TMINUS_TASKS.length;
+    const pct = Math.round((doneCount / total) * 100);
+    if (fill) fill.style.width = pct + '%';
+    let headline;
+    if (daysOut > 0) headline = 'T-' + daysOut + ' day' + (daysOut === 1 ? '' : 's') + ' to takeoff';
+    else if (daysOut === 0) headline = 'Flight day — go go go';
+    else headline = 'Post-trip legend status';
+    let nextLine;
+    if (doneCount === total) nextLine = ' · all prep done, legend.';
+    else if (nextCurrent) nextLine = ' · next: ' + nextCurrent.label;
+    else nextLine = ' · ' + (TMINUS_TASKS.find(function (t) { return !state[t.id]; }) ? 'waiting on next window' : 'all clear');
+    summary.textContent = headline + ' · ' + doneCount + ' / ' + total + ' done' + nextLine;
+  }
+  function resetTminusTracker() {
+    saveJSON(TMINUS_KEY, {});
+    renderTminusTracker();
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // Who Pays? — spinner that picks a lad (Ross excluded).
   // ─────────────────────────────────────────────────────────────
   const WHOPAYS_KEY = 'whoPaysHistory';
@@ -4211,6 +4315,7 @@
   }
   function initStagExtras() {
     try { renderFlightDayChecklist(); } catch (_) {}
+    try { renderTminusTracker(); } catch (_) {}
     try { renderWhoPaysHistory(); } catch (_) {}
     try { renderTriviaBestLabel(); } catch (_) {}
     try { renderMemoryWall(); } catch (_) {}
@@ -6521,6 +6626,7 @@
       onFxConvertDirection: typeof onFxConvertDirection === 'function' ? onFxConvertDirection : null,
       prefillTouristTax: typeof prefillTouristTax === 'function' ? prefillTouristTax : null,
       resetFlightDayChecklist: typeof resetFlightDayChecklist === 'function' ? resetFlightDayChecklist : null,
+      resetTminusTracker: typeof resetTminusTracker === 'function' ? resetTminusTracker : null,
       spinWhoPays: typeof spinWhoPays === 'function' ? spinWhoPays : null,
       resetWhoPaysHistory: typeof resetWhoPaysHistory === 'function' ? resetWhoPaysHistory : null,
       startTrivia: typeof startTrivia === 'function' ? startTrivia : null,
