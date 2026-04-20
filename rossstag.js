@@ -57,7 +57,7 @@
   const navToggles = navGroups
     .map(function (group) { return group.querySelector('.nav-group-toggle'); })
     .filter(Boolean);
-  const navLinks = Array.from(document.querySelectorAll('.top-sub-link, .nav-pin'));
+  const navLinks = Array.from(document.querySelectorAll('.top-sub-link, .nav-pin, .nav-drawer-cta'));
   const navMap = navLinks
     .map(link => {
       const targetId = (link.getAttribute('href') || '').replace('#', '');
@@ -3981,6 +3981,21 @@
       if (label) label.textContent = text;
       if (ico) ico.textContent = icon;
       primaryPin.classList.toggle('nav-pin-featured', d <= 14);
+    }
+    const drawerCta = document.getElementById('nav-drawer-cta');
+    if (drawerCta) {
+      const label = drawerCta.querySelector('.nav-drawer-cta-label');
+      const sub = drawerCta.querySelector('.nav-drawer-cta-sub');
+      const ico = drawerCta.querySelector('.nav-drawer-cta-ico');
+      let href = '#book-now-section', text = 'Book Now', subText = 'Lock in tickets & tables', icon = '\uD83C\uDFAB';
+      if (d <= 0) { href = '#flight-day-section'; text = 'Flight Day'; subText = 'Airport checklist'; icon = '\uD83D\uDEEB'; }
+      else if (d <= 2) { href = '#flight-day-section'; text = 'Flight Day'; subText = 'Wheels up soon — final checks'; icon = '\uD83D\uDEEB'; }
+      else if (d <= 7) { href = '#tminus-section'; text = 'T-minus ' + d + 'd'; subText = 'Tick off final prep'; icon = '\u23F3'; }
+      else { subText = d + ' days out — priority bookings'; }
+      drawerCta.setAttribute('href', href);
+      if (label) label.textContent = text;
+      if (sub) sub.textContent = subText;
+      if (ico) ico.textContent = icon;
     }
     markTodayInTimeline();
   }

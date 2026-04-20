@@ -220,10 +220,33 @@
     display: none;
     border-top: 1px solid rgba(212,168,67,.15);
     padding: 12px 14px 14px;
+    max-height: calc(100vh - var(--top-nav-height, 72px) - 32px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .top-nav.drawer-open .nav-drawer {
     display: block;
   }
+  .nav-drawer-cta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin: 0 0 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(212,168,67,.2), rgba(212,168,67,.06));
+    border: 1px solid rgba(212,168,67,.45);
+    color: var(--cream);
+    text-decoration: none;
+    transition: transform .15s ease, border-color .2s ease, background .2s ease;
+  }
+  .nav-drawer-cta:hover { border-color: rgba(212,168,67,.72); background: linear-gradient(135deg, rgba(212,168,67,.28), rgba(212,168,67,.1)); transform: translateY(-1px); }
+  .nav-drawer-cta-ico { font-size: 22px; line-height: 1; }
+  .nav-drawer-cta-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .nav-drawer-cta-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--gold); }
+  .nav-drawer-cta-sub { font-size: 11px; opacity: .7; letter-spacing: .2px; }
+  .nav-drawer-cta-chev { font-size: 22px; color: var(--gold); opacity: .75; }
   .nav-drawer-group {
     margin-bottom: 10px;
   }
@@ -279,40 +302,21 @@
       overflow-x: unset;
       justify-content: space-between;
       gap: 8px;
-      padding: 8px 10px;
+      padding: 6px 10px;
     }
     .top-nav-brand {
       flex: 0 0 auto;
-      font-size: 15px;
-      letter-spacing: 1.6px;
-      padding: 0 4px;
+      font-size: 14px;
+      letter-spacing: 1.4px;
+      padding: 0 2px;
       margin-right: 0;
     }
     .top-nav-brand::after { display: none; }
-    .nav-pinned {
-      flex: 1 1 auto;
-      margin-left: 6px;
-      gap: 4px;
-      justify-content: flex-end;
-      overflow: visible;
-    }
-    /* Keep only the time-aware primary CTA visible on phone; itinerary +
-       essentials move into the drawer to keep tap targets generous. */
-    .nav-pin { display: none; }
-    #nav-pin-primary {
-      display: inline-flex;
-      padding: 9px 12px;
-      min-height: 40px;
-      font-size: 12px;
-      letter-spacing: 1.4px;
-      gap: 6px;
-      border: 1px solid rgba(212,168,67,.42);
-      background: rgba(212,168,67,.06);
-      opacity: 1;
-    }
-    #nav-pin-primary .nav-pin-label { display: inline; }
-    #nav-pin-primary .nav-ico { font-size: 15px; }
+    /* On phones the entire pinned row collapses into the drawer; the
+       bar shows only brand + Menu so it stays calm and easy to tap. */
+    .nav-pinned { display: none; }
     .nav-hamburger {
+      margin-left: auto;
       padding: 9px 12px;
       min-height: 40px;
       gap: 8px;
@@ -322,11 +326,8 @@
 
   @media (max-width: 420px) {
     .top-nav { top: max(6px, env(safe-area-inset-top)); width: calc(100% - 8px); }
-    .top-nav-inner { padding: 7px 8px; gap: 6px; }
-    .top-nav-brand { display: none; }
-    .nav-pinned { margin-left: 0; }
-    #nav-pin-primary { padding: 9px 10px; }
-    #nav-pin-primary .nav-pin-label { letter-spacing: 1.2px; }
+    .top-nav-inner { padding: 6px 8px; gap: 6px; }
+    .top-nav-brand { font-size: 13px; letter-spacing: 1.2px; }
     .nav-hamburger { padding: 9px 10px; }
     .nav-hamburger-label { display: none; }
   }
