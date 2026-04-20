@@ -243,6 +243,7 @@
     z-index: 10030;
     display: block;
   }
+  body.nav-drawer-open .nav-drawer,
   .top-nav.drawer-open .nav-drawer {
     transform: translateX(0);
     visibility: visible;
