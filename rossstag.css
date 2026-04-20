@@ -278,18 +278,57 @@
     .top-nav-inner {
       overflow-x: unset;
       justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
     }
     .top-nav-brand {
       flex: 0 0 auto;
+      font-size: 15px;
+      letter-spacing: 1.6px;
+      padding: 0 4px;
+      margin-right: 0;
     }
+    .top-nav-brand::after { display: none; }
     .nav-pinned {
-      margin-left: 8px;
-      gap: 2px;
+      flex: 1 1 auto;
+      margin-left: 6px;
+      gap: 4px;
+      justify-content: flex-end;
+      overflow: visible;
     }
-    .nav-pin { padding: 6px 9px; font-size: 11px; letter-spacing: 1.4px; }
-    .nav-pin-label { display: none; }
+    /* Keep only the time-aware primary CTA visible on phone; itinerary +
+       essentials move into the drawer to keep tap targets generous. */
+    .nav-pin { display: none; }
+    #nav-pin-primary {
+      display: inline-flex;
+      padding: 9px 12px;
+      min-height: 40px;
+      font-size: 12px;
+      letter-spacing: 1.4px;
+      gap: 6px;
+      border: 1px solid rgba(212,168,67,.42);
+      background: rgba(212,168,67,.06);
+      opacity: 1;
+    }
+    #nav-pin-primary .nav-pin-label { display: inline; }
+    #nav-pin-primary .nav-ico { font-size: 15px; }
+    .nav-hamburger {
+      padding: 9px 12px;
+      min-height: 40px;
+      gap: 8px;
+    }
+    .nav-hamburger-label { display: inline; font-size: 12px; letter-spacing: 1.4px; }
+  }
+
+  @media (max-width: 420px) {
+    .top-nav { top: max(6px, env(safe-area-inset-top)); width: calc(100% - 8px); }
+    .top-nav-inner { padding: 7px 8px; gap: 6px; }
+    .top-nav-brand { display: none; }
+    .nav-pinned { margin-left: 0; }
+    #nav-pin-primary { padding: 9px 10px; }
+    #nav-pin-primary .nav-pin-label { letter-spacing: 1.2px; }
+    .nav-hamburger { padding: 9px 10px; }
     .nav-hamburger-label { display: none; }
-    .nav-hamburger { padding: 8px; }
   }
 
   /* ── Nav refinements: icons, sub-labels, drawer filter, progress bar ── */
@@ -1987,15 +2026,6 @@
       width: calc(100% - 10px);
       border-radius: 12px;
     }
-    .top-nav-inner {
-      padding: 8px;
-      gap: 6px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scroll-snap-type: x proximity;
-      touch-action: pan-x;
-    }
-    .top-nav-brand { font-size: 16px; margin-right: 2px; }
     .nav-group { scroll-snap-align: start; }
     .nav-group-toggle {
       padding: 9px 11px;
