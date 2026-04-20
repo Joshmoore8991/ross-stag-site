@@ -57,7 +57,7 @@
   const navToggles = navGroups
     .map(function (group) { return group.querySelector('.nav-group-toggle'); })
     .filter(Boolean);
-  const navLinks = Array.from(document.querySelectorAll('.top-sub-link'));
+  const navLinks = Array.from(document.querySelectorAll('.top-sub-link, .nav-pin'));
   const navMap = navLinks
     .map(link => {
       const targetId = (link.getAttribute('href') || '').replace('#', '');
@@ -100,7 +100,7 @@
       link.classList.toggle('active', isActive);
     });
     navGroups.forEach(group => {
-      const hasActive = !!group.querySelector('.top-sub-link.active');
+      const hasActive = !!group.querySelector('.top-sub-link.active, .nav-pin.active');
       group.classList.toggle('active', hasActive);
     });
   }
@@ -3967,9 +3967,21 @@
 
   function renderBookNowDaysOut() {
     const el = document.getElementById('book-now-days-out');
-    if (!el) return;
     const d = tminusDaysOut();
-    el.textContent = d <= 0 ? 'wheels up' : String(d);
+    if (el) el.textContent = d <= 0 ? 'wheels up' : String(d);
+    const primaryPin = document.getElementById('nav-pin-primary');
+    if (primaryPin) {
+      const label = primaryPin.querySelector('.nav-pin-label');
+      const ico = primaryPin.querySelector('.nav-ico');
+      let href = '#book-now-section', text = 'Book Now', icon = '\uD83C\uDFAB';
+      if (d <= 0) { href = '#flight-day-section'; text = 'Flight Day'; icon = '\uD83D\uDEEB'; }
+      else if (d <= 2) { href = '#flight-day-section'; text = 'Flight Day'; icon = '\uD83D\uDEEB'; }
+      else if (d <= 7) { href = '#tminus-section'; text = 'T-minus'; icon = '\u23F3'; }
+      primaryPin.setAttribute('href', href);
+      if (label) label.textContent = text;
+      if (ico) ico.textContent = icon;
+      primaryPin.classList.toggle('nav-pin-featured', d <= 14);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────
