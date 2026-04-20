@@ -56,14 +56,22 @@
   }
   .top-nav-inner::-webkit-scrollbar { display: none; }
   .top-nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-family: 'Bebas Neue', sans-serif;
     letter-spacing: 2px;
     font-size: 20px;
     color: var(--gold);
     margin-right: 4px;
-    padding: 0 8px;
+    padding: 4px 8px;
     white-space: nowrap;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background .15s ease;
   }
+  .top-nav-brand:hover { background: rgba(212,168,67,.08); }
+  .top-nav-brand-mark { font-size: 18px; line-height: 1; filter: saturate(1.1); }
   .top-nav-brand::after {
     content: '';
     display: inline-block;
@@ -228,6 +236,24 @@
   .top-nav.drawer-open .nav-drawer {
     display: block;
   }
+  /* Backdrop when drawer is open — dims the page so the menu reads as modal. */
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8,5,3,.55);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+    z-index: 10010;
+  }
+  body.nav-drawer-open .nav-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* Hide floating hero controls when the drawer is open so they don't
+     poke through the dim. */
+  body.nav-drawer-open .hero-controls { opacity: 0; pointer-events: none; transition: opacity .15s ease; }
   .nav-drawer-cta {
     display: flex;
     align-items: center;
@@ -327,7 +353,9 @@
   @media (max-width: 420px) {
     .top-nav { top: max(6px, env(safe-area-inset-top)); width: calc(100% - 8px); }
     .top-nav-inner { padding: 6px 8px; gap: 6px; }
-    .top-nav-brand { font-size: 13px; letter-spacing: 1.2px; }
+    .top-nav-brand { font-size: 13px; letter-spacing: 1.2px; padding: 4px; }
+    .top-nav-brand-text { display: none; }
+    .top-nav-brand-mark { font-size: 22px; }
     .nav-hamburger { padding: 9px 10px; }
     .nav-hamburger-label { display: none; }
   }
@@ -2107,7 +2135,6 @@
   }
 
   @media (max-width: 560px) {
-    .top-nav-brand { display: none; }
     .top-nav-inner { gap: 4px; }
     .nav-group-toggle { font-size: 10px; letter-spacing: 1.1px; }
     .countdown-item { min-width: 120px; }
