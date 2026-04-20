@@ -24,7 +24,7 @@
 <meta name="twitter:title" content="BARCELONA STAG — May 2026">
 <meta name="twitter:description" content="Ross Wightman's Stag Do in Barcelona, May 2026.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
-<link rel="manifest" href="manifest.webmanifest?v=20260420-3">
+<link rel="manifest" href="manifest.webmanifest?v=20260420-4">
 <!-- iOS PWA hints: without these, Add-to-Home-Screen creates a plain
      Safari bookmark that captures whatever URL is in the address bar
      rather than honouring the manifest's start_url. -->
@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260420-3">
+<link rel="stylesheet" href="rossstag.css?v=20260420-4">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -400,6 +400,13 @@
   <p class="section-lead fade-in">Crew-only timeline &mdash; Ross sees a locked countdown until landing. Dots colour the slot, badges flag booking status. <em>Suggestion</em> = optional, swap freely.</p>
 
   <div class="crew-timeline fade-in">
+    <nav class="ct-day-nav" aria-label="Jump to day">
+      <a class="ct-day-pill" href="#day-sun" data-day="sun"><span class="ct-day-pill-label">Sun</span><span class="ct-day-pill-date">3 May</span></a>
+      <a class="ct-day-pill" href="#day-mon" data-day="mon"><span class="ct-day-pill-label">Mon</span><span class="ct-day-pill-date">4 May</span></a>
+      <a class="ct-day-pill" href="#day-tue" data-day="tue"><span class="ct-day-pill-label">Tue</span><span class="ct-day-pill-date">5 May</span></a>
+      <a class="ct-day-pill" href="#day-wed" data-day="wed"><span class="ct-day-pill-label">Wed</span><span class="ct-day-pill-date">6 May</span></a>
+    </nav>
+
     <div class="ct-legend">
       <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#4A7FA5"></span>Transport</div>
       <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#D4A843"></span>Food &amp; Drink</div>
@@ -408,7 +415,7 @@
       <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#4A7A5A;border:2px dashed #4A7A5A;box-sizing:border-box"></span>Suggestion</div>
     </div>
 
-    <div class="ct-day">
+    <div class="ct-day" id="day-sun" data-day="sun">
       <div class="ct-day-header">
         <span class="ct-day-label">Sunday</span>
         <span class="ct-day-date">3 May</span>
@@ -512,7 +519,7 @@
       </div>
     </div>
 
-    <div class="ct-day">
+    <div class="ct-day" id="day-mon" data-day="mon">
       <div class="ct-day-header">
         <span class="ct-day-label">Monday</span>
         <span class="ct-day-date">4 May</span>
@@ -569,7 +576,7 @@
       </div>
     </div>
 
-    <div class="ct-day">
+    <div class="ct-day" id="day-tue" data-day="tue">
       <div class="ct-day-header">
         <span class="ct-day-label">Tuesday</span>
         <span class="ct-day-date">5 May</span>
@@ -623,7 +630,7 @@
       </div>
     </div>
 
-    <div class="ct-day">
+    <div class="ct-day" id="day-wed" data-day="wed">
       <div class="ct-day-header">
         <span class="ct-day-label">Wednesday</span>
         <span class="ct-day-date">6 May</span>
@@ -1888,7 +1895,7 @@
 </footer>
 
 <script defer src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="rossstag.js?v=20260420-3"></script>
+<script src="rossstag.js?v=20260420-4"></script>
 </body>
 </html>
 

@@ -3982,6 +3982,22 @@
       if (ico) ico.textContent = icon;
       primaryPin.classList.toggle('nav-pin-featured', d <= 14);
     }
+    markTodayInTimeline();
+  }
+
+  // Mark today's day block + day-pill during the trip window.
+  function markTodayInTimeline() {
+    const days = { sun: '2026-05-03', mon: '2026-05-04', tue: '2026-05-05', wed: '2026-05-06' };
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+    const todayISO = y + '-' + m + '-' + dd;
+    let todayKey = null;
+    Object.keys(days).forEach(function (k) { if (days[k] === todayISO) todayKey = k; });
+    document.querySelectorAll('.ct-day, .ct-day-pill').forEach(function (n) { n.classList.remove('is-today'); });
+    if (!todayKey) return;
+    document.querySelectorAll('.ct-day[data-day="' + todayKey + '"], .ct-day-pill[data-day="' + todayKey + '"]').forEach(function (n) {
+      n.classList.add('is-today');
+    });
   }
 
   // ─────────────────────────────────────────────────────────────
