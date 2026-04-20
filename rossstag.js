@@ -93,6 +93,22 @@
       }
     });
   }
+  const drawerCloseBtn = document.querySelector('.nav-drawer-close');
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', function (event) {
+      event.stopPropagation();
+      closeDrawer();
+    });
+  }
+  const navBackdropEl = document.querySelector('.nav-backdrop');
+  if (navBackdropEl) {
+    navBackdropEl.addEventListener('click', function () { closeDrawer(); });
+  }
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && topNavEl && topNavEl.classList.contains('drawer-open')) {
+      closeDrawer();
+    }
+  });
 
   function setActiveNavLink(id) {
     navLinks.forEach(link => {

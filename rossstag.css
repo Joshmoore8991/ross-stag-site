@@ -223,19 +223,45 @@
   .top-nav.drawer-open .nav-hamburger .nav-hamburger-bars .hamburger-bar:nth-child(3) {
     transform: translate(0, -6px) rotate(-45deg);
   }
-  /* Mobile drawer */
+  /* Side drawer — slides in from the right as a full-height overlay panel. */
   .nav-drawer {
-    display: none;
-    border-top: 1px solid rgba(212,168,67,.15);
-    padding: 12px 14px 14px;
-    max-height: calc(100vh - var(--top-nav-height, 72px) - 32px);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(360px, 88vw);
+    padding: 18px 18px calc(22px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(14,10,7,.98), rgba(8,5,3,.98));
+    border-left: 1px solid rgba(212,168,67,.25);
+    box-shadow: -16px 0 40px rgba(0,0,0,.55);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-  }
-  .top-nav.drawer-open .nav-drawer {
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.22,.61,.36,1), visibility .28s;
+    visibility: hidden;
+    z-index: 10030;
     display: block;
   }
+  .top-nav.drawer-open .nav-drawer {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .nav-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    margin: 0 0 12px auto;
+    background: transparent;
+    color: var(--cream);
+    border: 1px solid rgba(212,168,67,.3);
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .nav-drawer-close:hover { border-color: rgba(212,168,67,.6); background: rgba(212,168,67,.08); }
   /* Backdrop when drawer is open — dims the page so the menu reads as modal. */
   .nav-backdrop {
     position: fixed;
@@ -795,7 +821,13 @@
 
   /* Light-theme drawer fixes — base uses translucent white-on-white that
      vanishes against a light background. */
-  .light-theme .nav-drawer { background: rgba(255,255,255,.95); border-top-color: rgba(25,184,255,.22); }
+  .light-theme .nav-drawer {
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(245,245,248,.98));
+    border-left-color: rgba(25,184,255,.22);
+    box-shadow: -16px 0 40px rgba(0,0,0,.18);
+  }
+  .light-theme .nav-drawer-close { color: #1A1A1A; border-color: rgba(25,184,255,.3); }
+  .light-theme .nav-drawer-close:hover { border-color: rgba(25,184,255,.6); background: rgba(25,184,255,.08); }
   .light-theme .nav-drawer-cta {
     background: linear-gradient(135deg, rgba(212,168,67,.32), rgba(212,168,67,.12));
     border-color: rgba(212,168,67,.6);
