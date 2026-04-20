@@ -24,7 +24,7 @@
 <meta name="twitter:title" content="BARCELONA STAG — May 2026">
 <meta name="twitter:description" content="Ross Wightman's Stag Do in Barcelona, May 2026.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
-<link rel="manifest" href="manifest.webmanifest?v=20260420-1">
+<link rel="manifest" href="manifest.webmanifest?v=20260420-2">
 <!-- iOS PWA hints: without these, Add-to-Home-Screen creates a plain
      Safari bookmark that captures whatever URL is in the address bar
      rather than honouring the manifest's start_url. -->
@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260420-1">
+<link rel="stylesheet" href="rossstag.css?v=20260420-2">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -397,58 +397,280 @@
 
 <section id="itinerary-section">
   <h2 class="section-title fade-in">Trip Schedule</h2>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">Before Go</div>
-    <div class="schedule-info"><h3>Final Checks</h3><p>Final payment complete. EasyJet check-in is open. Keep passports, boarding passes and hotel details ready.</p></div>
+  <p class="section-lead fade-in">Crew-only timeline &mdash; Ross sees a locked countdown until landing. Dots colour the slot, badges flag booking status. <em>Suggestion</em> = optional, swap freely.</p>
+
+  <div class="crew-timeline fade-in">
+    <div class="ct-legend">
+      <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#4A7FA5"></span>Transport</div>
+      <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#D4A843"></span>Food &amp; Drink</div>
+      <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#C9382A"></span>Football</div>
+      <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#1C1410;border:1px solid #8C7660"></span>Night Out</div>
+      <div class="ct-legend-item"><span class="ct-legend-dot" style="background:#4A7A5A;border:2px dashed #4A7A5A;box-sizing:border-box"></span>Suggestion</div>
+    </div>
+
+    <div class="ct-day">
+      <div class="ct-day-header">
+        <span class="ct-day-label">Sunday</span>
+        <span class="ct-day-date">3 May</span>
+        <span class="ct-day-vibe">Arrival &amp; Double-Header</span>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">04:00</span><span class="ct-time-sub">Meet</span></div>
+        <div class="ct-dot transport"></div>
+        <div class="ct-card">
+          <div class="ct-card-top"><span class="ct-card-name">Belfast International &mdash; meet-up</span><div class="ct-badges"><span class="ct-badge booked">Booked</span></div></div>
+          <p class="ct-desc">All 6 lads at BFS by 04:00. Coffee, security, gate. Hand luggage only &mdash; 45&times;36&times;20cm, 15kg.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">06:10</span><span class="ct-time-sub">Depart</span></div>
+        <div class="ct-dot transport"></div>
+        <div class="ct-card">
+          <div class="ct-card-top"><span class="ct-card-name">EZY3001 BFS &rarr; BCN</span><div class="ct-badges"><span class="ct-badge booked">Booked</span></div></div>
+          <p class="ct-desc">EasyJet 06:10 &rarr; 09:50 local. ~3h direct. Boarding passes in Apple Wallet before you fly.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">10:15</span><span class="ct-time-sub">Arrivals</span></div>
+        <div class="ct-dot transport"></div>
+        <div class="ct-card">
+          <div class="ct-card-top"><span class="ct-card-name">Suntransfers private van &rarr; Htop BCN City</span><div class="ct-badges"><span class="ct-badge booked">Booked</span></div></div>
+          <p class="ct-desc">Driver at arrivals with a name sign. Code and emergency number in <a href="#transfer-section" style="color:var(--gold);">Transfer card</a>. ~30 min to the hotel in Gr&agrave;cia.</p>
+          <div class="ct-meta">
+            <span class="ct-meta-item"><span>&#x1F4CD;</span>Travessera de Gr&agrave;cia, Eixample border</span>
+            <span class="ct-meta-item"><span>&#x23F1;</span>Hotel by ~11:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">11:30</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Drop bags, quick vermut</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Rooms may not be ready until 14:00 &mdash; drop bags and head to a Gr&agrave;cia terrace for a first beer or vermut. <strong>Syra Coffee</strong> if anyone needs caffeine before the football.</p>
+          <div class="ct-meta"><span class="ct-meta-item"><span>&#x1F6B6;</span>5&ndash;10 min walk from hotel</span></div>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">13:00</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card tbc">
+          <div class="ct-card-top"><span class="ct-card-name">Welcome lunch &mdash; tapas in Gr&agrave;cia</span><div class="ct-badges"><span class="ct-badge tbc">Pick a spot</span><span class="ct-badge walk">&#x1F6B6; Walk</span></div></div>
+          <p class="ct-desc">Pla&ccedil;a de la Vila de Gr&agrave;cia or Carrer de Verdi &mdash; calm setup before the football. Keep it light. <a href="#restaurants-section" style="color:var(--gold);">See restaurant list &rarr;</a></p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">16:30</span><span class="ct-time-sub">K.O.</span></div>
+        <div class="ct-dot football"></div>
+        <div class="ct-card tbc">
+          <div class="ct-card-top"><span class="ct-card-name">&#x1F3C6; UWCL Semi &mdash; Bar&ccedil;a Fem&iacute; v Bayern</span><div class="ct-badges"><span class="ct-badge tbc">Tickets TBC</span><span class="ct-badge metro">&#x1F687; L3</span></div></div>
+          <p class="ct-desc">Spotify Camp Nou, semi-final 2nd leg. &euro;15&ndash;&euro;45 via the official portal. <strong>Book before you fly</strong> so seats are together.</p>
+          <div class="ct-meta">
+            <span class="ct-meta-item"><span>&#x1F687;</span>L3 to Palau Reial</span>
+            <span class="ct-meta-item"><span>&#x23F1;</span>Done ~18:30</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ct-transport-strip">&#x1F68B; Or skip the semi &mdash; direct T1 tram from Pl. Espanya to RCDE saves the 19:00 dinner rush.</div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">19:00</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Fast dinner near hotel</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Pizza, burger or quick tapas. Save the long meal for Monday. Eat, regroup, grab the tram.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">21:00</span><span class="ct-time-sub">K.O.</span></div>
+        <div class="ct-dot football"></div>
+        <div class="ct-card tbc">
+          <div class="ct-card-top"><span class="ct-card-name">&#x1F525; Espanyol v Real Madrid</span><div class="ct-badges"><span class="ct-badge tbc">Tickets TBC</span><span class="ct-badge metro">&#x1F687; L8 / T1</span></div></div>
+          <p class="ct-desc">RCDE Stadium, Cornell&agrave;. Real Madrid away in a live LaLiga title-race window &mdash; these seats move fast. Plan B: The George Payne or Flaherty's.</p>
+          <div class="ct-meta">
+            <span class="ct-meta-item"><span>&#x1F4B6;</span>~&euro;60&ndash;&euro;250</span>
+            <span class="ct-meta-item"><span>&#x1F687;</span>T1/T2/T3 tram from Pl. Espanya</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">23:30+</span></div>
+        <div class="ct-dot night"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Late night &mdash; Gr&agrave;cia or Eixample</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Back to base for the first proper session. Pace it &mdash; Monday is the main event.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ct-day">
+      <div class="ct-day-header">
+        <span class="ct-day-label">Monday</span>
+        <span class="ct-day-date">4 May</span>
+        <span class="ct-day-vibe">Big Day Out</span>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">10:30</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Late breakfast</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span><span class="ct-badge walk">&#x1F6B6; Walk</span></div></div>
+          <p class="ct-desc"><strong>Can Dend&ecirc;</strong> (Gr&agrave;cia) or <strong>Federal Caf&eacute;</strong> (Parlament). Expect a queue past 11:00 &mdash; get there early.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">13:30</span></div>
+        <div class="ct-dot"></div>
+        <div class="ct-card tbc">
+          <div class="ct-card-top"><span class="ct-card-name">Day activity &mdash; pick one</span><div class="ct-badges"><span class="ct-badge tbc">Book now</span></div></div>
+          <p class="ct-desc">Catamaran sail + tapas, karting, paella class, pool club. All book up for a May long-weekend &mdash; <a href="#book-now-section" style="color:var(--gold);">lock it in &rarr;</a></p>
+          <div class="ct-meta">
+            <span class="ct-meta-item"><span>&#x23F1;</span>2&ndash;3 hour window</span>
+            <span class="ct-meta-item"><span>&#x1F4B6;</span>~&euro;45&ndash;&euro;95pp</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">16:30</span><span class="ct-time-sub">Chill</span></div>
+        <div class="ct-dot suggestion"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Barceloneta chiringuito or rooftop</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Cold beers, salt air, decompress before dinner. Or a rooftop in Eixample &mdash; Hotel Claris / Ayre Rosell&oacute;n both walk-in.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">20:30</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card tbc">
+          <div class="ct-card-top"><span class="ct-card-name">Group dinner &mdash; book for 6</span><div class="ct-badges"><span class="ct-badge tbc">Book now</span></div></div>
+          <p class="ct-desc">Six lads without a reservation splits across tables &mdash; ping 2&ndash;3 spots today. Cerveceria Catalana, Bodega Biarritz or a paella house on the beach. <a href="#restaurants-section" style="color:var(--gold);">Picks &rarr;</a></p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">23:00+</span></div>
+        <div class="ct-dot night"></div>
+        <div class="ct-card">
+          <div class="ct-card-top"><span class="ct-card-name">Main night session</span><div class="ct-badges"><span class="ct-badge metro">&#x1F687; Late metro</span></div></div>
+          <p class="ct-desc">Eixample cocktail bar into a club &mdash; Opium, Pacha, Shoko on the beach. Kick-off Ross's big night. Cabs home are cheap split six ways.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ct-day">
+      <div class="ct-day-header">
+        <span class="ct-day-label">Tuesday</span>
+        <span class="ct-day-date">5 May</span>
+        <span class="ct-day-vibe">Recovery &amp; Flex</span>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">11:00</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Hangover brunch</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Granja La Pallaresa for churros con chocolate, or Hofmann for pastries. <a href="#breakfast-section" style="color:var(--gold);">Breakfast picks &rarr;</a></p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">13:30</span><span class="ct-time-sub">Pick one</span></div>
+        <div class="ct-dot suggestion"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Flex slot &mdash; sightsee or chill</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span><span class="ct-badge metro">&#x1F687; Metro</span></div></div>
+          <p class="ct-desc">Sagrada Fam&iacute;lia (book slots online), Park G&uuml;ell, Camp Nou tour, or Montju&iuml;c cable car for views. Cheap, walkable, decompression-friendly.</p>
+          <div class="ct-meta"><span class="ct-meta-item"><span>&#x1F4B6;</span>~&euro;12&ndash;&euro;36pp</span></div>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">17:00</span></div>
+        <div class="ct-dot suggestion"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Beach window</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Barceloneta chiringuito or W Hotel Sun Deck if the weather holds. Last easy afternoon before home.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">20:30</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card tbc">
+          <div class="ct-card-top"><span class="ct-card-name">Last-night dinner &mdash; Passeig de Gr&agrave;cia</span><div class="ct-badges"><span class="ct-badge tbc">Book now</span></div></div>
+          <p class="ct-desc">The final proper sit-down. Make it count &mdash; toast Ross, tell the stories, then wander. <a href="#restaurants-section" style="color:var(--gold);">Restaurant list &rarr;</a></p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">23:00+</span></div>
+        <div class="ct-dot night"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Last night out</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Keep it tighter than Monday &mdash; an early flight home is tomorrow. Finish with a late pint on the Passeig.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ct-day">
+      <div class="ct-day-header">
+        <span class="ct-day-label">Wednesday</span>
+        <span class="ct-day-date">6 May</span>
+        <span class="ct-day-vibe">Home Day</span>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">10:00</span></div>
+        <div class="ct-dot food"></div>
+        <div class="ct-card suggestion">
+          <div class="ct-card-top"><span class="ct-card-name">Quick morning coffee</span><div class="ct-badges"><span class="ct-badge suggestion">Suggestion</span></div></div>
+          <p class="ct-desc">Syra or Nom&ograve;. Bags packed, heads clear, room keys dropped.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">11:30</span><span class="ct-time-sub">Latest</span></div>
+        <div class="ct-dot transport"></div>
+        <div class="ct-card">
+          <div class="ct-card-top"><span class="ct-card-name">Suntransfers van &rarr; BCN airport</span><div class="ct-badges"><span class="ct-badge booked">Booked</span></div></div>
+          <p class="ct-desc">Confirm pickup time 24h before via customer.suntransfers.com. For a 14:00 flight, lobby by 11:30 is the safe call.</p>
+        </div>
+      </div>
+
+      <div class="ct-activity">
+        <div class="ct-time"><span class="ct-time-main">14:00</span><span class="ct-time-sub">Depart</span></div>
+        <div class="ct-dot transport"></div>
+        <div class="ct-card">
+          <div class="ct-card-top"><span class="ct-card-name">EZY3002 BCN &rarr; BFS</span><div class="ct-badges"><span class="ct-badge booked">Booked</span></div></div>
+          <p class="ct-desc">Land Belfast 15:55 local. Sort pickup before you fly.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ct-tips">
+      <h3>Practical Notes</h3>
+      <div class="ct-tips-grid">
+        <div class="ct-tip"><strong>Book Now</strong>UWCL + Espanyol + Day 2 activity sell fast. Pay before you fly &mdash; <a href="#book-now-section" style="color:var(--gold);">book-now section</a>.</div>
+        <div class="ct-tip"><strong>Metro Card</strong>T-Casual 10-trip is &euro;12.55 and shareable. Tap once per lad, not per group.</div>
+        <div class="ct-tip"><strong>Eating Times</strong>Barcelona eats late &mdash; lunch 14:00&ndash;16:00, dinner from 21:00. Kitchens close between meals.</div>
+        <div class="ct-tip"><strong>Ross Drinks Free</strong>Ross's wallet stays in the hotel. Rule 02 stands.</div>
+        <div class="ct-tip"><strong>Late Metro</strong>Sunday shuts ~00:00, Mon&ndash;Thu ~00:30, Fri &rarr; all-night Sat. Taxis home are cheap split six ways.</div>
+        <div class="ct-tip"><strong>Offline Map</strong>Download Barcelona to Google Maps before you fly &mdash; some bar streets have patchy 4G.</div>
+      </div>
+    </div>
   </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May<br>04:00</div>
-    <div class="schedule-info"><h3>Airport Meet-Up (BFS)</h3><p>Meet at Belfast International by 04:00. Coffee first, then security and gate.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May<br>06:10</div>
-    <div class="schedule-info"><h3>Flight to Barcelona</h3><p>EasyJet EZY3001 departs 06:10 and lands 09:50 local time.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May<br>10:30+</div>
-    <div class="schedule-info"><h3>Transfer &amp; Hotel Drop</h3><p>Suntransfers private van BCN&nbsp;&rarr;&nbsp;Htop BCN City. Bags dropped, quick freshen-up. Full check-in is from 14:00.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May<br>13:00</div>
-    <div class="schedule-info"><h3>Welcome Lunch + First Beer</h3><p>Easy tapas spot near the hotel &mdash; calm setup before the football double-header. Hydrate.</p></div>
-  </div>
-  <div class="schedule-item fade-in" style="border-left-color: var(--gold);">
-    <div class="schedule-time">3 May<br>16:30</div>
-    <div class="schedule-info"><h3>&#x1F3C6; UWCL Semi @ Camp Nou (optional)</h3><p>Bar&ccedil;a Fem&iacute; v Bayern M&uuml;nchen, semi-final 2nd leg. L3 metro to Palau Reial. <strong>Book tickets in advance.</strong> Done by ~18:30.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May<br>19:00</div>
-    <div class="schedule-info"><h3>Quick Dinner</h3><p>Light, fast bite back near the hotel &mdash; pizza or tapas. Save the long meal for Day 2.</p></div>
-  </div>
-  <div class="schedule-item fade-in" style="border-left-color: #C9382A;">
-    <div class="schedule-time">3 May<br>21:00</div>
-    <div class="schedule-info"><h3>&#x1F525; Espanyol v Real Madrid (optional)</h3><p>RCDE Stadium, Cornell&agrave;. T1/T2/T3 tram from Pl. Espanya. Or pivot to a sports bar &mdash; The George Payne / Flaherty's pull the fixture.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">3 May<br>23:30+</div>
-    <div class="schedule-info"><h3>Late Night Out</h3><p>Back to the city for first proper session. Pace it &mdash; Day 2 is the big one.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">4 May<br>Day 2</div>
-    <div class="schedule-info"><h3>Big Activity Day</h3><p>Late breakfast, daytime activity window, then dinner and main night session.</p></div>
-  </div>
-  <div class="schedule-item fade-in" id="crew-only-optional" style="display:none;">
-    <div class="schedule-time">4 May<br>Optional</div>
-    <div class="schedule-info"><h3>Optional Activity Slot</h3><p>Free block for group plans, weather backup, or extra activities.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">5 May<br>Day 3</div>
-    <div class="schedule-info"><h3>Recovery + Flex Plans</h3><p>Brunch, optional football/sightseeing block, final group meal and easy last night.</p></div>
-  </div>
-  <div class="schedule-item fade-in">
-    <div class="schedule-time">6 May<br>14:00</div>
-    <div class="schedule-info"><h3>Return Flight</h3><p>Transfer to BCN airport, EasyJet EZY3002 departs 14:00 and lands Belfast 15:55 local.</p></div>
-  </div>
+
   <div id="approved-schedule-items" style="margin-top:10px;"></div>
 </section>
 
@@ -1666,7 +1888,7 @@
 </footer>
 
 <script defer src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="rossstag.js?v=20260420-1"></script>
+<script src="rossstag.js?v=20260420-2"></script>
 </body>
 </html>
 
