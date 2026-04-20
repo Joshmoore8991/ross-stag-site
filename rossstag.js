@@ -3965,6 +3965,13 @@
     renderTminusTracker();
   }
 
+  function renderBookNowDaysOut() {
+    const el = document.getElementById('book-now-days-out');
+    if (!el) return;
+    const d = tminusDaysOut();
+    el.textContent = d <= 0 ? 'wheels up' : String(d);
+  }
+
   // ─────────────────────────────────────────────────────────────
   // Who Pays? — spinner that picks a lad (Ross excluded).
   // ─────────────────────────────────────────────────────────────
@@ -4316,6 +4323,7 @@
   function initStagExtras() {
     try { renderFlightDayChecklist(); } catch (_) {}
     try { renderTminusTracker(); } catch (_) {}
+    try { renderBookNowDaysOut(); } catch (_) {}
     try { renderWhoPaysHistory(); } catch (_) {}
     try { renderTriviaBestLabel(); } catch (_) {}
     try { renderMemoryWall(); } catch (_) {}

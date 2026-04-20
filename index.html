@@ -24,7 +24,7 @@
 <meta name="twitter:title" content="BARCELONA STAG — May 2026">
 <meta name="twitter:description" content="Ross Wightman's Stag Do in Barcelona, May 2026.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
-<link rel="manifest" href="manifest.webmanifest?v=20260419-6">
+<link rel="manifest" href="manifest.webmanifest?v=20260419-7">
 <!-- iOS PWA hints: without these, Add-to-Home-Screen creates a plain
      Safari bookmark that captures whatever URL is in the address bar
      rather than honouring the manifest's start_url. -->
@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260419-6">
+<link rel="stylesheet" href="rossstag.css?v=20260419-7">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -64,6 +64,7 @@
       <div class="nav-group-menu">
         <span class="nav-submenu-label">Pre-trip</span>
         <a class="top-sub-link" href="#trip-schedule-section"><span class="nav-ico" aria-hidden="true">👥</span>Crew</a>
+        <a class="top-sub-link" href="#book-now-section"><span class="nav-ico" aria-hidden="true">🎟️</span>Book Now</a>
         <a class="top-sub-link" href="#flights-section"><span class="nav-ico" aria-hidden="true">✈️</span>Flights</a>
         <a class="top-sub-link" href="#essentials-section"><span class="nav-ico" aria-hidden="true">🎒</span>Essentials</a>
         <a class="top-sub-link" href="#scams-section"><span class="nav-ico" aria-hidden="true">🚨</span>Scams</a>
@@ -133,6 +134,7 @@
     <div class="nav-drawer-group">
       <span class="nav-drawer-label">Trip · Pre-trip</span>
       <a class="top-sub-link" href="#trip-schedule-section"><span class="nav-ico" aria-hidden="true">👥</span>Crew</a>
+      <a class="top-sub-link" href="#book-now-section"><span class="nav-ico" aria-hidden="true">🎟️</span>Book Now</a>
       <a class="top-sub-link" href="#flights-section"><span class="nav-ico" aria-hidden="true">✈️</span>Flights</a>
       <a class="top-sub-link" href="#essentials-section"><span class="nav-ico" aria-hidden="true">🎒</span>Essentials</a>
       <a class="top-sub-link" href="#scams-section"><span class="nav-ico" aria-hidden="true">🚨</span>Scams</a>
@@ -237,6 +239,33 @@
       <button type="button" class="btn btn-outline-light btn-sm" data-action="resetTminusTracker">Reset tracker</button>
     </div>
     <p class="subtle-note" style="margin-top:10px;">Tasks unlock as the trip gets closer. Tap to tick — your device keeps the state.</p>
+  </div>
+</section>
+
+<section id="book-now-section" class="fade-in">
+  <h2 class="section-title">Book These Now</h2>
+  <p class="section-lead">Trip is <strong id="book-now-days-out">--</strong> days out. Anything below runs out of stock fastest. Pay now, thank yourself later.</p>
+  <div class="info-grid">
+    <div class="info-card" style="border-color:rgba(201,56,42,.45);">
+      <h3>&#x1F525; Espanyol v Real Madrid</h3>
+      <p><strong>Sun 3 May, 21:00 &middot; RCDE Stadium.</strong> Away-Madrid fixtures sell out. Price rises sharply as availability drops.</p>
+      <p><a class="btn btn-gold btn-sm" href="https://www.rcdespanyol.com/en/nextmatches" target="_blank" rel="noopener noreferrer">Buy at rcdespanyol.com</a></p>
+    </div>
+    <div class="info-card" style="border-color:rgba(212,168,67,.55);">
+      <h3>&#x1F3C6; UWCL Semi &mdash; Bar&ccedil;a Fem&iacute; v Bayern</h3>
+      <p><strong>Sun 3 May, 16:30 &middot; Spotify Camp Nou.</strong> Knockout football at Camp Nou, &euro;15&ndash;&euro;45. Get seats together before the crew split up.</p>
+      <p><a class="btn btn-gold btn-sm" href="https://www.fcbarcelona.com/en/tickets/women-football" target="_blank" rel="noopener noreferrer">Buy at fcbarcelona.com</a></p>
+    </div>
+    <div class="info-card">
+      <h3>&#x1F3DD; Day 2 Activity (Mon 4 May)</h3>
+      <p>Boat party, karting, paella class or pool club. All book up mid-week before a bank-holiday weekend &mdash; lock it in.</p>
+      <p><a class="btn btn-outline-gold btn-sm" href="#activities-section">See activity list</a></p>
+    </div>
+    <div class="info-card">
+      <h3>&#x1F37D; Dinner for 6 (Mon/Tue)</h3>
+      <p>Group of six without a booking = split across two tables or walking off looking for a table at 22:00. Ping 2-3 spots now.</p>
+      <p><a class="btn btn-outline-gold btn-sm" href="#restaurants-section">Pick a restaurant</a></p>
+    </div>
   </div>
 </section>
 
@@ -1687,7 +1716,7 @@
 </footer>
 
 <script defer src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="rossstag.js?v=20260419-6"></script>
+<script src="rossstag.js?v=20260419-7"></script>
 </body>
 </html>
 
