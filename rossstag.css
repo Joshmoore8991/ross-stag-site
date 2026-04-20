@@ -166,22 +166,34 @@
     background: var(--gold);
     box-shadow: 0 6px 18px rgba(212,168,67,.25);
   }
-  /* Hamburger button */
+  /* Hamburger / Menu button — now shown on all viewports */
   .nav-hamburger {
-    display: none;
-    flex-direction: column;
-    gap: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     background: transparent;
-    border: 1px solid transparent;
+    border: 1px solid rgba(212,168,67,.32);
     border-radius: 8px;
-    padding: 8px;
+    padding: 8px 12px 8px 10px;
     cursor: pointer;
     margin-left: auto;
     flex-shrink: 0;
-    transition: border-color .2s ease;
+    transition: border-color .2s ease, background .2s ease;
   }
   .nav-hamburger:hover {
-    border-color: rgba(212,168,67,.32);
+    border-color: rgba(212,168,67,.6);
+    background: rgba(212,168,67,.08);
+  }
+  .nav-hamburger-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--cream);
+  }
+  .nav-hamburger-bars {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
   }
   .hamburger-bar {
     display: block;
@@ -191,15 +203,15 @@
     border-radius: 2px;
     transition: transform .25s ease, opacity .2s ease;
   }
-  .top-nav.drawer-open .nav-hamburger .hamburger-bar:nth-child(1) {
-    transform: translate(0, 7px) rotate(45deg);
+  .top-nav.drawer-open .nav-hamburger .nav-hamburger-bars .hamburger-bar:nth-child(1) {
+    transform: translate(0, 6px) rotate(45deg);
   }
-  .top-nav.drawer-open .nav-hamburger .hamburger-bar:nth-child(2) {
+  .top-nav.drawer-open .nav-hamburger .nav-hamburger-bars .hamburger-bar:nth-child(2) {
     opacity: 0;
     transform: scaleX(0);
   }
-  .top-nav.drawer-open .nav-hamburger .hamburger-bar:nth-child(3) {
-    transform: translate(0, -7px) rotate(-45deg);
+  .top-nav.drawer-open .nav-hamburger .nav-hamburger-bars .hamburger-bar:nth-child(3) {
+    transform: translate(0, -6px) rotate(-45deg);
   }
   /* Mobile drawer */
   .nav-drawer {
@@ -229,26 +241,53 @@
     display: inline-block;
     margin: 2px;
   }
+  /* Pinned quick-action links in the top bar */
+  .nav-pinned {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 14px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-pinned::-webkit-scrollbar { display: none; }
+  .nav-pin {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--cream);
+    text-decoration: none;
+    opacity: .85;
+    white-space: nowrap;
+    transition: background .2s ease, opacity .2s ease, color .2s ease;
+  }
+  .nav-pin:hover { opacity: 1; background: rgba(212,168,67,.14); }
+  .nav-pin.active { opacity: 1; color: var(--black); background: var(--gold); box-shadow: 0 6px 18px rgba(212,168,67,.25); }
+  .nav-pin.nav-pin-featured { border: 1px solid rgba(212,168,67,.55); box-shadow: 0 0 0 1px rgba(212,168,67,.18) inset; }
+  .nav-pin .nav-ico { margin-right: 0; }
   /* Responsive breakpoints */
   @media (max-width: 720px) {
-    .nav-hamburger {
-      display: flex;
-    }
     .top-nav-inner {
       overflow-x: unset;
       justify-content: space-between;
     }
-    .top-nav-inner .nav-group {
-      display: none;
-    }
     .top-nav-brand {
-      flex: 1;
+      flex: 0 0 auto;
     }
-  }
-  @media (min-width: 721px) {
-    .nav-drawer {
-      display: none !important;
+    .nav-pinned {
+      margin-left: 8px;
+      gap: 2px;
     }
+    .nav-pin { padding: 6px 9px; font-size: 11px; letter-spacing: 1.4px; }
+    .nav-pin-label { display: none; }
+    .nav-hamburger-label { display: none; }
+    .nav-hamburger { padding: 8px; }
   }
 
   /* ── Nav refinements: icons, sub-labels, drawer filter, progress bar ── */
