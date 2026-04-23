@@ -947,6 +947,60 @@
   .light-theme .venue-act { color:#5A4216; background:rgba(212,168,67,.1); border-color:rgba(212,168,67,.4); }
   .light-theme .venue-act:hover { background:rgba(212,168,67,.18); border-color:rgba(212,168,67,.65); }
 
+  /* Tap-to-copy booking codes — surface affordance + briefly confirm. */
+  .copyable-code {
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px dashed rgba(212,168,67,.32);
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+    user-select: all;
+    position: relative;
+  }
+  .copyable-code:hover { border-color: rgba(212,168,67,.6); background: rgba(212,168,67,.08); }
+  .copyable-code:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .copyable-code:active { transform: translateY(1px); }
+  .copyable-code.is-copied { background: rgba(74,122,90,.22); border-color: rgba(74,122,90,.55); border-style: solid; }
+  .light-theme .copyable-code { border-color: rgba(0,0,0,.2); }
+  .light-theme .copyable-code:hover { border-color: rgba(212,168,67,.6); background: rgba(212,168,67,.1); }
+
+  /* iOS Add-to-Home-Screen hint — bottom-anchored dismissible banner. */
+  .ios-install-hint {
+    position: fixed;
+    left: 10px; right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(14,10,7,.96), rgba(22,16,10,.96));
+    border: 1px solid rgba(212,168,67,.5);
+    border-radius: 14px;
+    color: var(--cream);
+    box-shadow: 0 16px 40px rgba(0,0,0,.45);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+    z-index: 10005;
+  }
+  .ios-install-hint.is-visible { transform: translateY(0); opacity: 1; }
+  .ios-install-ico { font-size: 24px; line-height: 1; flex-shrink: 0; }
+  .ios-install-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; font-size: 13px; line-height: 1.35; }
+  .ios-install-body strong { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--gold); font-size: 15px; }
+  .ios-install-body em { color: var(--gold); font-style: normal; font-weight: 600; }
+  .ios-install-close {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--cream);
+    border: 1px solid rgba(212,168,67,.3);
+    font-size: 20px; line-height: 1; cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .ios-install-close:hover { background: rgba(212,168,67,.1); border-color: rgba(212,168,67,.6); }
+  .light-theme .ios-install-hint { background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(245,245,248,.98)); color: #1A1A1A; border-color: rgba(25,184,255,.35); box-shadow: 0 16px 40px rgba(0,0,0,.18); }
+  .light-theme .ios-install-close { color: #1A1A1A; border-color: rgba(0,0,0,.18); }
+  .light-theme .ios-install-close:hover { background: rgba(0,0,0,.04); border-color: rgba(25,184,255,.5); }
+
   .rsvp-section { text-align:center; padding:100px 24px; }
   .rsvp-btn { display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--black); background:var(--gold); padding:16px 52px; border:none; cursor:pointer; text-decoration:none; transition:all .3s ease; margin-top:20px; border-radius:8px; box-shadow:0 6px 20px rgba(212,168,67,.3); font-weight:700; }
   .rsvp-btn:hover { background:var(--cream); transform:translateY(-4px); box-shadow:0 12px 40px rgba(212,168,67,.5); }

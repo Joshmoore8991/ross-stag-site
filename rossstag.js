@@ -4447,6 +4447,98 @@
     try { enhanceVenueCards(); } catch (_) {}
     try { renderWhatsNextPill(); } catch (_) {}
     try { setInterval(function () { try { renderWhatsNextPill(); } catch (_) {} }, 60000); } catch (_) {}
+    try { wireCopyableCodes(); } catch (_) {}
+    try { addFlightStatusLinks(); } catch (_) {}
+    try { maybeShowIosInstallHint(); } catch (_) {}
+  }
+
+  // Tap-to-copy for hotel + transfer booking codes.
+  function wireCopyableCodes() {
+    ['hotel-booking-code', 'transfer-booking-code'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.copyWired === '1') return;
+      el.dataset.copyWired = '1';
+      el.classList.add('copyable-code');
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('title', 'Tap to copy');
+      const copy = function () {
+        const raw = (el.textContent || '').trim();
+        if (!raw || raw === 'Loading...' || raw === 'Unavailable') return;
+        const done = function () {
+          el.classList.add('is-copied');
+          if (typeof showToast === 'function') showToast('Code copied', 1600);
+          setTimeout(function () { el.classList.remove('is-copied'); }, 1200);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(raw).then(done).catch(function () {});
+        } else {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = raw; ta.setAttribute('readonly', ''); ta.style.position = 'absolute'; ta.style.left = '-9999px';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            done();
+          } catch (_) {}
+        }
+      };
+      el.addEventListener('click', copy);
+      el.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copy(); } });
+    });
+  }
+
+  // Add a Flightradar24 "Track flight" link to the outbound + return legs.
+  function addFlightStatusLinks() {
+    const flights = [
+      { nameMatch: 'EZY3001', number: 'EZY3001' },
+      { nameMatch: 'EZY3002', number: 'EZY3002' }
+    ];
+    document.querySelectorAll('.ct-card .ct-card-name').forEach(function (name) {
+      const text = (name.textContent || '');
+      flights.forEach(function (f) {
+        if (text.indexOf(f.nameMatch) === -1) return;
+        const card = name.closest('.ct-card');
+        if (!card || card.querySelector('.flight-track-link')) return;
+        const link = document.createElement('a');
+        link.className = 'flight-track-link venue-act';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.href = 'https://www.flightradar24.com/data/flights/' + f.number.toLowerCase();
+        link.innerHTML = '<span class="venue-act-ico" aria-hidden="true">✈️</span>Track flight';
+        const wrap = document.createElement('div');
+        wrap.className = 'venue-actions';
+        wrap.appendChild(link);
+        card.appendChild(wrap);
+      });
+    });
+  }
+
+  // iOS Safari "Add to Home Screen" hint — dismissible, shown once per device.
+  function maybeShowIosInstallHint() {
+    const KEY = 'iosInstallHintDismissed';
+    try { if (localStorage.getItem(KEY) === '1') return; } catch (_) { return; }
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    const standalone = ('standalone' in navigator && navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (!isIOS || standalone) return;
+    const banner = document.createElement('div');
+    banner.className = 'ios-install-hint';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-label', 'Install app');
+    banner.innerHTML =
+      '<span class="ios-install-ico" aria-hidden="true">📲</span>' +
+      '<span class="ios-install-body">' +
+      '<strong>Install Stag HQ</strong>' +
+      '<span>Tap <span aria-label="the Share icon">⇪</span> then <em>Add to Home Screen</em>.</span>' +
+      '</span>' +
+      '<button type="button" class="ios-install-close" aria-label="Dismiss">×</button>';
+    document.body.appendChild(banner);
+    requestAnimationFrame(function () { banner.classList.add('is-visible'); });
+    banner.querySelector('.ios-install-close').addEventListener('click', function () {
+      try { localStorage.setItem(KEY, '1'); } catch (_) {}
+      banner.classList.remove('is-visible');
+      setTimeout(function () { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 220);
+    });
   }
 
   // Find the next upcoming ct-activity during the trip window and surface
