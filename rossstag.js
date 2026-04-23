@@ -94,6 +94,14 @@
       if (isOpen) {
         const filter = document.getElementById('nav-drawer-filter');
         if (filter) setTimeout(function () { try { filter.focus({ preventScroll: true }); } catch (_) { filter.focus(); } }, 80);
+        // Scroll the currently-active nav link into view inside the drawer.
+        setTimeout(function () {
+          if (!navDrawerEl) return;
+          const activeLink = navDrawerEl.querySelector('.top-sub-link.active');
+          if (activeLink && typeof activeLink.scrollIntoView === 'function') {
+            activeLink.scrollIntoView({ block: 'center', behavior: 'instant' in window ? 'instant' : 'auto' });
+          }
+        }, 140);
       }
     });
   }
@@ -107,6 +115,36 @@
   const navBackdropEl = document.querySelector('.nav-backdrop');
   if (navBackdropEl) {
     navBackdropEl.addEventListener('click', function () { closeDrawer(); });
+  }
+  // Swipe-right to close the side drawer on touch devices.
+  if (navDrawerEl) {
+    let touchStartX = null, touchStartY = null, dragging = false;
+    navDrawerEl.addEventListener('touchstart', function (e) {
+      if (!topNavEl || !topNavEl.classList.contains('drawer-open')) return;
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      dragging = true;
+      navDrawerEl.style.transition = 'none';
+    }, { passive: true });
+    navDrawerEl.addEventListener('touchmove', function (e) {
+      if (!dragging || touchStartX === null) return;
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      // Only treat as horizontal swipe if dx dominates and is rightward.
+      if (Math.abs(dy) > Math.abs(dx)) { dragging = false; navDrawerEl.style.transform = ''; navDrawerEl.style.transition = ''; return; }
+      if (dx > 0) navDrawerEl.style.transform = 'translateX(' + dx + 'px)';
+    }, { passive: true });
+    navDrawerEl.addEventListener('touchend', function (e) {
+      if (!dragging) return;
+      dragging = false;
+      navDrawerEl.style.transition = '';
+      const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : touchStartX;
+      const dx = endX - touchStartX;
+      touchStartX = touchStartY = null;
+      navDrawerEl.style.transform = '';
+      if (dx > 70) closeDrawer();
+    });
   }
   document.addEventListener('keydown', function (event) {
     if (!topNavEl || !topNavEl.classList.contains('drawer-open')) return;
@@ -4406,6 +4444,96 @@
     try { renderTriviaBestLabel(); } catch (_) {}
     try { renderMemoryWall(); } catch (_) {}
     try { renderSharedAlbumMsg(); } catch (_) {}
+    try { enhanceVenueCards(); } catch (_) {}
+    try { renderWhatsNextPill(); } catch (_) {}
+    try { setInterval(function () { try { renderWhatsNextPill(); } catch (_) {} }, 60000); } catch (_) {}
+  }
+
+  // Find the next upcoming ct-activity during the trip window and surface
+  // it in the "Up next" pill at the top of the itinerary section. Hidden
+  // outside the trip window so it doesn't distract pre-trip.
+  function renderWhatsNextPill() {
+    const pill = document.getElementById('whats-next-pill');
+    if (!pill) return;
+    const dayMap = { sun: '2026-05-03', mon: '2026-05-04', tue: '2026-05-05', wed: '2026-05-06' };
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+    const todayISO = y + '-' + m + '-' + dd;
+    // Only show during the trip window.
+    const tripDates = Object.values(dayMap);
+    if (tripDates.indexOf(todayISO) === -1) { pill.setAttribute('hidden', ''); return; }
+    let todayKey = null;
+    Object.keys(dayMap).forEach(function (k) { if (dayMap[k] === todayISO) todayKey = k; });
+    const dayEl = document.querySelector('.ct-day[data-day="' + todayKey + '"]');
+    if (!dayEl) { pill.setAttribute('hidden', ''); return; }
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    let next = null;
+    dayEl.querySelectorAll('.ct-activity').forEach(function (act) {
+      const timeEl = act.querySelector('.ct-time-main');
+      if (!timeEl) return;
+      const match = (timeEl.textContent || '').match(/(\d{1,2}):(\d{2})/);
+      if (!match) return;
+      const mins = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+      if (mins < nowMins) return;
+      if (!next || mins < next.mins) {
+        const nameEl = act.querySelector('.ct-card-name');
+        next = { mins: mins, time: match[1].padStart(2, '0') + ':' + match[2], name: nameEl ? nameEl.textContent.trim() : 'Next up', id: act.id || null };
+      }
+    });
+    if (!next) { pill.setAttribute('hidden', ''); return; }
+    pill.removeAttribute('hidden');
+    const tEl = pill.querySelector('[data-whats-next-time]');
+    const nEl = pill.querySelector('[data-whats-next-name]');
+    if (tEl) tEl.textContent = next.time;
+    if (nEl) nEl.textContent = next.name;
+    pill.setAttribute('href', '#' + (dayEl.id || 'itinerary-section'));
+  }
+
+  // Upgrade plain "Open in Maps" links on restaurant + hotel cards into
+  // a tappable action row with Directions + Share. No HTML edits required.
+  function enhanceVenueCards() {
+    const candidates = [];
+    document.querySelectorAll('.restaurant-card .restaurant-link').forEach(function (a) {
+      const card = a.closest('.restaurant-card');
+      const name = card ? (card.querySelector('h3') || {}).textContent : null;
+      if (name) candidates.push({ link: a, name: name.trim() });
+    });
+    document.querySelectorAll('#base-section .hotel-card a[href*="maps.google"]').forEach(function (a) {
+      const card = a.closest('.hotel-card');
+      const name = card ? (card.querySelector('.hotel-name') || {}).textContent : null;
+      if (name) candidates.push({ link: a, name: name.trim(), isHotel: true });
+    });
+    candidates.forEach(function (c) {
+      if (c.link.dataset.venueEnhanced === '1') return;
+      c.link.dataset.venueEnhanced = '1';
+      const wrap = document.createElement('div');
+      wrap.className = 'venue-actions';
+      const directions = document.createElement('a');
+      directions.className = 'venue-act';
+      directions.href = c.link.getAttribute('href');
+      directions.target = '_blank';
+      directions.rel = 'noopener noreferrer';
+      directions.innerHTML = '<span class="venue-act-ico" aria-hidden="true">🧭</span>Directions';
+      const shareBtn = document.createElement('button');
+      shareBtn.type = 'button';
+      shareBtn.className = 'venue-act';
+      shareBtn.innerHTML = '<span class="venue-act-ico" aria-hidden="true">📤</span>Share';
+      shareBtn.addEventListener('click', function () {
+        const url = c.link.getAttribute('href');
+        const msg = c.isHotel
+          ? 'Base for the Barcelona stag: ' + c.name + ' ' + url
+          : 'Pencil in ' + c.name + ' (Barcelona) ' + url;
+        if (navigator.share) {
+          navigator.share({ title: c.name, text: msg, url: url }).catch(function () {});
+        } else {
+          window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+        }
+      });
+      wrap.appendChild(directions);
+      wrap.appendChild(shareBtn);
+      const parent = c.link.parentElement;
+      if (parent) parent.replaceChild(wrap, c.link);
+    });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initStagExtras);

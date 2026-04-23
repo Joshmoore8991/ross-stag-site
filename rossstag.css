@@ -592,6 +592,56 @@
   .crew-timeline { padding: 8px 0; }
 
   /* Day pill nav — quick jumps between the 4 days */
+  .whats-next-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px 10px 16px;
+    margin: 0 0 18px;
+    background: linear-gradient(135deg, rgba(212,168,67,.2), rgba(212,168,67,.06));
+    border: 1px solid rgba(212,168,67,.5);
+    border-radius: 999px;
+    color: var(--cream);
+    text-decoration: none;
+    position: relative;
+    box-shadow: 0 6px 18px rgba(212,168,67,.18);
+    transition: background .2s ease, transform .15s ease, border-color .2s ease;
+  }
+  .whats-next-pill:hover { background: linear-gradient(135deg, rgba(212,168,67,.32), rgba(212,168,67,.12)); border-color: rgba(212,168,67,.8); transform: translateY(-1px); }
+  .whats-next-pill[hidden] { display: none; }
+  .whats-next-pill .whats-next-eyebrow {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px; letter-spacing: 2px; color: var(--gold);
+    padding: 3px 8px; border: 1px solid rgba(212,168,67,.5); border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .whats-next-pill .whats-next-time {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 1.5px; color: var(--gold);
+    flex-shrink: 0;
+  }
+  .whats-next-pill .whats-next-name { font-size: 13px; font-weight: 500; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .whats-next-pill .whats-next-chev { font-size: 22px; color: var(--gold); line-height: 1; flex-shrink: 0; opacity: .75; }
+  .whats-next-pill::after {
+    content: ''; position: absolute; inset: 0; border-radius: 999px;
+    box-shadow: 0 0 0 0 rgba(212,168,67,.4);
+    animation: wnPulse 2.6s ease-out infinite;
+    pointer-events: none;
+  }
+  @keyframes wnPulse {
+    0% { box-shadow: 0 0 0 0 rgba(212,168,67,.4); }
+    70% { box-shadow: 0 0 0 14px rgba(212,168,67,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .whats-next-pill::after { animation: none; } }
+  .light-theme .whats-next-pill { color: #1A1A1A; background: linear-gradient(135deg, rgba(212,168,67,.28), rgba(212,168,67,.1)); border-color: rgba(212,168,67,.55); }
+  .light-theme .whats-next-pill .whats-next-eyebrow { color: #5A4216; border-color: rgba(212,168,67,.55); }
+  .light-theme .whats-next-pill .whats-next-time,
+  .light-theme .whats-next-pill .whats-next-chev { color: #5A4216; }
+  @media (max-width: 520px) {
+    .whats-next-pill { flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; }
+    .whats-next-pill .whats-next-name { flex: 1 1 100%; order: 3; white-space: normal; }
+    .whats-next-pill .whats-next-chev { order: 4; margin-left: auto; }
+  }
+
   .crew-timeline .ct-day-nav {
     display: flex; flex-wrap: wrap; gap: 8px;
     margin: 0 0 22px;
@@ -880,6 +930,22 @@
   .restaurant-meta { font-size:11px; letter-spacing:2px; text-transform:uppercase; opacity:.45; margin-bottom:8px; }
   .restaurant-body p { font-size:13px; opacity:.65; line-height:1.5; }
   .restaurant-link { display:inline-block; margin-top:10px; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--gold); text-decoration:none; }
+  .venue-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .venue-act {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 12px; min-height:36px;
+    font-family:'Outfit',sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:1px; text-transform:uppercase;
+    color:var(--gold); background:rgba(212,168,67,.08);
+    border:1px solid rgba(212,168,67,.3); border-radius:8px;
+    text-decoration:none; cursor:pointer;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .venue-act:hover { background:rgba(212,168,67,.16); border-color:rgba(212,168,67,.55); }
+  .venue-act:active { transform: translateY(1px); }
+  .venue-act .venue-act-ico { font-size:14px; line-height:1; }
+  .light-theme .venue-act { color:#5A4216; background:rgba(212,168,67,.1); border-color:rgba(212,168,67,.4); }
+  .light-theme .venue-act:hover { background:rgba(212,168,67,.18); border-color:rgba(212,168,67,.65); }
 
   .rsvp-section { text-align:center; padding:100px 24px; }
   .rsvp-btn { display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--black); background:var(--gold); padding:16px 52px; border:none; cursor:pointer; text-decoration:none; transition:all .3s ease; margin-top:20px; border-radius:8px; box-shadow:0 6px 20px rgba(212,168,67,.3); font-weight:700; }
