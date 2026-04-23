@@ -72,11 +72,15 @@
 
   function closeDrawer() {
     if (!topNavEl) return;
+    const wasOpen = topNavEl.classList.contains('drawer-open');
     topNavEl.classList.remove('drawer-open');
     document.body.classList.remove('nav-drawer-open');
     if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'false');
     if (navDrawerEl) navDrawerEl.setAttribute('aria-hidden', 'true');
     syncTopNavHeightVar();
+    if (wasOpen && hamburgerBtn) {
+      try { hamburgerBtn.focus({ preventScroll: true }); } catch (_) { hamburgerBtn.focus(); }
+    }
   }
 
   if (hamburgerBtn && topNavEl) {
@@ -105,8 +109,23 @@
     navBackdropEl.addEventListener('click', function () { closeDrawer(); });
   }
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && topNavEl && topNavEl.classList.contains('drawer-open')) {
-      closeDrawer();
+    if (!topNavEl || !topNavEl.classList.contains('drawer-open')) return;
+    if (event.key === 'Escape') { closeDrawer(); return; }
+    if (event.key !== 'Tab' || !navDrawerEl) return;
+    // Focus trap — keep Tab / Shift+Tab cycling inside the open drawer.
+    const focusables = navDrawerEl.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !navDrawerEl.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
     }
   });
 
