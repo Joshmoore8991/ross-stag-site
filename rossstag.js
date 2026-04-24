@@ -4401,8 +4401,11 @@
   function onSharedAlbumInput() {
     const input = document.getElementById('shared-album-url');
     if (!input) return;
-    const url = input.value.trim();
-    saveJSON(SHARED_ALBUM_KEY, url);
+    // Only persist safe http(s) URLs so tainted storage can't leak into
+    // later opens/copies; blank input clears the stored value.
+    const raw = input.value.trim();
+    const safe = raw ? normalizeURL(raw) : '';
+    saveJSON(SHARED_ALBUM_KEY, safe);
     renderSharedAlbumMsg();
   }
   function renderSharedAlbumMsg() {
@@ -4415,15 +4418,20 @@
   }
   function openSharedAlbum() {
     const input = document.getElementById('shared-album-url');
-    const url = (input && input.value.trim()) || loadJSON(SHARED_ALBUM_KEY, '');
-    if (!url) {
-      const msg = document.getElementById('shared-album-msg');
+    const raw = (input && input.value.trim()) || loadJSON(SHARED_ALBUM_KEY, '');
+    const url = normalizeURL(raw);
+    const msg = document.getElementById('shared-album-msg');
+    if (!raw) {
       if (msg) { msg.textContent = 'Paste an album URL first.'; msg.style.color = 'var(--gold)'; }
+      return;
+    }
+    if (!url) {
+      if (msg) { msg.textContent = 'That URL looks off — use a full https:// link.'; msg.style.color = 'var(--error)'; }
       return;
     }
     saveJSON(SHARED_ALBUM_KEY, url);
     try { window.open(url, '_blank', 'noopener,noreferrer'); }
-    catch (_) { location.href = url; }
+    catch (_) { location.assign(url); }
   }
   function copySharedAlbum() {
     const stored = loadJSON(SHARED_ALBUM_KEY, '');
@@ -6743,13 +6751,27 @@
       if (earned) unlocked += 1;
       const card = document.createElement('div');
       card.className = 'achievement' + (earned ? ' unlocked' : '');
-      card.innerHTML =
-        '<div class="achievement-icon" aria-hidden="true">' + a.icon + '</div>' +
-        '<div class="achievement-body">' +
-          '<div class="achievement-title">' + a.title + '</div>' +
-          '<div class="achievement-hint">' + a.hint + '</div>' +
-        '</div>' +
-        '<div class="achievement-status" aria-hidden="true">' + (earned ? '✓' : '—') + '</div>';
+      const iconEl = document.createElement('div');
+      iconEl.className = 'achievement-icon';
+      iconEl.setAttribute('aria-hidden', 'true');
+      iconEl.textContent = a.icon;
+      const bodyEl = document.createElement('div');
+      bodyEl.className = 'achievement-body';
+      const titleEl = document.createElement('div');
+      titleEl.className = 'achievement-title';
+      titleEl.textContent = a.title;
+      const hintEl = document.createElement('div');
+      hintEl.className = 'achievement-hint';
+      hintEl.textContent = a.hint;
+      bodyEl.appendChild(titleEl);
+      bodyEl.appendChild(hintEl);
+      const statusEl = document.createElement('div');
+      statusEl.className = 'achievement-status';
+      statusEl.setAttribute('aria-hidden', 'true');
+      statusEl.textContent = earned ? '✓' : '—';
+      card.appendChild(iconEl);
+      card.appendChild(bodyEl);
+      card.appendChild(statusEl);
       grid.appendChild(card);
     });
     if (msg) msg.textContent = unlocked + ' / ' + ACHIEVEMENTS.length + ' unlocked.';
