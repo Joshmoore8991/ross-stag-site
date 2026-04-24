@@ -1858,6 +1858,13 @@
       return;
     }
     const key = getChallengeKey(currentChallenge);
+    // Cross-tab race guard: re-read the freshest list from storage so a
+    // sibling tab that already pushed this key wins, and we no-op
+    // (avoids double-credit on team battle scores).
+    try {
+      const fresh = loadJSON('completedChallengeIds', []);
+      if (Array.isArray(fresh)) completedChallengeIds = fresh;
+    } catch (_) {}
     if (completedChallengeIds.includes(key)) {
       msg.textContent = 'Already marked completed.';
       msg.style.color = 'var(--error)';
@@ -2700,6 +2707,18 @@
     return false;
   }
 
+  // Defence-in-depth for destructive admin actions: even with a valid
+  // admin session in memory, require the admin code typed live. Stops
+  // a casual prankster who's flipped crewBday in localStorage from
+  // triggering destructive actions without also typing the code.
+  function reconfirmAdminCode() {
+    if (typeof window === 'undefined' || typeof window.prompt !== 'function') return true;
+    const entered = (window.prompt('Re-enter admin code to confirm.') || '').trim();
+    if (entered === bmBday) return true;
+    showToast('Admin code not confirmed.', 2600);
+    return false;
+  }
+
   function confirmModerationAction(message) {
     if (typeof window === 'undefined' || typeof window.confirm !== 'function') return true;
     return window.confirm(message);
@@ -2815,6 +2834,7 @@
 
   function addCrewCodeByJoshua() {
     if (!requireAdminSession()) return;
+    if (!reconfirmAdminCode()) return;
     const input = document.getElementById('approval-new-code');
     const msg = document.getElementById('approval-code-msg');
     if (!input || !msg) return;
@@ -2860,6 +2880,7 @@
 
   function resetChallengeScoresByJoshua() {
     if (!requireAdminSession()) return;
+    if (!reconfirmAdminCode()) return;
     if (!confirmModerationAction(
       'Reset all challenge scores to 0?\n\nThis deletes every submitted challenge, clears completion marks, and wipes challenge votes. Activities, schedule, expenses, and team battle are untouched.'
     )) return;
@@ -4752,7 +4773,20 @@
   function vote(optionKey) {
     const selectedPoll = pollBoard.polls[pollBoard.selected];
     if (!selectedPoll || !selectedPoll.options[optionKey]) return;
-    selectedPoll.options[optionKey].votes += 1;
+    const crew = getCurrentCrewKey();
+    if (!crew) { showToast('Log in first to cast a vote.', 2200); return; }
+    if (!pollBoard.voteLog) pollBoard.voteLog = {};
+    const ballotKey = pollBoard.selected;
+    if (!pollBoard.voteLog[ballotKey]) pollBoard.voteLog[ballotKey] = {};
+    const previous = pollBoard.voteLog[ballotKey][crew];
+    if (previous === optionKey) return; // already voted that option — no-op
+    if (previous && selectedPoll.options[previous]) {
+      // Move the vote to the new option rather than letting one user
+      // stuff the ballot with multiple +1s across options.
+      selectedPoll.options[previous].votes = Math.max(0, (selectedPoll.options[previous].votes || 0) - 1);
+    }
+    selectedPoll.options[optionKey].votes = (selectedPoll.options[optionKey].votes || 0) + 1;
+    pollBoard.voteLog[ballotKey][crew] = optionKey;
     saveChallengeData();
     renderPollBoard();
   }
