@@ -782,6 +782,24 @@
   .crew-timeline .ct-meta-item { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(238,227,203,.62); }
   .crew-timeline .ct-meta-item span:first-child { opacity: .85; }
 
+  /* Wear / bring pills — surfaces dress code + kit so it's not buried
+     in description prose. */
+  .crew-timeline .ct-kit { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .crew-timeline .ct-kit-item {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; letter-spacing: .3px;
+    color: rgba(238,227,203,.85);
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(212,168,67,.22);
+  }
+  .crew-timeline .ct-kit-item .ct-kit-ico { font-size: 13px; line-height: 1; }
+  .crew-timeline .ct-kit-item.warn { color: #FFB97A; background: rgba(201,56,42,.12); border-color: rgba(201,56,42,.4); }
+  .crew-timeline .ct-kit-item.dress { color: var(--gold); background: rgba(212,168,67,.12); border-color: rgba(212,168,67,.4); }
+  .light-theme .crew-timeline .ct-kit-item { color: #1A1A1A; background: rgba(0,0,0,.04); border-color: rgba(25,184,255,.25); }
+  .light-theme .crew-timeline .ct-kit-item.warn { color: #8C2A1F; background: rgba(201,56,42,.1); border-color: rgba(201,56,42,.42); }
+  .light-theme .crew-timeline .ct-kit-item.dress { color: #5A4216; background: rgba(212,168,67,.18); border-color: rgba(212,168,67,.55); }
+
   .crew-timeline .ct-transport-strip {
     display: flex; align-items: center; gap: 10px;
     background: linear-gradient(90deg, rgba(74,127,165,.16), rgba(74,127,165,.06));
