@@ -4449,7 +4449,7 @@
     try { setInterval(function () { try { renderWhatsNextPill(); } catch (_) {} }, 60000); } catch (_) {}
     try { wireCopyableCodes(); } catch (_) {}
     try { addFlightStatusLinks(); } catch (_) {}
-    try { maybeShowIosInstallHint(); } catch (_) {}
+    try { maybeShowInstallHint(); } catch (_) {}
   }
 
   // Tap-to-copy for hotel + transfer booking codes.
@@ -4513,32 +4513,76 @@
     });
   }
 
-  // iOS Safari "Add to Home Screen" hint — dismissible, shown once per device.
-  function maybeShowIosInstallHint() {
-    const KEY = 'iosInstallHintDismissed';
+  // Add-to-Home-Screen hint. iOS gets instructional; Android + other
+  // browsers supporting the beforeinstallprompt event get a one-tap
+  // Install button wired into the native prompt.
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    ev.preventDefault();
+    deferredInstallPrompt = ev;
+    try { maybeShowInstallHint(); } catch (_) {}
+  });
+  window.addEventListener('appinstalled', function () {
+    deferredInstallPrompt = null;
+    try { localStorage.setItem('installHintDismissed', '1'); } catch (_) {}
+    const existing = document.querySelector('.ios-install-hint');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+  });
+
+  function maybeShowInstallHint() {
+    const KEY = 'installHintDismissed';
     try { if (localStorage.getItem(KEY) === '1') return; } catch (_) { return; }
+    if (document.querySelector('.ios-install-hint')) return;
     const ua = navigator.userAgent || '';
     const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
     const standalone = ('standalone' in navigator && navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    if (!isIOS || standalone) return;
+    if (standalone) return;
+    // iOS: instructional only. Other: need the deferred prompt to fire first.
+    if (!isIOS && !deferredInstallPrompt) return;
     const banner = document.createElement('div');
     banner.className = 'ios-install-hint';
     banner.setAttribute('role', 'dialog');
     banner.setAttribute('aria-label', 'Install app');
-    banner.innerHTML =
-      '<span class="ios-install-ico" aria-hidden="true">📲</span>' +
-      '<span class="ios-install-body">' +
-      '<strong>Install Stag HQ</strong>' +
-      '<span>Tap <span aria-label="the Share icon">⇪</span> then <em>Add to Home Screen</em>.</span>' +
-      '</span>' +
-      '<button type="button" class="ios-install-close" aria-label="Dismiss">×</button>';
+    if (isIOS) {
+      banner.innerHTML =
+        '<span class="ios-install-ico" aria-hidden="true">📲</span>' +
+        '<span class="ios-install-body">' +
+        '<strong>Install Stag HQ</strong>' +
+        '<span>Tap <span aria-label="the Share icon">⇪</span> then <em>Add to Home Screen</em>.</span>' +
+        '</span>' +
+        '<button type="button" class="ios-install-close" aria-label="Dismiss">×</button>';
+    } else {
+      banner.innerHTML =
+        '<span class="ios-install-ico" aria-hidden="true">📲</span>' +
+        '<span class="ios-install-body">' +
+        '<strong>Install Stag HQ</strong>' +
+        '<span>Add to your home screen for one-tap access, offline-ready.</span>' +
+        '</span>' +
+        '<button type="button" class="ios-install-action">Install</button>' +
+        '<button type="button" class="ios-install-close" aria-label="Dismiss">×</button>';
+    }
     document.body.appendChild(banner);
     requestAnimationFrame(function () { banner.classList.add('is-visible'); });
-    banner.querySelector('.ios-install-close').addEventListener('click', function () {
-      try { localStorage.setItem(KEY, '1'); } catch (_) {}
+    const closeBanner = function (persist) {
+      if (persist) { try { localStorage.setItem(KEY, '1'); } catch (_) {} }
       banner.classList.remove('is-visible');
       setTimeout(function () { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 220);
-    });
+    };
+    banner.querySelector('.ios-install-close').addEventListener('click', function () { closeBanner(true); });
+    const actionBtn = banner.querySelector('.ios-install-action');
+    if (actionBtn) {
+      actionBtn.addEventListener('click', function () {
+        if (!deferredInstallPrompt) { closeBanner(false); return; }
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(function (choice) {
+          if (choice && choice.outcome === 'accepted') {
+            try { localStorage.setItem(KEY, '1'); } catch (_) {}
+          }
+          deferredInstallPrompt = null;
+          closeBanner(choice && choice.outcome === 'accepted');
+        }).catch(function () { closeBanner(false); });
+      });
+    }
   }
 
   // Find the next upcoming ct-activity during the trip window and surface

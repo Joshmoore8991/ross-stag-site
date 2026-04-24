@@ -997,6 +997,20 @@
     transition: background .15s ease, border-color .15s ease;
   }
   .ios-install-close:hover { background: rgba(212,168,67,.1); border-color: rgba(212,168,67,.6); }
+  .ios-install-action {
+    flex-shrink: 0;
+    padding: 9px 16px; min-height: 36px;
+    border-radius: 10px;
+    background: var(--gold);
+    color: var(--black);
+    border: 1px solid var(--gold);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px; letter-spacing: 2px;
+    cursor: pointer;
+    transition: transform .1s ease, box-shadow .15s ease;
+  }
+  .ios-install-action:hover { box-shadow: 0 6px 18px rgba(212,168,67,.32); }
+  .ios-install-action:active { transform: translateY(1px); }
   .light-theme .ios-install-hint { background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(245,245,248,.98)); color: #1A1A1A; border-color: rgba(25,184,255,.35); box-shadow: 0 16px 40px rgba(0,0,0,.18); }
   .light-theme .ios-install-close { color: #1A1A1A; border-color: rgba(0,0,0,.18); }
   .light-theme .ios-install-close:hover { background: rgba(0,0,0,.04); border-color: rgba(25,184,255,.5); }
