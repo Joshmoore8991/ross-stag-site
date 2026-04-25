@@ -4576,8 +4576,23 @@
     pill.removeAttribute('hidden');
     const tEl = pill.querySelector('[data-whats-next-time]');
     const nEl = pill.querySelector('[data-whats-next-name]');
+    const dEl = pill.querySelector('[data-whats-next-delta]');
     if (tEl) tEl.textContent = next.time;
     if (nEl) nEl.textContent = next.name;
+    if (dEl) {
+      const delta = next.mins - nowMins;
+      let label = '';
+      if (delta <= 0) {
+        label = 'now';
+      } else if (delta < 60) {
+        label = 'in ' + delta + 'm';
+      } else {
+        const h = Math.floor(delta / 60), m2 = delta % 60;
+        label = m2 ? 'in ' + h + 'h ' + m2 + 'm' : 'in ' + h + 'h';
+      }
+      dEl.textContent = label;
+      pill.classList.toggle('is-imminent', delta <= 60);
+    }
     pill.setAttribute('href', '#' + (dayEl.id || 'itinerary-section'));
   }
 
