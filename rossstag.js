@@ -6940,6 +6940,7 @@
       copyHotelAddress: typeof copyHotelAddress === 'function' ? copyHotelAddress : null,
       openHotelMaps: typeof openHotelMaps === 'function' ? openHotelMaps : null,
       shareStagSite: typeof shareStagSite === 'function' ? shareStagSite : null,
+      shareCrewBrief: typeof shareCrewBrief === 'function' ? shareCrewBrief : null,
       refreshWeather: typeof refreshWeather === 'function' ? refreshWeather : null,
       shareMyLocation: typeof shareMyLocation === 'function' ? shareMyLocation : null,
       clearMyLocation: typeof clearMyLocation === 'function' ? clearMyLocation : null,
@@ -7251,6 +7252,46 @@
         .then(function () { showToast('Link copied', 2000); })
         .catch(function () { showToast('Copy failed', 2000); });
     }
+  }
+
+  // Build a one-shot crew brief (confirmed plans + outstanding items)
+  // and ship it to the group chat. Falls back to clipboard / WhatsApp.
+  function buildCrewBrief() {
+    const lines = [
+      "🦌 Ross's Barcelona Stag — quick brief",
+      '',
+      '📅 Sun 3 → Wed 6 May 2026 · 6 lads',
+      '✈️ Sun 06:10 BFS → BCN (EZY3001), land 09:50',
+      '🏨 Htop BCN City, Travessera de Gràcia',
+      '🚐 Suntransfers van pickup at arrivals',
+      '',
+      'Confirmed:',
+      '🍺 Sun 17:00 · Brewery tour + tasting (30 min walk)',
+      '⛵ Mon 14:30 · Catamaran (sail · wine · tapas · swim) — bring swim shorts + sun cream',
+      '🍸 Mon 19:30 · Sir Victor rooftop dinner — smart casual, no shorts',
+      '🎤 Mon 22:00 · Space Cowboy karaoke',
+      '🐟 Tue 20:30 · Final-night fish dinner — Kaiku / Can Solé / La Mar Salada (still to book)',
+      '✈️ Wed 14:00 · BCN → BFS (EZY3002), land 15:55',
+      '',
+      'Full plan: ' + location.origin + location.pathname
+    ];
+    return lines.join('\n');
+  }
+
+  function shareCrewBrief() {
+    const text = buildCrewBrief();
+    if (navigator.share) {
+      navigator.share({ title: "Barcelona stag brief", text: text })
+        .catch(function () { /* user cancelled — try WhatsApp */
+          window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+        });
+      return;
+    }
+    // No Web Share — copy to clipboard and open WhatsApp Web.
+    copyToClipboard(text)
+      .then(function () { showToast('Brief copied — paste into the group chat', 2600); })
+      .catch(function () {});
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
   }
 
   // ── Crew presence (who's online) ──────────────────────────────────────
