@@ -24,7 +24,7 @@
 <meta name="twitter:title" content="BARCELONA STAG — May 2026">
 <meta name="twitter:description" content="Ross Wightman's Stag Do in Barcelona, May 2026.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
-<link rel="manifest" href="manifest.webmanifest?v=20260420-22">
+<link rel="manifest" href="manifest.webmanifest?v=20260420-23">
 <!-- iOS PWA hints: without these, Add-to-Home-Screen creates a plain
      Safari bookmark that captures whatever URL is in the address bar
      rather than honouring the manifest's start_url. -->
@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260420-22">
+<link rel="stylesheet" href="rossstag.css?v=20260420-23">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -205,7 +205,39 @@
 
 <section id="book-now-section" class="fade-in">
   <h2 class="section-title">Book These Now</h2>
-  <p class="section-lead">Trip is <strong id="book-now-days-out">--</strong> days out. Anything below runs out of stock fastest. Pay now, thank yourself later.</p>
+  <p class="section-lead">Trip is <strong id="book-now-days-out">--</strong> days out. Most of the trip is now booked &mdash; the cards below are what's still outstanding.</p>
+
+  <div class="still-to-book" role="region" aria-label="Outstanding items">
+    <div class="still-to-book-head">
+      <span class="still-to-book-pill">&#x26A0;&#xFE0F; Still outstanding</span>
+      <span class="still-to-book-count" id="still-to-book-count">3 items</span>
+    </div>
+    <ul class="still-to-book-list">
+      <li class="still-to-book-item priority">
+        <div class="still-to-book-text">
+          <strong>Tuesday fish dinner &mdash; table for 6</strong>
+          <span>Kaiku is the hero pick &mdash; book 2&ndash;3 days out. Backups: Can Sol&eacute; (closes Sun nights, check Tue), La Mar Salada.</span>
+        </div>
+        <a class="btn btn-gold btn-sm" href="#restaurants-section">Pick &amp; book</a>
+      </li>
+      <li class="still-to-book-item">
+        <div class="still-to-book-text">
+          <strong>Wed airport pickup time</strong>
+          <span>Confirm 24h before via customer.suntransfers.com. For a 14:00 flight, lobby by 11:30 is safe.</span>
+        </div>
+        <a class="btn btn-outline-gold btn-sm" href="https://customer.suntransfers.com/" target="_blank" rel="noopener noreferrer">Open Suntransfers</a>
+      </li>
+      <li class="still-to-book-item">
+        <div class="still-to-book-text">
+          <strong>Sunday football &mdash; final call</strong>
+          <span>Josh is still scouting. Stadium slot vs sport-bar screening vs skip &mdash; lock in this week.</span>
+        </div>
+        <a class="btn btn-outline-gold btn-sm" href="#football-section">Football section</a>
+      </li>
+    </ul>
+  </div>
+
+  <p class="section-sublead">Reference / Plan B options below.</p>
   <div class="info-grid">
     <div class="info-card" style="border-color:rgba(201,56,42,.45);">
       <h3>&#x1F525; Espanyol v Real Madrid</h3>
@@ -1930,7 +1962,7 @@
 </footer>
 
 <script defer src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js" integrity="sha384-rRoXxn2yHlrZYB587Ki9RO1tONhLdM6XfORg7Rw4uwH4/Fh/5nP7IUX91bkaKUgs" crossorigin="anonymous"></script>
-<script src="rossstag.js?v=20260420-22"></script>
+<script src="rossstag.js?v=20260420-23"></script>
 </body>
 </html>
 
