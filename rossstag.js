@@ -4063,6 +4063,30 @@
     const el = document.getElementById('book-now-days-out');
     const d = tminusDaysOut();
     if (el) el.textContent = d <= 0 ? 'wheels up' : String(d);
+    // Glanceable T-minus chip on the brand wordmark.
+    const chip = document.getElementById('top-nav-tminus-chip');
+    if (chip) {
+      chip.classList.remove('is-imminent', 'is-during');
+      const tripEnd = new Date('2026-05-06T16:00:00+01:00').getTime();
+      if (Date.now() > tripEnd) {
+        chip.setAttribute('hidden', '');
+      } else if (d <= 0) {
+        chip.removeAttribute('hidden');
+        chip.textContent = 'In Barcelona';
+        chip.classList.add('is-during');
+      } else if (d === 1) {
+        chip.removeAttribute('hidden');
+        chip.textContent = 'Tomorrow';
+        chip.classList.add('is-imminent');
+      } else if (d <= 7) {
+        chip.removeAttribute('hidden');
+        chip.textContent = 'T-' + d + 'd';
+        chip.classList.add('is-imminent');
+      } else {
+        chip.removeAttribute('hidden');
+        chip.textContent = 'T-' + d + 'd';
+      }
+    }
     const primaryPin = document.getElementById('nav-pin-primary');
     if (primaryPin) {
       const label = primaryPin.querySelector('.nav-pin-label');

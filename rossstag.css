@@ -94,6 +94,23 @@
   }
   .top-nav-brand:hover { background: rgba(212,168,67,.08); }
   .top-nav-brand-mark { font-size: 18px; line-height: 1; filter: saturate(1.1); }
+  .top-nav-brand-chip {
+    display: inline-flex; align-items: center;
+    margin-left: 4px; padding: 3px 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: .8px;
+    color: var(--gold);
+    background: rgba(212,168,67,.14);
+    border: 1px solid rgba(212,168,67,.42);
+    border-radius: 100px;
+    line-height: 1;
+  }
+  .top-nav-brand-chip[hidden] { display: none; }
+  .top-nav-brand-chip.is-imminent { color: #FFB97A; background: rgba(201,56,42,.16); border-color: rgba(201,56,42,.45); animation: wnPulse 2.4s ease-out infinite; }
+  .top-nav-brand-chip.is-during  { color: var(--black); background: var(--gold); border-color: var(--gold); }
+  .light-theme .top-nav-brand-chip { color: #5A4216; background: rgba(212,168,67,.18); border-color: rgba(212,168,67,.55); }
+  .light-theme .top-nav-brand-chip.is-imminent { color: #8C2A1F; background: rgba(201,56,42,.12); border-color: rgba(201,56,42,.5); }
+  .light-theme .top-nav-brand-chip.is-during { color: #1A1A1A; background: var(--gold); border-color: var(--gold); }
   .top-nav-brand::after {
     content: '';
     display: inline-block;
