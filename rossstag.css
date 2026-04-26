@@ -911,6 +911,25 @@
     color: #8BB3D5;
   }
 
+  /* Fish-dinner picks — three cards with action rows for the booking
+     decision on the Tuesday card. */
+  .crew-timeline .fish-picks { list-style: none; margin: 12px 0 4px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .crew-timeline .fish-pick {
+    padding: 12px 14px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(212,168,67,.22);
+    border-radius: 10px;
+  }
+  .crew-timeline .fish-pick:first-child { border-color: rgba(212,168,67,.5); background: rgba(212,168,67,.08); }
+  .crew-timeline .fish-pick-name { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .crew-timeline .fish-pick-name strong { font-size: 14px; color: var(--cream); }
+  .crew-timeline .fish-pick-name span { font-size: 12px; opacity: .65; }
+  .crew-timeline .fish-pick .venue-actions { margin-top: 0; }
+  .light-theme .crew-timeline .fish-pick { background: rgba(255,255,255,.7); border-color: rgba(25,184,255,.22); }
+  .light-theme .crew-timeline .fish-pick:first-child { border-color: rgba(212,168,67,.55); background: rgba(212,168,67,.12); }
+  .light-theme .crew-timeline .fish-pick-name strong { color: #1A1A1A; }
+  .light-theme .crew-timeline .fish-pick-name span { color: rgba(0,0,0,.7); opacity: 1; }
+
   .crew-timeline .ct-tips {
     margin-top: 44px;
     background: linear-gradient(135deg, rgba(212,168,67,.1), rgba(212,168,67,.02));
