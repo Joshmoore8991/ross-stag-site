@@ -24,7 +24,7 @@
 <meta name="twitter:title" content="BARCELONA STAG — May 2026">
 <meta name="twitter:description" content="Ross Wightman's Stag Do in Barcelona, May 2026.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&h=630&q=80">
-<link rel="manifest" href="manifest.webmanifest?v=20260420-26">
+<link rel="manifest" href="manifest.webmanifest?v=20260420-27">
 <!-- iOS PWA hints: without these, Add-to-Home-Screen creates a plain
      Safari bookmark that captures whatever URL is in the address bar
      rather than honouring the manifest's start_url. -->
@@ -37,9 +37,27 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="rossstag.css?v=20260420-26">
+<link rel="stylesheet" href="rossstag.css?v=20260420-27">
 </head>
 <body>
+<aside class="emergency-strip" id="emergency-strip" hidden aria-label="Trip-day emergency info">
+  <button class="emergency-chip" type="button" data-emergency="hotel">
+    <span class="emergency-ico" aria-hidden="true">🏨</span>
+    <span class="emergency-body"><span class="emergency-label">Hotel</span><span class="emergency-value" id="emergency-hotel-value">—</span></span>
+  </button>
+  <a class="emergency-chip" href="tel:112">
+    <span class="emergency-ico" aria-hidden="true">🆘</span>
+    <span class="emergency-body"><span class="emergency-label">EU emergency</span><span class="emergency-value">112</span></span>
+  </a>
+  <a class="emergency-chip" id="emergency-transfer" href="tel:0">
+    <span class="emergency-ico" aria-hidden="true">🚐</span>
+    <span class="emergency-body"><span class="emergency-label">Suntransfers</span><span class="emergency-value" id="emergency-transfer-value">—</span></span>
+  </a>
+  <a class="emergency-chip" id="emergency-ride" href="https://maps.google.com/?daddr=Htop+BCN+City+Travessera+de+Gracia+Barcelona&amp;dirflg=d" target="_blank" rel="noopener noreferrer">
+    <span class="emergency-ico" aria-hidden="true">🚖</span>
+    <span class="emergency-body"><span class="emergency-label">Get a ride</span><span class="emergency-value">to hotel</span></span>
+  </a>
+</aside>
 <a class="skip-link" href="#main-content">Skip to content</a>
 
 <div id="login-overlay" role="dialog" aria-modal="true" aria-labelledby="crew-login-title">
@@ -158,11 +176,13 @@
     <div class="divider-line"></div>
     <div class="hero-date">3 - 5 MAY 2026</div>
     <div class="hero-location">3 nights &#183; 6 lads &#183; 1 mission</div>
+    <div class="hero-presence" id="hero-presence" hidden aria-label="Crew online now"></div>
     <div class="quick-actions" aria-label="Quick actions">
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="copyTripCode" title="Copy trip code">&#x1F511; Trip Code</button>
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="copyHotelAddress" title="Copy hotel address">&#x1F3E8; Copy Hotel</button>
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="openHotelMaps" title="Open hotel in Google Maps">&#x1F5FA;&#xFE0F; Hotel Map</button>
       <button type="button" class="btn btn-gold btn-sm" data-action="shareCrewBrief" title="Send the latest crew brief to WhatsApp">&#x1F4F2; Crew Brief</button>
+      <button type="button" class="btn btn-outline-gold btn-sm" data-action="openGroupChat" title="Open the trip group chat">&#x1F4AC; Group Chat</button>
       <button type="button" class="btn btn-outline-gold btn-sm" data-action="shareStagSite" title="Share this site">&#x1F4E4; Share</button>
     </div>
   </div>
@@ -210,7 +230,13 @@
   <div class="still-to-book" role="region" aria-label="Outstanding items">
     <div class="still-to-book-head">
       <span class="still-to-book-pill">&#x26A0;&#xFE0F; Still outstanding</span>
-      <span class="still-to-book-count" id="still-to-book-count">3 items</span>
+      <span class="still-to-book-count" id="still-to-book-count">— items</span>
+    </div>
+    <div class="booking-progress" aria-label="Bookings progress">
+      <div class="booking-progress-track">
+        <div class="booking-progress-fill" id="booking-progress-fill" style="width:0%;"></div>
+      </div>
+      <div class="booking-progress-meta"><span id="booking-progress-count">0 / 0 booked</span><span id="booking-progress-pct">0%</span></div>
     </div>
     <ul class="still-to-book-list">
       <li class="still-to-book-item priority">
@@ -487,7 +513,11 @@
         <div class="ct-dot transport"></div>
         <div class="ct-card">
           <div class="ct-card-top"><span class="ct-card-name">EZY3001 BFS &rarr; BCN</span><div class="ct-badges"><span class="ct-badge booked">Booked</span></div></div>
-          <p class="ct-desc">EasyJet 06:10 &rarr; 09:50 local. ~3h direct. Boarding passes in Apple Wallet before you fly.</p>
+          <p class="ct-desc">EasyJet 06:10 &rarr; 09:50 local. ~3h direct.</p>
+          <div class="wallet-tip">
+            <span class="wallet-tip-ico" aria-hidden="true">&#x1F4F1;</span>
+            <span><strong>Add boarding pass to Wallet:</strong> EasyJet app &rarr; Trips &rarr; tap your flight &rarr; <em>Add to Apple Wallet</em> (or Google Wallet on Android). Do this on Saturday so security is just a tap.</span>
+          </div>
         </div>
       </div>
 
@@ -960,8 +990,20 @@
 
 <section id="phrasebook-section">
   <h2 class="section-title fade-in">Stag Phrasebook</h2>
-  <p class="section-lead fade-in">Enough Spanish to order, charm, and apologise. Pronunciation is forgiving &mdash; just go for it.</p>
+  <p class="section-lead fade-in">Enough Spanish to order, charm, and apologise. Pronunciation is forgiving &mdash; just go for it. The Catalan card up top wins instant goodwill from locals.</p>
   <div class="info-grid">
+    <div class="info-card fade-in" style="border-color:rgba(212,168,67,.45);">
+      <h3>&#x1F1E8;&#x1F1F9; Catalan basics</h3>
+      <p><strong>Bon dia</strong> &mdash; good morning <span style="opacity:.6;">(bohn DEE-ah)</span>.<br>
+      <strong>Bona nit</strong> &mdash; good evening <span style="opacity:.6;">(BO-nah neet)</span>.<br>
+      <strong>Si us plau</strong> &mdash; please <span style="opacity:.6;">(see oos-PLOW)</span>.<br>
+      <strong>Gr&agrave;cies</strong> &mdash; thanks <span style="opacity:.6;">(GRAH-see-ehs)</span>.<br>
+      <strong>Salut!</strong> &mdash; cheers <span style="opacity:.6;">(sah-LOOT)</span>.<br>
+      <strong>Una taula per sis</strong> &mdash; a table for six.<br>
+      <strong>El compte, si us plau</strong> &mdash; the bill, please.<br>
+      <strong>On &eacute;s el bany?</strong> &mdash; where's the toilet?<br>
+      <strong>Quant &eacute;s?</strong> &mdash; how much?</p>
+    </div>
     <div class="info-card fade-in">
       <h3>At the Bar</h3>
       <p><strong>Una ca&ntilde;a, por favor</strong> &mdash; small draught beer (the local default).<br>
@@ -1689,6 +1731,18 @@
 
 <section id="expenses-section">
   <h2 class="section-title fade-in">Shared Expense Splitter</h2>
+  <div class="fx-widget info-card fade-in" aria-label="Pound to Euro converter">
+    <div class="fx-widget-head">
+      <span class="fx-widget-title">£ ↔ € converter</span>
+      <span class="fx-widget-rate" id="fx-widget-rate">—</span>
+    </div>
+    <div class="fx-widget-body">
+      <label class="fx-widget-input"><span class="fx-widget-currency">£</span><input type="number" id="fx-input-gbp" inputmode="decimal" placeholder="0.00" min="0" step="0.01" autocomplete="off"></label>
+      <span class="fx-widget-arrow" aria-hidden="true">↔</span>
+      <label class="fx-widget-input"><span class="fx-widget-currency">€</span><input type="number" id="fx-input-eur" inputmode="decimal" placeholder="0.00" min="0" step="0.01" autocomplete="off"></label>
+    </div>
+    <div class="fx-widget-foot" id="fx-widget-foot">Tap a number — converts as you type.</div>
+  </div>
   <div class="info-card fade-in" style="text-align:center;">
     <p style="opacity:.7; margin-bottom:10px;">Track spend and instantly see who owes what.</p>
     <select id="expense-payer" class="form-input" aria-label="Who paid"></select>
@@ -1989,7 +2043,7 @@
 </footer>
 
 <script defer src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js" integrity="sha384-rRoXxn2yHlrZYB587Ki9RO1tONhLdM6XfORg7Rw4uwH4/Fh/5nP7IUX91bkaKUgs" crossorigin="anonymous"></script>
-<script src="rossstag.js?v=20260420-26"></script>
+<script src="rossstag.js?v=20260420-27"></script>
 </body>
 </html>
 

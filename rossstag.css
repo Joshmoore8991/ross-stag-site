@@ -576,6 +576,129 @@
   .light-theme .still-to-book-item { background: rgba(255,255,255,.7); border-color: rgba(25,184,255,.2); }
   .light-theme .still-to-book-item.priority { border-color: rgba(212,168,67,.55); background: rgba(212,168,67,.12); }
 
+  /* Bookings progress bar — atop the still-to-book list. */
+  .booking-progress { margin: 0 0 14px; }
+  .booking-progress-track {
+    height: 8px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(212,168,67,.22);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .booking-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--sun));
+    border-radius: 999px;
+    transition: width .5s cubic-bezier(.22,.61,.36,1);
+    box-shadow: 0 0 12px rgba(212,168,67,.5);
+  }
+  .booking-progress-meta {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 6px;
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(238,227,203,.62);
+  }
+  .booking-progress-meta span:last-child { color: var(--gold); font-weight: 700; }
+  .light-theme .booking-progress-track { background: rgba(0,0,0,.06); border-color: rgba(212,168,67,.32); }
+  .light-theme .booking-progress-meta { color: rgba(0,0,0,.6); }
+  .light-theme .booking-progress-meta span:last-child { color: #5A4216; }
+
+  /* Hero presence avatars — letter chips with online/idle/offline ring. */
+  .hero-presence {
+    display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    margin: 14px 0 0;
+  }
+  .hero-presence[hidden] { display: none; }
+  .presence-avatar {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px; letter-spacing: 1px;
+    color: var(--cream);
+    background: rgba(255,255,255,.06);
+    border: 2px solid rgba(238,227,203,.25);
+    transition: transform .15s ease;
+  }
+  .presence-avatar.presence-online { border-color: #6BCF7F; box-shadow: 0 0 0 2px rgba(107,207,127,.18); }
+  .presence-avatar.presence-idle { border-color: #F4A423; box-shadow: 0 0 0 2px rgba(244,164,35,.16); }
+  .presence-avatar.presence-offline { opacity: .55; }
+  .light-theme .presence-avatar { background: rgba(0,0,0,.04); color: #1A1A1A; border-color: rgba(0,0,0,.18); }
+
+  /* Bidirectional £↔€ converter widget. */
+  .fx-widget { padding: 18px 20px; }
+  .fx-widget-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .fx-widget-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--gold); }
+  .fx-widget-rate { font-size: 12px; color: rgba(238,227,203,.65); letter-spacing: .3px; }
+  .fx-widget-body { display: flex; align-items: center; gap: 10px; }
+  .fx-widget-input {
+    flex: 1; display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(212,168,67,.28);
+    border-radius: 10px;
+    cursor: text;
+  }
+  .fx-widget-input:focus-within { border-color: var(--gold); background: rgba(212,168,67,.08); }
+  .fx-widget-currency { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); flex-shrink: 0; }
+  .fx-widget-input input {
+    flex: 1; min-width: 0;
+    background: transparent; border: 0; outline: 0;
+    color: var(--cream);
+    font-size: 16px; font-family: 'Outfit', sans-serif; font-weight: 600;
+  }
+  .fx-widget-arrow { font-size: 20px; color: rgba(212,168,67,.55); flex-shrink: 0; }
+  .fx-widget-foot { margin-top: 10px; font-size: 11px; opacity: .55; letter-spacing: .3px; }
+  .light-theme .fx-widget-rate { color: rgba(0,0,0,.6); }
+  .light-theme .fx-widget-input { background: rgba(0,0,0,.04); border-color: rgba(25,184,255,.25); }
+  .light-theme .fx-widget-input:focus-within { border-color: rgba(212,168,67,.55); background: rgba(212,168,67,.08); }
+  .light-theme .fx-widget-input input { color: #1A1A1A; }
+  .light-theme .fx-widget-currency { color: #5A4216; }
+  .light-theme .fx-widget-foot { opacity: .65; }
+
+  /* Wallet-tip card — small inline reminder. */
+  .wallet-tip {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    font-size: 11px; line-height: 1.4;
+    color: rgba(238,227,203,.78);
+    background: rgba(255,255,255,.04);
+    border: 1px dashed rgba(212,168,67,.32);
+    border-radius: 8px;
+  }
+  .wallet-tip-ico { font-size: 14px; line-height: 1; flex-shrink: 0; }
+  .wallet-tip strong { color: var(--gold); }
+  .light-theme .wallet-tip { color: rgba(0,0,0,.7); background: rgba(0,0,0,.03); border-color: rgba(212,168,67,.45); }
+  .light-theme .wallet-tip strong { color: #5A4216; }
+
+  /* Restaurant image skeleton shimmer until <img> finishes loading. */
+  .restaurant-card { position: relative; }
+  .restaurant-card .restaurant-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    background: linear-gradient(110deg, rgba(212,168,67,.06) 25%, rgba(212,168,67,.18) 50%, rgba(212,168,67,.06) 75%);
+    background-size: 200% 100%;
+    animation: stagShimmer 1.6s linear infinite;
+    overflow: hidden;
+  }
+  .restaurant-card .restaurant-img-wrap.is-loaded { animation: none; background: transparent; }
+  .restaurant-card .restaurant-img-wrap img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; opacity: 0; transition: opacity .35s ease;
+  }
+  .restaurant-card .restaurant-img-wrap.is-loaded img { opacity: 1; }
+  @keyframes stagShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) { .restaurant-card .restaurant-img-wrap { animation: none; } }
+  .light-theme .restaurant-card .restaurant-img-wrap {
+    background: linear-gradient(110deg, rgba(0,0,0,.04) 25%, rgba(212,168,67,.18) 50%, rgba(0,0,0,.04) 75%);
+    background-size: 200% 100%;
+  }
+
   .hero-controls {
     position: fixed;
     top: 90px;
@@ -812,6 +935,32 @@
     background-repeat: repeat-y;
   }
   .crew-timeline .ct-activity:last-of-type::after { display: none; }
+
+  /* Now-playing — set on the active .ct-activity by renderWhatsNextPill
+     during the trip window. */
+  .crew-timeline .ct-activity.is-now .ct-card {
+    border-color: rgba(212,168,67,.7);
+    box-shadow: 0 0 0 1px rgba(212,168,67,.4) inset, 0 12px 28px rgba(212,168,67,.18);
+    animation: wnPulse 2.6s ease-out infinite;
+  }
+  .crew-timeline .ct-activity.is-now .ct-card-top::after {
+    content: '● Happening now';
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--black);
+    background: var(--gold);
+    padding: 3px 9px;
+    border-radius: 100px;
+    margin-left: auto;
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+  .crew-timeline .ct-activity.is-now .ct-time-main { color: var(--gold); }
+  @media (prefers-reduced-motion: reduce) {
+    .crew-timeline .ct-activity.is-now .ct-card { animation: none; }
+  }
+  .light-theme .crew-timeline .ct-activity.is-now .ct-card { border-color: rgba(212,168,67,.85); box-shadow: 0 0 0 1px rgba(212,168,67,.5) inset, 0 12px 26px rgba(212,168,67,.18); }
+  .light-theme .crew-timeline .ct-activity.is-now .ct-card-top::after { color: #1A1A1A; }
 
   .crew-timeline .ct-time { text-align: right; padding-top: 12px; padding-right: 10px; position: relative; }
   .crew-timeline .ct-time::after { content: ''; position: absolute; right: 0; top: 12px; height: 26px; width: 1px; background: linear-gradient(180deg, transparent, rgba(212,168,67,.25), transparent); }
@@ -1099,6 +1248,54 @@
   .copyable-code.is-copied { background: rgba(74,122,90,.22); border-color: rgba(74,122,90,.55); border-style: solid; }
   .light-theme .copyable-code { border-color: rgba(0,0,0,.2); }
   .light-theme .copyable-code:hover { border-color: rgba(212,168,67,.6); background: rgba(212,168,67,.1); }
+
+  /* Trip-day emergency strip — sticky bottom chip row. Hidden outside
+     the trip window. Copy hotel addr / dial 112 / dial transfers. */
+  .emergency-strip {
+    position: fixed;
+    left: 8px; right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 9994;
+    display: flex; gap: 6px; flex-wrap: nowrap;
+    padding: 6px;
+    background: linear-gradient(180deg, rgba(8,5,3,.94), rgba(14,10,7,.94));
+    border: 1px solid rgba(212,168,67,.32);
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.5);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .emergency-strip::-webkit-scrollbar { display: none; }
+  .emergency-strip[hidden] { display: none; }
+  .emergency-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    flex: 1 1 0; min-width: 110px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(212,168,67,.22);
+    border-radius: 10px;
+    color: var(--cream);
+    text-decoration: none;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .emergency-chip:hover { background: rgba(212,168,67,.08); border-color: rgba(212,168,67,.5); }
+  .emergency-chip:active { transform: translateY(1px); }
+  .emergency-chip .emergency-ico { font-size: 18px; line-height: 1; flex-shrink: 0; }
+  .emergency-chip .emergency-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+  .emergency-chip .emergency-label { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(238,227,203,.55); }
+  .emergency-chip .emergency-value { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.nav-drawer-open .emergency-strip,
+  body.print-mode .emergency-strip { display: none; }
+  .light-theme .emergency-strip { background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(245,245,248,.96)); border-color: rgba(25,184,255,.25); box-shadow: 0 10px 28px rgba(0,0,0,.16); }
+  .light-theme .emergency-chip { color: #1A1A1A; background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.1); }
+  .light-theme .emergency-chip:hover { background: rgba(212,168,67,.1); border-color: rgba(212,168,67,.5); }
+  .light-theme .emergency-chip .emergency-label { color: rgba(0,0,0,.55); }
+  .light-theme .emergency-chip .emergency-value { color: #5A4216; }
+  @media (max-width: 480px) {
+    .emergency-chip { min-width: 92px; padding: 7px 9px; }
+    .emergency-chip .emergency-value { font-size: 11px; }
+  }
 
   .rsvp-section { text-align:center; padding:100px 24px; }
   .rsvp-btn { display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--black); background:var(--gold); padding:16px 52px; border:none; cursor:pointer; text-decoration:none; transition:all .3s ease; margin-top:20px; border-radius:8px; box-shadow:0 6px 20px rgba(212,168,67,.3); font-weight:700; }

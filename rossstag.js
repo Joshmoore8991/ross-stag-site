@@ -4053,6 +4053,19 @@
     else if (nextCurrent) nextLine = ' · next: ' + nextCurrent.label;
     else nextLine = ' · ' + (TMINUS_TASKS.find(function (t) { return !state[t.id]; }) ? 'waiting on next window' : 'all clear');
     summary.textContent = headline + ' · ' + doneCount + ' / ' + total + ' done' + nextLine;
+    // Fire confetti on the transition to 100% — only once per device.
+    try {
+      const FIRED_KEY = 'tminusFullFiredAt';
+      const fired = !!localStorage.getItem(FIRED_KEY);
+      if (doneCount === total && !fired && typeof launchConfetti === 'function') {
+        launchConfetti();
+        localStorage.setItem(FIRED_KEY, String(Date.now()));
+        if (typeof showToast === 'function') showToast('Prep complete — legend.', 3000);
+      } else if (doneCount < total && fired) {
+        // Reset the flag if a task gets unticked, so completing again still celebrates.
+        localStorage.removeItem(FIRED_KEY);
+      }
+    } catch (_) {}
   }
   function resetTminusTracker() {
     saveJSON(TMINUS_KEY, {});
@@ -4131,6 +4144,18 @@
     document.querySelectorAll('.ct-day[data-day="' + todayKey + '"], .ct-day-pill[data-day="' + todayKey + '"]').forEach(function (n) {
       n.classList.add('is-today');
     });
+    // One-shot scroll: on first run during the trip, when the page
+    // either opens at #itinerary-section or has no hash, slide today's
+    // pill into view inside the day-pill nav. Avoids yanking the page
+    // on every render.
+    if (window.__stagTodayScrolled) return;
+    const hash = window.location.hash;
+    if (hash && hash !== '#itinerary-section' && hash !== '') return;
+    const todayPill = document.querySelector('.ct-day-pill[data-day="' + todayKey + '"]');
+    if (todayPill && typeof todayPill.scrollIntoView === 'function') {
+      try { todayPill.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); } catch (_) {}
+    }
+    window.__stagTodayScrolled = true;
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -4502,6 +4527,196 @@
     try { setInterval(function () { try { renderWhatsNextPill(); } catch (_) {} }, 60000); } catch (_) {}
     try { wireCopyableCodes(); } catch (_) {}
     try { addFlightStatusLinks(); } catch (_) {}
+    try { renderEmergencyStrip(); } catch (_) {}
+    try { maybeFireDailyPing(); } catch (_) {}
+    try { renderBookingsProgress(); } catch (_) {}
+    try { renderCrewPresenceAvatars(); } catch (_) {}
+    try { setInterval(function () { try { renderCrewPresenceAvatars(); } catch (_) {} }, 30000); } catch (_) {}
+    try { initFxWidget(); } catch (_) {}
+    try { wrapRestaurantImages(); } catch (_) {}
+  }
+
+  // Wrap each .restaurant-card > img in a shimmering placeholder div so
+  // slow networks see something rather than a blank box.
+  function wrapRestaurantImages() {
+    document.querySelectorAll('.restaurant-card > img').forEach(function (img) {
+      if (img.parentElement && img.parentElement.classList.contains('restaurant-img-wrap')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'restaurant-img-wrap';
+      img.parentNode.insertBefore(wrap, img);
+      wrap.appendChild(img);
+      const markLoaded = function () { wrap.classList.add('is-loaded'); };
+      if (img.complete && img.naturalWidth > 0) markLoaded();
+      else {
+        img.addEventListener('load', markLoaded, { once: true });
+        img.addEventListener('error', markLoaded, { once: true });
+      }
+    });
+  }
+
+  // Bidirectional GBP↔EUR widget. Reuses existing fxRates store and
+  // refreshFxRate so the live rate trickles in over time.
+  function initFxWidget() {
+    const gbpEl = document.getElementById('fx-input-gbp');
+    const eurEl = document.getElementById('fx-input-eur');
+    const rateEl = document.getElementById('fx-widget-rate');
+    const footEl = document.getElementById('fx-widget-foot');
+    if (!gbpEl || !eurEl) return;
+    const fmtAge = function (ts) {
+      if (!ts) return 'rate not refreshed yet';
+      const ageMs = Date.now() - Number(ts);
+      if (ageMs < 60 * 60 * 1000) return 'updated ' + Math.max(1, Math.round(ageMs / 60000)) + 'm ago';
+      return 'updated ' + Math.round(ageMs / 3600000) + 'h ago';
+    };
+    const sync = function () {
+      const r = (fxRates && fxRates.rates && Number(fxRates.rates.EUR)) || 1.17;
+      if (rateEl) rateEl.textContent = '£1 = €' + r.toFixed(2);
+      if (footEl) footEl.textContent = 'Live rate · ' + fmtAge(fxRates && fxRates.fetchedAt);
+    };
+    let lock = false;
+    gbpEl.addEventListener('input', function () {
+      if (lock) return;
+      const v = parseFloat(gbpEl.value);
+      const r = (fxRates && fxRates.rates && Number(fxRates.rates.EUR)) || 1.17;
+      lock = true;
+      eurEl.value = isFinite(v) && v > 0 ? (v * r).toFixed(2) : '';
+      lock = false;
+    });
+    eurEl.addEventListener('input', function () {
+      if (lock) return;
+      const v = parseFloat(eurEl.value);
+      const r = (fxRates && fxRates.rates && Number(fxRates.rates.EUR)) || 1.17;
+      lock = true;
+      gbpEl.value = isFinite(v) && v > 0 ? (v / r).toFixed(2) : '';
+      lock = false;
+    });
+    sync();
+    // Try a refresh; sync again once it lands.
+    if (typeof refreshFxRate === 'function') {
+      refreshFxRate(false).then(sync).catch(function () {});
+    }
+  }
+
+  // Single source of truth for booking status; renders a progress bar
+  // + dynamic outstanding count above the still-to-book list.
+  const BOOKINGS = [
+    { label: 'BFS → BCN flights', booked: true },
+    { label: 'Hotel — Htop BCN City', booked: true },
+    { label: 'Suntransfers airport van', booked: true },
+    { label: 'Sun 17:00 brewery tour', booked: true },
+    { label: 'Mon 14:30 catamaran', booked: true },
+    { label: 'Mon 19:30 Sir Victor rooftop', booked: true },
+    { label: 'Mon 22:00 Space Cowboy', booked: true },
+    { label: 'Tue 20:30 fish dinner', booked: false },
+    { label: 'Wed airport pickup time', booked: false }
+  ];
+  function renderBookingsProgress() {
+    const fill = document.getElementById('booking-progress-fill');
+    const countEl = document.getElementById('booking-progress-count');
+    const pctEl = document.getElementById('booking-progress-pct');
+    const headCount = document.getElementById('still-to-book-count');
+    const total = BOOKINGS.length;
+    const done = BOOKINGS.filter(function (b) { return b.booked; }).length;
+    const pct = Math.round((done / total) * 100);
+    if (fill) fill.style.width = pct + '%';
+    if (countEl) countEl.textContent = done + ' / ' + total + ' booked';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (headCount) {
+      const remaining = total - done;
+      headCount.textContent = remaining + ' item' + (remaining === 1 ? '' : 's');
+    }
+  }
+
+  // Letter-chip avatars in the hero showing online crew. Reuses the
+  // existing crewPresence beacon system.
+  function renderCrewPresenceAvatars() {
+    const host = document.getElementById('hero-presence');
+    if (!host) return;
+    if (typeof crewPresence !== 'object' || !crewPresence) { host.setAttribute('hidden', ''); return; }
+    const now = Date.now();
+    const FRESH = 2 * 60 * 1000, IDLE = 10 * 60 * 1000;
+    const entries = [];
+    Object.keys(crewPresence).forEach(function (code) {
+      const p = crewPresence[code];
+      if (!p || !p.lastSeen) return;
+      const age = now - Number(p.lastSeen);
+      if (age > 60 * 60 * 1000) return; // older than 1h, drop
+      const state = age < FRESH ? 'online' : (age < IDLE ? 'idle' : 'offline');
+      entries.push({ code: code, name: p.name || '?', state: state, age: age });
+    });
+    if (!entries.length) { host.setAttribute('hidden', ''); return; }
+    entries.sort(function (a, b) { return a.age - b.age; });
+    host.removeAttribute('hidden');
+    const existing = Array.from(host.querySelectorAll('.presence-avatar'));
+    existing.forEach(function (n) { n.remove(); });
+    entries.slice(0, 6).forEach(function (e) {
+      const initial = (e.name || '?').trim().charAt(0).toUpperCase() || '?';
+      const av = document.createElement('span');
+      av.className = 'presence-avatar presence-' + e.state;
+      av.setAttribute('title', e.name + ' — ' + e.state);
+      av.setAttribute('aria-label', e.name + ' is ' + e.state);
+      av.textContent = initial;
+      host.appendChild(av);
+    });
+  }
+
+  // Sticky emergency strip (trip days only) — tap-to-copy hotel addr,
+  // dial 112, dial Suntransfers. Reads HOTEL_INFO + transferEmergency
+  // from Supabase trip-details after sync.
+  function renderEmergencyStrip() {
+    const strip = document.getElementById('emergency-strip');
+    if (!strip) return;
+    const dayMap = { sun: '2026-05-03', mon: '2026-05-04', tue: '2026-05-05', wed: '2026-05-06' };
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+    const todayISO = y + '-' + m + '-' + dd;
+    if (Object.values(dayMap).indexOf(todayISO) === -1) { strip.setAttribute('hidden', ''); return; }
+    strip.removeAttribute('hidden');
+    const hotelEl = document.getElementById('emergency-hotel-value');
+    if (hotelEl && typeof HOTEL_INFO !== 'undefined') hotelEl.textContent = HOTEL_INFO.address.split(',')[0];
+    const transferRaw = (document.getElementById('transfer-emergency-number') || {}).textContent || '';
+    const transferDigits = transferRaw.replace(/[^\d+]/g, '');
+    const tEl = document.getElementById('emergency-transfer');
+    const tValEl = document.getElementById('emergency-transfer-value');
+    if (tValEl) tValEl.textContent = transferRaw && transferRaw !== 'Loading...' && transferRaw !== 'Unavailable' ? transferRaw : 'Confirm in app';
+    if (tEl) tEl.setAttribute('href', transferDigits ? 'tel:' + transferDigits : 'https://customer.suntransfers.com/');
+  }
+
+  // Hotel chip in the strip: copy address on tap.
+  document.addEventListener('click', function (e) {
+    const chip = e.target && e.target.closest && e.target.closest('.emergency-chip[data-emergency="hotel"]');
+    if (!chip) return;
+    e.preventDefault();
+    if (typeof HOTEL_INFO === 'undefined') return;
+    const text = HOTEL_INFO.name + ', ' + HOTEL_INFO.address;
+    if (typeof copyToClipboard === 'function') {
+      copyToClipboard(text).then(function () { if (typeof showToast === 'function') showToast('Hotel address copied', 1800); }).catch(function () {});
+    }
+    if (typeof hapticTap === 'function') hapticTap(8);
+  });
+
+  // Daily morning ping — once per device per trip day, surface today's
+  // vibe + first event so the page-open feels alive.
+  function maybeFireDailyPing() {
+    const dayMap = {
+      sun: { iso: '2026-05-03', label: 'Sunday — Arrival & Brewery Opener', first: '17:00 brewery tasting' },
+      mon: { iso: '2026-05-04', label: 'Monday — Catamaran · Rooftop · Karaoke', first: '14:30 catamaran sail' },
+      tue: { iso: '2026-05-05', label: 'Tuesday — Flex Day & Fish Night', first: '20:30 fish dinner — book if not yet' },
+      wed: { iso: '2026-05-06', label: 'Wednesday — Home Day', first: '14:00 flight back' }
+    };
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+    const todayISO = y + '-' + m + '-' + dd;
+    let today = null;
+    Object.keys(dayMap).forEach(function (k) { if (dayMap[k].iso === todayISO) today = dayMap[k]; });
+    if (!today) return;
+    const key = 'dailyPingShown:' + todayISO;
+    try { if (localStorage.getItem(key)) return; } catch (_) { return; }
+    if (typeof showToast !== 'function') return;
+    setTimeout(function () {
+      showToast(today.label + '. First slot: ' + today.first + '.', 5000);
+      try { localStorage.setItem(key, '1'); } catch (_) {}
+    }, 1200);
   }
 
   // Tap-to-copy for hotel + transfer booking codes.
@@ -4583,19 +4798,43 @@
     const dayEl = document.querySelector('.ct-day[data-day="' + todayKey + '"]');
     if (!dayEl) { pill.setAttribute('hidden', ''); return; }
     const nowMins = now.getHours() * 60 + now.getMinutes();
-    let next = null;
+    // Build a sorted list once so we can find both "now" and "next".
+    const slots = [];
     dayEl.querySelectorAll('.ct-activity').forEach(function (act) {
       const timeEl = act.querySelector('.ct-time-main');
       if (!timeEl) return;
       const match = (timeEl.textContent || '').match(/(\d{1,2}):(\d{2})/);
       if (!match) return;
       const mins = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
-      if (mins < nowMins) return;
-      if (!next || mins < next.mins) {
-        const nameEl = act.querySelector('.ct-card-name');
-        next = { mins: mins, time: match[1].padStart(2, '0') + ':' + match[2], name: nameEl ? nameEl.textContent.trim() : 'Next up', id: act.id || null };
-      }
+      const nameEl = act.querySelector('.ct-card-name');
+      slots.push({
+        mins: mins,
+        time: match[1].padStart(2, '0') + ':' + match[2],
+        name: nameEl ? nameEl.textContent.trim() : 'Next up',
+        el: act
+      });
     });
+    slots.sort(function (a, b) { return a.mins - b.mins; });
+    // Now-playing = latest slot whose start time has passed; clear all
+    // other .is-now first so a stale highlight doesn't linger.
+    document.querySelectorAll('.ct-activity.is-now').forEach(function (n) { n.classList.remove('is-now'); });
+    let nowPlaying = null;
+    for (let i = 0; i < slots.length; i += 1) {
+      if (slots[i].mins <= nowMins) nowPlaying = slots[i]; else break;
+    }
+    // Hide a finished now-playing if the next slot is more than 30 min
+    // away (otherwise it lingers as "happening now" overnight).
+    if (nowPlaying) {
+      const nextIdx = slots.indexOf(nowPlaying) + 1;
+      const followingMins = nextIdx < slots.length ? slots[nextIdx].mins : nowPlaying.mins + 180;
+      const stale = (nowMins - nowPlaying.mins) > Math.min(180, followingMins - nowPlaying.mins);
+      if (!stale) nowPlaying.el.classList.add('is-now');
+    }
+    let next = null;
+    for (let i = 0; i < slots.length; i += 1) {
+      if (slots[i].mins >= nowMins) { next = slots[i]; break; }
+    }
+    next = next ? { mins: next.mins, time: next.time, name: next.name } : null;
     if (!next) { pill.setAttribute('hidden', ''); return; }
     pill.removeAttribute('hidden');
     const tEl = pill.querySelector('[data-whats-next-time]');
@@ -5426,6 +5665,10 @@
         const prog = document.getElementById('packing-progress');
         if (prog) prog.textContent = updatedCount + ' / ' + total + ' packed' + (updatedCount === total ? ' — Ready to go!' : '');
         renderPackingCrewRoster();
+        if (typeof hapticTap === 'function') hapticTap(checkbox.checked ? 8 : 6);
+        if (checkbox.checked && updatedCount === total && typeof launchConfetti === 'function') {
+          launchConfetti();
+        }
       };
       const label = document.createElement('label');
       label.htmlFor = checkbox.id;
@@ -6980,6 +7223,7 @@
       openHotelMaps: typeof openHotelMaps === 'function' ? openHotelMaps : null,
       shareStagSite: typeof shareStagSite === 'function' ? shareStagSite : null,
       shareCrewBrief: typeof shareCrewBrief === 'function' ? shareCrewBrief : null,
+      openGroupChat: typeof openGroupChat === 'function' ? openGroupChat : null,
       refreshWeather: typeof refreshWeather === 'function' ? refreshWeather : null,
       shareMyLocation: typeof shareMyLocation === 'function' ? shareMyLocation : null,
       clearMyLocation: typeof clearMyLocation === 'function' ? clearMyLocation : null,
@@ -7315,6 +7559,30 @@
       'Full plan: ' + location.origin + location.pathname
     ];
     return lines.join('\n');
+  }
+
+  // Configurable trip group-chat link. Stored locally per device. First
+  // tap prompts for the URL; routed through normalizeURL() so a junk
+  // paste can't open javascript: or //attacker.com.
+  function openGroupChat() {
+    const KEY = 'groupChatUrl';
+    let stored = '';
+    try { stored = localStorage.getItem(KEY) || ''; } catch (_) {}
+    if (!stored) {
+      const raw = (typeof window !== 'undefined' && typeof window.prompt === 'function')
+        ? window.prompt('Paste the trip group-chat link (WhatsApp / Telegram / Signal):')
+        : '';
+      if (!raw) return;
+      const safe = (typeof normalizeURL === 'function') ? normalizeURL(raw) : '';
+      if (!safe) {
+        if (typeof showToast === 'function') showToast('That link looks off — use a full https:// URL.', 3000);
+        return;
+      }
+      try { localStorage.setItem(KEY, safe); } catch (_) {}
+      stored = safe;
+      if (typeof showToast === 'function') showToast('Group chat saved on this device.', 2400);
+    }
+    window.open(stored, '_blank', 'noopener,noreferrer');
   }
 
   function shareCrewBrief() {

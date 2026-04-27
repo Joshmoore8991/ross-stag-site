@@ -1,10 +1,10 @@
 // Minimal service worker — caches the app shell for offline read access.
-const CACHE = 'stag-shell-v53';
+const CACHE = 'stag-shell-v54';
 const SHELL = [
   './',
   './index.html',
-  './rossstag.css?v=20260420-26',
-  './rossstag.js?v=20260420-26',
+  './rossstag.css?v=20260420-27',
+  './rossstag.js?v=20260420-27',
   './404.html'
 ];
 // The manifest is intentionally NOT pre-cached — iOS reads it fresh every
