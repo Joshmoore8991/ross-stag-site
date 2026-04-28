@@ -3973,8 +3973,28 @@
     { id: 't0_gomode', unlockDay: 0, label: 'Flight day — switch to the Flight Day Hub', hint: 'Move to the morning-of checklist. Alarm 02:30. Belfast Intl 04:00 sharp.' }
   ];
   const STAG_DEPART_MS = new Date('2026-05-03T06:10:00+01:00').getTime();
+  // Trip-day simulation hook: ?simdate=YYYY-MM-DD or ?simdate=YYYY-MM-DDTHH:MM
+  // overrides the "now" used by trip-day features so the active-event,
+  // emergency strip, daily ping etc. can be previewed before the trip.
+  // Falls back silently to the real wall-clock if the param is absent /
+  // malformed.
+  let __simNowMs = null;
+  try {
+    const sp = new URLSearchParams(window.location.search);
+    const raw = sp.get('simdate');
+    if (raw) {
+      const iso = /T\d{2}/.test(raw) ? raw : raw + 'T12:00:00+02:00';
+      const t = Date.parse(iso);
+      if (!isNaN(t)) {
+        __simNowMs = t;
+        try { console.info('[stag] simdate active:', new Date(t).toISOString()); } catch (_) {}
+      }
+    }
+  } catch (_) {}
+  function nowMs() { return __simNowMs != null ? __simNowMs : Date.now(); }
+  function nowDate() { return new Date(nowMs()); }
   function tminusDaysOut() {
-    return Math.ceil((STAG_DEPART_MS - Date.now()) / 86400000);
+    return Math.ceil((STAG_DEPART_MS - nowMs()) / 86400000);
   }
   function tminusState(task, state, daysOut) {
     if (state[task.id]) return 'done';
@@ -4081,7 +4101,7 @@
     if (chip) {
       chip.classList.remove('is-imminent', 'is-during');
       const tripEnd = new Date('2026-05-06T16:00:00+01:00').getTime();
-      if (Date.now() > tripEnd) {
+      if (nowMs() > tripEnd) {
         chip.setAttribute('hidden', '');
       } else if (d <= 0) {
         chip.removeAttribute('hidden');
@@ -4134,7 +4154,7 @@
   // Mark today's day block + day-pill during the trip window.
   function markTodayInTimeline() {
     const days = { sun: '2026-05-03', mon: '2026-05-04', tue: '2026-05-05', wed: '2026-05-06' };
-    const now = new Date();
+    const now = nowDate();
     const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
     const todayISO = y + '-' + m + '-' + dd;
     let todayKey = null;
@@ -4667,7 +4687,7 @@
     const strip = document.getElementById('emergency-strip');
     if (!strip) return;
     const dayMap = { sun: '2026-05-03', mon: '2026-05-04', tue: '2026-05-05', wed: '2026-05-06' };
-    const now = new Date();
+    const now = nowDate();
     const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
     const todayISO = y + '-' + m + '-' + dd;
     if (Object.values(dayMap).indexOf(todayISO) === -1) { strip.setAttribute('hidden', ''); return; }
@@ -4704,7 +4724,7 @@
       tue: { iso: '2026-05-05', label: 'Tuesday — Flex Day & Fish Night', first: '20:30 fish dinner — book if not yet' },
       wed: { iso: '2026-05-06', label: 'Wednesday — Home Day', first: '14:00 flight back' }
     };
-    const now = new Date();
+    const now = nowDate();
     const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
     const todayISO = y + '-' + m + '-' + dd;
     let today = null;
@@ -4787,7 +4807,7 @@
     const pill = document.getElementById('whats-next-pill');
     if (!pill) return;
     const dayMap = { sun: '2026-05-03', mon: '2026-05-04', tue: '2026-05-05', wed: '2026-05-06' };
-    const now = new Date();
+    const now = nowDate();
     const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
     const todayISO = y + '-' + m + '-' + dd;
     // Only show during the trip window.
@@ -7476,9 +7496,12 @@
   // Trip + hotel reference data (used by quick actions, map, countdowns).
   const HOTEL_INFO = {
     name: 'Htop BCN City',
-    address: 'Carrer de Balmes 144, 08008 Barcelona, Spain',
-    lat: 41.3958,
-    lng: 2.1555
+    // Matches the address shown on the hotel card in index.html. The
+    // earlier hardcoded "Carrer de Balmes" string was wrong and would
+    // have leaked into copyHotelAddress / openHotelMaps / crew-brief.
+    address: 'Calle Travessera de Gràcia, 08025 Barcelona, Spain',
+    lat: 41.4015,
+    lng: 2.1620
   };
   const OUTBOUND_DEPART_MS = Date.parse('2026-05-03T06:10:00+01:00');
   const RETURN_DEPART_MS = Date.parse('2026-05-06T14:00:00+02:00');
